@@ -13,6 +13,18 @@ return new class extends Migration
     {
         Schema::create('customer', function (Blueprint $table) {
             $table->id();
+
+            $table->string('matric_number')->unique();
+            $table->string('name');
+            $table->string('license_number');
+            $table->string('ic_number');
+            $table->string('phone_number');
+            $table->string('college');
+            $table->string('faculty');
+            $table->decimal('deposit_balance', 8, 2);
+            $table->boolean('is_blacklisted')->default(false);
+            $table->string('blacklist_reason')->nullable();
+
             $table->timestamps();
         });
     }
