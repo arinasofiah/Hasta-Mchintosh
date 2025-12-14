@@ -12,11 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('voucher', function (Blueprint $table) {
-            $table->id();
+            $table->id('voucherCode');
+            $table->string('voucherType');
+            $table->decimal('value', 8, 2);
+            $table->integer('expiryTime');
+            $table->boolean('isUsed')->default(false);
             $table->timestamps();
         });
     }
-
     /**
      * Reverse the migrations.
      */

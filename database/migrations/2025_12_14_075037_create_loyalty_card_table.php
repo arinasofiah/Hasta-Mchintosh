@@ -12,11 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('loyalty_card', function (Blueprint $table) {
-            $table->id();
+            $table->id('matricNumber');
+            $table->integer('stampCount');
+            $table->string('voucherCode',100);
             $table->timestamps();
         });
     }
-
     /**
      * Reverse the migrations.
      */
