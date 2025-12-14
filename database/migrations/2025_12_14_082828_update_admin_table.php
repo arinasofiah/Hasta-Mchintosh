@@ -11,13 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('report', function (Blueprint $table) {
-            $table->id('reportID');
-            $table->date('generatedDate');
-            $table->string('facultyName');
-            $table->integer('totalBookings');
-            $table->integer('frequentUsers');
-            $table->timestamps();
+        Schema::table('admin', function (Blueprint $table) {
+            //
         });
     }
 
@@ -26,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('report');
+        Schema::table('admin', function (Blueprint $table) {
+            //
+        });
     }
 };
