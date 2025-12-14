@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('customer', function (Blueprint $table) {
             $table->id(matricNumber);
 
-            $table->string('matricNumber')->unique();
             $table->string('name');
             $table->string('licenseNumber');
             $table->string('icNumber');
