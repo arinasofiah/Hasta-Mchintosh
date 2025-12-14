@@ -11,18 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('loyalty_card', function (Blueprint $table) {
-            $table->id('matricNumber');
-            $table->integer('stampCount');
-            $table->string('voucherCode',100);
-            $table->timestamps();
+        Schema::table('admin', function (Blueprint $table) {
+            //
         });
     }
+
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('loyalty_card');
+        Schema::table('admin', function (Blueprint $table) {
+            //
+        });
     }
 };

@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('promotion', function (Blueprint $table) {
-            $table->id();
+            $table->id('promoID');
+            $table->decimal('discountValue', 8, 2);
+            $table->integer('applicableDays');
             $table->timestamps();
         });
     }
