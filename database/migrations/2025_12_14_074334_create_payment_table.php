@@ -12,7 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('payment', function (Blueprint $table) {
-            $table->id();
+            $table->id(paymentID);
+
+            $table->string('bankName', 20);
+            $table->decimal('amount', 10, 2);
+            $table->string('qrPayment');
+            $table->string('receiptImage');
+            $table->enum('paymentStatus', ['pending', 'completed', 'failed'])->default('pending');
+            $table->date('paymentDate');
+
             $table->timestamps();
         });
     }

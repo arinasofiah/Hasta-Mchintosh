@@ -12,7 +12,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('return', function (Blueprint $table) {
-            $table->id();
+            $table->id('returnID');
+
+            $table->date('returnDate');
+            $table->string('returnLocation', 255); 
+            $table->string('returnPhoto');
+            $table->boolean('isFined')->default(false);
+            $table->string('trafficTicketPhoto')->nullable();
+            $table->integer('fuelAmount');
+            $table->integer('lateHours')->default(0);
+            $table->text('feedback');
+            $table->decimal('refundCalculated', 8, 2)->default(0);
+
             $table->timestamps();
         });
     }

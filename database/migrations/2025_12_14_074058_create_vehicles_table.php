@@ -12,7 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('vehicles', function (Blueprint $table) {
-            $table->id();
+            $table->id('vehicleID');
+
+            $table->string('vehicleType', 50);
+            $table->string('model', 100);
+            $table->string('plateNumber', 20)->unique();
+            $table->integer('fuelLevel');
+            $table->enum('status', ['available', 'rented', 'maintenance'])->default('available');
+            $table->decimal('pricePerHour', 8, 2);
+            $table->decimal('pricePerDay', 8, 2);
+
             $table->timestamps();
         });
     }
