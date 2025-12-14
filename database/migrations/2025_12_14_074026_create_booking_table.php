@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('bankNum');
             $table->string('penamaBank');
             $table->date('startDate');
-            $table->data('endDate');
+            $table->date('endDate');
             $table->integer('bookingDuration');
             $table->enum('bookingStatus', ['pending', 'approved', 'cancelled', 'completed']);
             $table->decimal('totalPrice', 8, 2);
