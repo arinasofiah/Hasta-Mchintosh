@@ -12,18 +12,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('customer', function (Blueprint $table) {
-            $table->id();
+            $table->id(matricNumber);
 
-            $table->string('matric_number')->unique();
+            $table->string('matricNumber')->unique();
             $table->string('name');
-            $table->string('license_number');
-            $table->string('ic_number');
-            $table->string('phone_number');
+            $table->string('licenseNumber');
+            $table->string('icNumber');
+            $table->string('phoneNumber');
             $table->string('college');
             $table->string('faculty');
-            $table->decimal('deposit_balance', 8, 2);
-            $table->boolean('is_blacklisted')->default(false);
-            $table->string('blacklist_reason')->nullable();
+            $table->float('depoBalance', 8, 2);
+            $table->boolean('isBlacklisted')->default(false);
+            $table->string('blacklistReason')->nullable();
 
             $table->timestamps();
         });
