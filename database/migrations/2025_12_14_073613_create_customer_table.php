@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('phoneNumber');
             $table->string('college');
             $table->string('faculty');
-            $table->float('depoBalance', 8, 2);
+            $table->decimal('depoBalance', 8, 2);
             $table->boolean('isBlacklisted')->default(false);
             $table->string('blacklistReason')->nullable();
 
