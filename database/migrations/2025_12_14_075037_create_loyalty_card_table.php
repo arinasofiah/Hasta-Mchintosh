@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('loyalty_card', function (Blueprint $table) {
             $table->id('matricNumber');
             $table->integer('stampCount');
+            $table->boolean('rewardEligible')->default(false);
             $table->string('voucherCode',100);
             $table->timestamps();
         });
