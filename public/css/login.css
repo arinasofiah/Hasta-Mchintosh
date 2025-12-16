@@ -1,0 +1,231 @@
+/* Base Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body, html {
+    height: 100%;
+    font-family: 'Poppins', sans-serif; /* Adjust to your preferred font */
+}
+
+/* Main Container */
+.login-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: #fce4ec; /* Light pink base */
+}
+
+/* --- Left Section (Red/Pink Side) --- */
+.left-section {
+    position: relative;
+    flex: 0 0 50%; /* Takes half the width */
+    padding: 40px;
+    color: white;
+    /* Gradient Background for the left side */
+    background: linear-gradient(135deg, #FF6F6F 0%, #E63946 100%);
+    overflow: hidden; /* To contain the car and circles */
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    background-color: #E63946; /* A slightly darker red for the background of the logo text */
+    padding: 5px 10px;
+    display: inline-block;
+}
+
+.headline {
+    font-size: 60px;
+    font-weight: bold;
+    margin-top: 80px;
+    line-height: 1.1;
+}
+
+.sub-headline {
+    font-size: 18px;
+    margin-top: 10px;
+    font-weight: 300;
+}
+
+/* Car Visuals and Decorations */
+.car-visuals {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+.car-image {
+    width: 80%; /* Adjust size as needed */
+    height: auto;
+    z-index: 10;
+    position: relative;
+    bottom: -20px; /* Slight lift */
+}
+
+.circle-decoration {
+    position: absolute;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent white */
+    z-index: 5;
+}
+
+.circle-large {
+    width: 200px;
+    height: 200px;
+    left: 50px;
+    bottom: 150px;
+    border: 3px solid rgba(255, 255, 255, 0.5); /* Outer ring style */
+    background-color: transparent; /* Make it a ring */
+}
+
+.circle-small {
+    width: 100px;
+    height: 100px;
+    right: 50px;
+    top: 50px;
+}
+
+
+/* --- Right Section (Form Side) --- */
+.right-section {
+    flex: 1; /* Takes the remaining half */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Background Gradient for Right Side */
+    background: linear-gradient(to top right, #fce4ec, #fff0f5); /* Light pink to white */
+}
+
+.login-card {
+    background: white;
+    padding: 50px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    width: 450px;
+    text-align: center;
+}
+
+.welcome-text {
+    font-size: 24px;
+    font-weight: normal;
+    color: #4A4A4A;
+    margin-bottom: 20px;
+}
+
+.login-title {
+    font-size: 32px;
+    font-weight: bold;
+    color: #E63946; /* Red color */
+    margin-bottom: 10px;
+}
+
+.credential-prompt {
+    color: #888;
+    margin-bottom: 30px;
+}
+
+/* Form Styling */
+.form-group {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+    border-color: #E63946;
+}
+
+.error-message {
+    color: #E63946;
+    font-size: 12px;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Options Row */
+.options-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    margin-bottom: 30px;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    color: #666;
+}
+
+.remember-me input {
+    margin-right: 5px;
+    accent-color: #E63946; /* Colors the checkbox */
+}
+
+.forgot-password {
+    color: #5a76e9; /* Blue link color */
+    text-decoration: none;
+}
+
+.forgot-password:hover {
+    text-decoration: underline;
+}
+
+/* Button */
+.login-button {
+    width: 100%;
+    padding: 15px;
+    background-color: #E63946;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.login-button:hover {
+    background-color: #c9333e;
+}
+
+/* Footer Link */
+.no-account {
+    margin-top: 25px;
+    font-size: 16px;
+    color: #666;
+}
+
+.sign-up-link {
+    color: #5a76e9;
+    font-weight: bold;
+    text-decoration: none;
+    margin-left: 5px;
+}
+
+.sign-up-link:hover {
+    text-decoration: underline;
+}
