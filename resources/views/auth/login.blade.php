@@ -26,8 +26,9 @@
         </div>
 
         <div class="right-section">
+            <h2 class="welcome-text">Welcome Back !</h2>
             <div class="login-card">
-                <h2 class="welcome-text">Welcome Back !</h2>
+                
                 <h3 class="login-title">Login</h3>
                 <p class="credential-prompt">Enter your Credentials to access your account</p>
 
