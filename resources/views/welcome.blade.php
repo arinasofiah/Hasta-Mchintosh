@@ -27,7 +27,7 @@
 </head>
 
 <body>
-@include('profile.partials.header')
+@include('profile.partials.header') <!--just include this one for header-->
 <div id="body">
     {{-- Page content goes here --}}
 </div>
