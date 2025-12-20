@@ -24,7 +24,7 @@
     
 <div class="container">
     <div class="pickup-layout">
-        <aside class="vehicle-card">
+        <div class="vehicle-card">
             <p id="res_txt">Reserved Vehicle</p>
             <p id="car_name">Perodua Axia 2024<p>
             <p id="car_type">Hatchback</p>
@@ -42,7 +42,36 @@
             </ul>
             <p id="day_pr">RM130 / Day</p>
             <p id="all_pr">Total MYR 530</p>
-        </aside>
+</div>
+         <div class="pickup_form">
+            <p id="form_name">Pick Up Details</p>
+            <p class="main_txt">Upload Photos</p>
+            <p class="sub_txt">Upload photos of the car before pick up</p>
+            <p class="main_txt">Pick Up Information</p>
+            <p class="sub_txt">Fill in pick up details</p>
+            
+            <form method="POST" enctype="multipart/form-data">
+                <div class="form-row">
+                    <div>
+                    <label for="loc">Pickup Location:</label>
+                    <input type="text" id="loc">
+                    </div>
+                    <div>
+                    <label for="date_pickup">Pickup Location:</label>
+                    <input type="date" id="date_pickup">
+                    </div>
+                </div>
+
+                <label class="checkbox">
+                    <input type="checkbox"> 
+                    <span>I have read and accepted the Terms and Conditions</span>
+                </label>
+
+                <div id="btn_div"> 
+                    <button class="btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 

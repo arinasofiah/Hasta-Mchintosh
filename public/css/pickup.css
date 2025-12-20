@@ -8,8 +8,9 @@
 
 .pickup-layout {
     display: grid;
-    grid-template-columns: 45% 55%;
+    grid-template-columns: 45% 85%;
     width: 100%;
+    height: 100%;
 }
 
 .vehicle-card {
@@ -92,4 +93,77 @@
     color: gray;
 }
 
+#form_name {
+    text-align: center;
+    font-weight: bold;
+    font-size: 34px;
+    padding: 0px; 
+}
 
+.pickup_form{
+    padding-top: 30px;
+    padding-right: 50px;
+    padding-left: 50px;
+}
+
+.main_txt{
+    font-weight: bold;
+    font-size: 24px;
+    margin-bottom: 0px;
+}
+
+.sub_txt{
+    font-size: 18px;
+    color: gray;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 700px 200px;
+    gap: 100px;
+    margin-top: 25px;
+    margin-bottom: 10px;
+}
+
+.form-row label {
+  display: block;
+  margin-bottom: 3px;
+  font-weight: bold;
+}
+
+input {
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    width: 100%;
+}
+
+.checkbox{
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    height: 50px;
+    font-weight: bold;
+}
+
+.checkbox input{
+    width: 20px;
+    margin-right: 7px;
+    cursor: pointer;
+}
+
+#btn_div{
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.btn-primary {
+    background: #CB3737;
+    color: white;
+    border: none;
+    padding: 4px;
+    border-radius: 10px;
+    width: 40%;
+    cursor: pointer;
+}
