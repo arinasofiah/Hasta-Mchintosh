@@ -12,7 +12,7 @@
 <body>
     <div class="login-container">
         <div class="left-section">
-            <div class="logo"><img src="{{ asset('images/hasta_logo.jpg') }}"></div>
+            <div class="logo"><img src="{{ asset('img/hasta_logo.jpg') }}"></div>
             <h1 class="headline">
                 For You,<br>
                 From Us

@@ -2,6 +2,17 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\OcrController;
+use App\Http\Controllers\RegisterController;
+
+Route::view('/signup', 'signup');
+
+Route::post('/ocr/ic', [OcrController::class, 'ic']);
+Route::post('/ocr/license', [OcrController::class, 'license']);
+Route::post('/ocr/student', [OcrController::class, 'student']);
+
+Route::post('/register', [RegisterController::class, 'register']);
+
 
 Route::get('/', function () {
     return view('welcome');
