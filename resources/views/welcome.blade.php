@@ -12,6 +12,7 @@
     {{-- Custom CSS --}}
     <link href="{{ asset('css/header.css') }}" rel="stylesheet">
     <link href="{{ asset('css/footer.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/vehicles.css') }}" rel="stylesheet">
 
     <style>
         .footer {
@@ -70,7 +71,38 @@
 </div>
 
 <div id="body">
-    {{-- Page content goes here --}}
+    <div class="car-grid">
+
+@foreach($vehicles as $vehicle)
+    <div class="car-card">
+
+        <img src="{{ asset('img/vehicles/'.$vehicle->vehicleID.'.jpg') }}"
+             onerror="this.src='{{ asset('img/vehicles/default.jpg') }}'">
+
+        <h3>RM{{ $vehicle->pricePerDay }}</h3>
+
+        <div class="specs">
+            <span>🚗 {{ $vehicle->vehicleType }}</span>
+            <span>⛽ {{ $vehicle->fuelLevel }}%</span>
+            <span>📌 {{ $vehicle->plateNumber }}</span>
+        </div>
+
+        {{-- View Details Button --}}
+        @auth
+            <a href="{{ route('booking.form', $vehicle->vehicleID) }}" class="btn">
+                View Details
+            </a>
+        @else
+            <a href="{{ route('login') }}" class="btn">
+                View Details
+            </a>
+        @endauth
+
+    </div>
+@endforeach
+
+</div>
+
 </div>
 
 <div class="footer">

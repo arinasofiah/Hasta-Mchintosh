@@ -27,12 +27,16 @@ Route::get('/pickup', function () {
 
 /*nisa add this*/
 Route::get('/vehicles/{id}', [VehicleController::class, 'show'])->name('vehicles.select'); 
+Route::get('/', [VehicleController::class, 'index'])->name('welcome');
 
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/booking/{vehicleID}', function ($vehicleID) {
+        return view('bookingform', compact('vehicleID'));
+    })->name('booking.form');
 });
 
 require __DIR__.'/auth.php';
