@@ -47,6 +47,7 @@
                 @guest
                     <a href="{{ route('login') }}" class="dropdown-item">Login</a>
                     <a href="{{ route('register') }}" class="dropdown-item">Register</a>
+                    <a href="{{ route('selectVehicle') }}" class="head_button">Vehicles</a>
                 @endguest
 
                 @auth
