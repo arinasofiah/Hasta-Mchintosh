@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\Vehicle;
+use App\Models\Vehicles;
 use Illuminate\Http\Request;
 
 class VehicleController extends Controller
