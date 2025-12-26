@@ -8,7 +8,7 @@ class VehicleController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Vehicle::where('status', 'available');
+        $query = Vehicles::where('status', 'available');
 
         if ($request->search) {
             $query->where('model', 'like', '%'.$request->search.'%');
