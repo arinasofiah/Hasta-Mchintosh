@@ -47,6 +47,13 @@
             <p id="form_name">Pick Up Details</p>
             <p class="main_txt">Upload Photos</p>
             <p class="sub_txt">Upload photos of the car before pick up</p>
+
+            <div id="drop-zone">
+                <p>Drop files to upload</p>
+                <p>or</p>
+                <p><input type="file" id="file-input" multiple accept="image/*" /></p>
+            </div>
+
             <p class="main_txt">Pick Up Information</p>
             <p class="sub_txt">Fill in pick up details</p>
             
