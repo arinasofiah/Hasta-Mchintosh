@@ -35,6 +35,21 @@ Route::middleware('guest')->group(function () {
         ->name('password.store');
 });
 
+Route::middleware(['auth'])->group(function () {
+    // Admin only
+    Route::get('/admin/dashboard', [AdminController::class, 'index'])
+        ->middleware('can:access-admin')->name('admin.dashboard');
+
+    // Staff only
+    Route::get('/staff/dashboard', [StaffController::class, 'index'])
+        ->middleware('can:access-staff')->name('staff.dashboard');
+
+    // Customer only
+    Route::get('/customer/dashboard', [CustomerController::class, 'index'])
+        ->middleware('can:access-customer')->name('customer.dashboard');
+});
+
+
 Route::middleware('auth')->group(function () {
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');

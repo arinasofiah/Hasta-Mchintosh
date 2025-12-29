@@ -39,7 +39,7 @@
                 <input type="tel" name="phone" required>
 
                 <label>National Identification Card</label>
-                <input type="text" id="icNumber" name="ic" required>
+                <input type="text" id="icNumber" name="icNumber" required>
 
                 <label>Upload National IC (For Autofill)</label>
                 <input type="file" id="icUpload" accept="image/*">
@@ -47,6 +47,17 @@
                 <small class="hint" id="statusMsg">
                     Upload your IC to autofill your name and ID number.
                 </small>
+
+                <div class="mt-4">
+                    <x-input-label for="matricNumber" :value="__('Matric Number')" />
+                    <x-text-input id="matricNumber" class="block mt-1 w-full" 
+                                  type="text" 
+                                  name="matricNumber" 
+                                  :value="old('matricNumber')" 
+                                  required 
+                                  placeholder="e.g. A21CS0001" />
+                    <x-input-error :messages="$errors->get('matricNumber')" class="mt-2" />
+                </div>
 
                 <label>Password</label>
                 <input type="password" name="password" required>

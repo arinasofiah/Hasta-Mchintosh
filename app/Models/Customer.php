@@ -6,21 +6,21 @@ use Illuminate\Database\Eloquent\Model;
 
 class Customer extends Model
 {
-    protected $primaryKey = 'matricNumber'; 
-    protected $keyType = 'string';          
-    public $incrementing = false;         
-    
+    protected $table = 'customers';
+    protected $primaryKey = 'matricNumber'; // Set matricNumber as PK
+    public $incrementing = false;          // PK is not an auto-incrementing integer
+    protected $keyType = 'string';          // PK is a string
+
     protected $fillable = [
         'matricNumber', 
         'userID', 
-        'licenseNumber', 
-        'college', 
-        'faculty', 
         'depoBalance'
     ];
 
+    // Link back to the User supertype
     public function user()
     {
         return $this->belongsTo(User::class, 'userID', 'userID');
     }
 }
+

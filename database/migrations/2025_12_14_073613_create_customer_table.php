@@ -13,21 +13,20 @@ return new class extends Migration
     public function up(): void
 {
     Schema::create('customers', function (Blueprint $table) {
-        
-        $table->string('matricNumber')->primary(); 
-        
-        
-        $table->foreignId('userID')->unique()->constrained('users', 'userID')->onDelete('cascade');
+    // Primary Key as a string
+    $table->string('matricNumber')->primary(); 
 
-        
-        $table->string('licenseNumber');
-        $table->string('college');
-        $table->string('faculty');
-        $table->decimal('depoBalance', 10, 2)->default(0);
-        $table->boolean('isBlacklisted')->default(false);
-        $table->string('blacklistReason')->nullable();
-        $table->timestamps();
-    });
+    $table->foreignId('userID')->unique()->constrained('users', 'userID')->onDelete('cascade');
+
+    // These remain nullable so they can be filled after registration
+    $table->string('licenseNumber')->nullable();
+    $table->string('college')->nullable();
+    $table->string('faculty')->nullable();
+    $table->decimal('depoBalance', 10, 2)->default(0.00);
+    $table->boolean('isBlacklisted')->default(false);
+    
+    $table->timestamps();
+});
 }
     
 
