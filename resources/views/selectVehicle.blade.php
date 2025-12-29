@@ -82,7 +82,7 @@ $returnTime = $returnTime ?? '08:00';
         <div class="logo">HASTA</div>
         <nav class="nav">
             <a href="{{ url('/') }}">Home</a>
-            <a href="{{ route('selectVehicle') }}">Vehicles</a>
+            <a href="{{ route('selectVehicle', $vehicle->vehicleID) }}">Vehicles</a>
             <a href="#">Details</a>
             <a href="#">About Us</a>
             <a href="#">Contact Us</a>
@@ -110,7 +110,7 @@ $returnTime = $returnTime ?? '08:00';
 
     <!-- Booking Form -->
     <div class="booking-form">
-        <form action="{{ route('selectVehicle') }}" method="GET">
+        <form action="{{ route('selectVehicle', $vehicle->vehicleID) }}" method="GET">
             <div class="form-group">
                 <label>Pickup</label>
                 <div class="date-time-group">

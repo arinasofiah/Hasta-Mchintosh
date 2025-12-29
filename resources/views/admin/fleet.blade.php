@@ -49,7 +49,8 @@
     <div class="main-content">
         <div class="header-flex">
             <h2>Vehicles Management</h2>
-            <button class="btn btn-success" style="border-radius: 20px; background-color: #1a8f36;">+ Add New</button>
+           <button class="btn btn-success" style="border-radius: 20px; background-color: #1a8f36;" data-bs-toggle="modal" data-bs-target="#addVehicleModal"> + Add New
+            </button>
         </div>
 
         <div class="tab-menu">
@@ -82,6 +83,70 @@
         </div>
         @endforeach
     </div>
+    <div class="modal fade" id="addVehicleModal" tabindex="-1" aria-labelledby="addVehicleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form action="{{ route('admin.vehicles.store') }}" method="POST" class="modal-content">
+            @csrf
+            <div class="modal-header">
+                <h5 class="modal-title" id="addVehicleModalLabel">Register New Vehicle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label text-muted">Model Name</label>
+                    <input type="text" name="model" class="form-control" placeholder="e.g. Honda Civic" required>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Vehicle Type</label>
+                        <select name="vehicleType" class="form-select">
+                            <option value="Sedan">Sedan</option>
+                            <option value="Sedan">Hatchback</option>
+                            <option value="SUV">SUV</option>
+                            <option value="MPV">MPV</option>
+                            <option value="Luxury">Luxury</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Plate Number</label>
+                        <input type="text" name="plateNumber" class="form-control" placeholder="ABC 1234" required>
+                    </div>
+                </div>
 
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Price Per Day (RM)</label>
+                        <input type="number" name="pricePerDay" class="form-control" placeholder="150" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Seats</label>
+                        <input type="number" name="seat" class="form-control" value="5" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Fuel Type</label>
+                        <select name="fuelType" class="form-select">
+                            <option value="Petrol">Petrol</option>
+                            <option value="Diesel">Diesel</option>
+                            <option value="Electric">Electric</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Current Fuel (%)</label>
+                        <input type="number" name="fuelLevel" class="form-control" value="100" max="100">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-success" style="background-color: #1a8f36;">Save Vehicle</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

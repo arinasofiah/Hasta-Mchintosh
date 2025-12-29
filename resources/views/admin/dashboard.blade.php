@@ -49,7 +49,7 @@
 
 
 <div class="sidebar">
-    <div class="text-center mb-4"><img src="{{ asset('img/hasta_logo.jpg') }}" width="120"></div>
+    
     <nav class="d-flex flex-column">
         <a href="{{ route('admin.dashboard') }}" class="nav-item active">📊 Dashboard</a>
         <a href="#" class="nav-item">📈 Reporting</a>

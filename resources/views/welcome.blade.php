@@ -120,7 +120,7 @@
                 View Details
             </a>
         @else
-            <a href="{{ route('login') }}" class="btn">
+            <a href="{{ route('selectVehicle', $vehicle->vehicleID) }}" class="btn">
                 View Details
             </a>
         @endauth

@@ -31,6 +31,9 @@ Route::get('/', [VehicleController::class, 'index'])->name('welcome');
 Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
 Route::get('/admin/dashboard', [VehicleController::class, 'adminDashboard'])->name('admin.dashboard');
 Route::get('/admin/fleet', [VehicleController::class, 'adminVehicles'])->name('admin.fleet');
+Route::post('/admin/vehicles/store', [VehicleController::class, 'store'])->name('admin.vehicles.store');
+Route::get('/select-vehicle/{id}', [VehicleController::class, 'select'])
+    ->name('selectVehicle');
 
 
 Route::middleware('auth')->group(function () {

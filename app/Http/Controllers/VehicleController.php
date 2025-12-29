@@ -32,6 +32,13 @@ class VehicleController extends Controller
     return view('welcome', compact('vehicles'));
 }
 
+  public function select($id)
+{
+    $vehicle = Vehicles::findOrFail($id);
+    return view('selectVehicle', compact('vehicle'));  // Remove 'vehicles.' prefix
+}
+
+
 public function manage(Request $request)
 {
     // Fetch vehicles based on status tab (default to active)
@@ -44,6 +51,30 @@ public function manage(Request $request)
     $totalCount = Vehicles::count();
 
     return view('admin.fleet', compact('vehicles', 'totalCount', 'status'));
+}
+
+public function store(Request $request)
+{
+    // 1. Validate the form data
+    $validated = $request->validate([
+        'model' => 'required|string|max:255',
+        'vehicleType' => 'required|string',
+        'plateNumber' => 'required|string|unique:vehicles,plateNumber',
+        'pricePerDay' => 'required|numeric',
+        'fuelLevel' => 'required|integer',
+        'fuelType' => 'required|string',
+        'seat' => 'required|integer',
+    ]);
+
+    // 2. Create the vehicle record
+    // We manually add 'status' as 'available' and calculate pricePerHour
+    \App\Models\Vehicles::create($validated + [
+        'status' => 'available',
+        'pricePerHour' => $request->pricePerDay / 10, 
+    ]);
+
+    // 3. Go back to the fleet page with a success message
+    return redirect()->route('admin.fleet')->with('success', 'Vehicle added successfully!');
 }
 
 public function adminDashboard()
