@@ -122,8 +122,6 @@
                     <a href="{{ route('booking.form', $vehicle->vehicleID) }}" class="btn">
                         View Details & Book
                     </a>
-                @else
-                    <a href="{{ route('login') }}" class="btn">Login to Book</a>
                 @endauth
             </div>
         @empty
