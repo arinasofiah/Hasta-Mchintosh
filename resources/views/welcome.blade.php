@@ -51,12 +51,7 @@
                    
                 @endguest
 
-                @auth
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="dropdown-item">Logout</button>
-                    </form>
-                @endauth
+               
             </div>
         </div>
 
@@ -64,9 +59,6 @@
             <a id="username" href="{{ route('login') }}">Log in</a>
         @endguest
 
-        @auth
-            <span id="username">{{ Auth::user()->name }}</span>
-        @endauth
     </div>
 </div>
 
