@@ -12,18 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('admin', function (Blueprint $table) {
-            $table->unsignedBigInteger('staffID');
-             $table->string('name',100);
-            $table->string('icNumber',12)->unique();
-            $table->string('phoneNumber',15);
-            $table->text('address');
+           $table->unsignedBigInteger('userID')->primary();
 
-            $table->primary('staffID');
-
-            $table->foreign('staffID')
-                  ->references('staffID')
-                  ->on('staff')
-                  ->onDelete('cascade');
+            $table->foreign('userID')
+            ->references('userID')
+            ->on('users')
+            ->onDelete('cascade');
 
             $table->timestamps();
         });
