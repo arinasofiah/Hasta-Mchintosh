@@ -42,4 +42,6 @@ Route::middleware('auth')->group(function () {
     })->name('booking.form');
 });
 
+
+
 require __DIR__.'/auth.php';

@@ -28,7 +28,7 @@ $otherVehicles = $otherVehicles ?? [
         'ac' => 'Yes',
         'transmission' => 'Auto',
         'fuel_policy' => 'Full',
-        'fuel_type' => 'Petrol'
+        'fuelType' => 'Petrol'
     ],
     [
         'id' => 3,
@@ -158,11 +158,9 @@ $returnTime = $returnTime ?? '08:00';
             </div>
             <div class="vehicle-specs">
                 <span>Seats: {{ $featuredVehicle['seats'] }}</span>
-                <span>Bags: {{ $featuredVehicle['bags'] }}</span>
-                <span>Doors: {{ $featuredVehicle['doors'] }}</span>
                 <span>AC: {{ $featuredVehicle['ac'] }}</span>
-                <span>Transmission: {{ $featuredVehicle['transmission'] }}</span>
-                <span>Fuel: {{ $featuredVehicle['fuel_type'] }}</span>
+                <span>Transmission: {{ $featuredVehicle['transmission'] }}
+                <span>Fuel: {{ $featuredVehicle['fuelType'] }}</span>
             </div>
             @if($featuredVehicle['available'])
                 <button class="book-btn">Book</button>
