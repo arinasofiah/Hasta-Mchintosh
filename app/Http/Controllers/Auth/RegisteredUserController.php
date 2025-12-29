@@ -35,6 +35,7 @@ class RegisteredUserController extends Controller
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'icNumber' => ['required', 'string', 'unique:users,icNumber'],
+            'matricNumber' => ['required', 'string', 'unique:customer,matricNumber'],
         ]);
 
         // 2. Use a transaction to ensure both tables are updated or none
@@ -53,6 +54,7 @@ class RegisteredUserController extends Controller
             // We use the ID directly from the $user object we just created
             DB::table('customer')->insert([
                 'userID'       => $user->userID, // Links the two tables
+                'matricNumber' => $request->matricNumber, 
                 'depoBalance'  => 0.00,
                 'created_at'   => now(),
                 'updated_at'   => now(),

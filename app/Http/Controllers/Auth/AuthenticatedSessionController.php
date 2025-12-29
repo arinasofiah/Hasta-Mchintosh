@@ -7,10 +7,11 @@ use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB; // Add this
 use Illuminate\View\View;
 use App\Models\Admin;
 use App\Models\Staff;
-use App\Models\Customer;
+// Remove: use App\Models\Customer; // Remove this
 
 class AuthenticatedSessionController extends Controller
 {
@@ -26,32 +27,24 @@ class AuthenticatedSessionController extends Controller
      * Handle an incoming authentication request.
      */
     public function store(LoginRequest $request)
-{
-    
-    $request->authenticate();
+    {
+        $request->authenticate();
     $request->session()->regenerate();
 
-    $user = auth()->user();
-
-    if (Admin::where('userID', $user->userID)->exists()) {
-        return redirect()->intended('/admin/dashboard');
+    $user = Auth::user();
+    
+    // Simple redirect based on userType
+    if ($user->userType === 'admin') {
+        return redirect()->route('admin.dashboard');
+    } elseif ($user->userType === 'staff') {
+        return redirect()->route('staff.dashboard');
+    } elseif ($user->userType === 'customer') {
+        return redirect()->route('customer.dashboard');
     }
-
-    if (Staff::where('userID', $user->userID)->exists()) {
-        return redirect()->intended('/staff/dashboard');
+    
+    // Fallback
+    return redirect()->intended('/customer/dashboard');
     }
-
-    if (Customer::where('userID', $user->userID)->exists()) {
-        return redirect()->intended('/customer/dashboard');
-    }
-
-    Auth::logout();
-    return redirect('/login')->withErrors([
-        'email' => 'Unauthorized account.'
-    ]);
-}
-
-
 
     /**
      * Destroy an authenticated session.
