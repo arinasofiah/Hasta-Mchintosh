@@ -165,7 +165,7 @@ $returnTime = $returnTime ?? '08:00';
                 <span>Fuel: {{ $featuredVehicle['fuel_type'] }}</span>
             </div>
             @if($featuredVehicle['available'])
-                <button class="book-btn">Book Now</button>
+                <button class="book-btn">Book</button>
             @else
                 <span class="availability-badge">Not Available</span>
             @endif
