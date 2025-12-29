@@ -98,6 +98,14 @@ public function adminDashboard()
     ));
 }
 
+public function show($id)
+{
+    $vehicle = Vehicle::findOrFail($id);
+
+    return view('selectVehicle', compact('vehicle'));
+}
+
+
 public function adminVehicles(Request $request)
 {
     // 1. Get the current status filter from the URL (defaults to 'available')
