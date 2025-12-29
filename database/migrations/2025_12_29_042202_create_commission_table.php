@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('admin', function (Blueprint $table) {
-            // Link to User table: userID is the PK and FK
-            $table->foreignId('userID')->primary()->constrained('users', 'userID')->onDelete('cascade');
-
+        Schema::create('commission', function (Blueprint $table) {
+            $table->id('commissionID');
+            $table->string('commissionType');
+            $table->date('commissionDate');
             $table->timestamps();
         });
     }
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('admin');
+        Schema::dropIfExists('commission');
     }
 };

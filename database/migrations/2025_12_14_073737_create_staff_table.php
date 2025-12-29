@@ -12,14 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('staff', function (Blueprint $table) {
-            $table->unsignedBigInteger('userID')->primary();
+            // Link to User table: userID is the PK and FK
+            $table->foreignId('userID')->primary()->constrained('users', 'userID')->onDelete('cascade');
 
-            $table->foreign('userID')
-            ->references('userID')
-            ->on('users')
-            ->onDelete('cascade');
             $table->string('position',100);
             $table->integer('commissionCount')->default(0);
+            
             $table->timestamps();
         });
     }
