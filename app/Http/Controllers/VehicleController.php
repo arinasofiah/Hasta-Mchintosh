@@ -32,10 +32,25 @@ class VehicleController extends Controller
     return view('welcome', compact('vehicles'));
 }
 
-  public function select($id)
+  public function select($id, Request $request)
 {
-    $vehicle = Vehicles::findOrFail($id);
-    return view('selectVehicle', compact('vehicle'));  // Remove 'vehicles.' prefix
+    $featuredVehicle = Vehicles::findOrFail($id);
+    $otherVehicles = Vehicles::where('vehicleID', '!=', $id)->get();
+
+    // Set default dates and times
+    $pickupDate = $request->pickup_date ?? date('Y-m-d');
+    $pickupTime = $request->pickup_time ?? '08:00';
+    $returnDate = $request->return_date ?? date('Y-m-d', strtotime('+1 day'));
+    $returnTime = $request->return_time ?? '08:00';
+
+    return view('selectVehicle', compact(
+        'featuredVehicle',
+        'otherVehicles',
+        'pickupDate',
+        'pickupTime',
+        'returnDate',
+        'returnTime'
+    ));
 }
 
 
@@ -97,14 +112,6 @@ public function adminDashboard()
         'recentVehicles'
     ));
 }
-
-public function show($id)
-{
-    $vehicle = Vehicle::findOrFail($id);
-
-    return view('selectVehicle', compact('vehicle'));
-}
-
 
 public function adminVehicles(Request $request)
 {

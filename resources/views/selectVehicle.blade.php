@@ -1,71 +1,3 @@
-@php
-$featuredVehicle = $featuredVehicle ?? [
-    'id' => 1,
-    'name' => 'Perodua Axia 2018',
-    'type' => 'Hatchback',
-    'price' => 120,
-    'image' => 'assets/images/perodua-axia.png',
-    'seats' => 5,
-    'bags' => 1,
-    'doors' => 4,
-    'ac' => 'Yes',
-    'transmission' => 'Auto',
-    'fuel_policy' => 'Full',
-    'fuel_type' => 'Petrol',
-    'available' => true
-];
-
-$otherVehicles = $otherVehicles ?? [
-    [
-        'id' => 2,
-        'name' => 'Proton Saga 2017',
-        'type' => 'Sedan',
-        'price' => 120,
-        'image' => 'assets/images/proton-saga.png',
-        'seats' => 5,
-        'bags' => 1,
-        'doors' => 4,
-        'ac' => 'Yes',
-        'transmission' => 'Auto',
-        'fuel_policy' => 'Full',
-        'fuelType' => 'Petrol'
-    ],
-    [
-        'id' => 3,
-        'name' => 'Perodua Bezza 2018',
-        'type' => 'Sedan',
-        'price' => 140,
-        'image' => 'assets/images/perodua-bezza.png',
-        'seats' => 5,
-        'bags' => 1,
-        'doors' => 4,
-        'ac' => 'Yes',
-        'transmission' => 'Auto',
-        'fuel_policy' => 'Full',
-        'fuel_type' => 'Petrol'
-    ],
-    [
-        'id' => 4,
-        'name' => 'Perodua Myvi 2015',
-        'type' => 'Hatchback',
-        'price' => 120,
-        'image' => 'assets/images/perodua-myvi.png',
-        'seats' => 5,
-        'bags' => 1,
-        'doors' => 4,
-        'ac' => 'Yes',
-        'transmission' => 'Auto',
-        'fuel_policy' => 'Full',
-        'fuel_type' => 'Petrol'
-    ]
-];
-
-$pickupDate = $pickupDate ?? date('Y-m-d');
-$pickupTime = $pickupTime ?? '08:00';
-$returnDate = $returnDate ?? date('Y-m-d', strtotime('+1 day'));
-$returnTime = $returnTime ?? '08:00';
-@endphp
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -74,6 +6,392 @@ $returnTime = $returnTime ?? '08:00';
     <title>HASTA - Vehicle Booking</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/selectVehicle.css') }}">
+
+    <style>
+                * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        /* Header */
+        .header {
+            background-color: #d94242;
+            padding: 15px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            border: 3px solid white;
+            padding: 8px 15px;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .nav {
+            display: flex;
+            gap: 40px;
+        }
+
+        .nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .nav a:hover {
+            text-decoration: underline;
+        }
+
+        .login-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .login-icon {
+            width: 40px;
+            height: 40px;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: #d94242;
+        }
+
+        /* Progress Steps */
+        .progress-container {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+
+        .steps {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 50px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 40px;
+            border: 2px solid #ddd;
+            border-radius: 50px;
+            background-color: white;
+            color: #999;
+            font-weight: 600;
+        }
+
+        .step.active {
+            border-color: #d94242;
+            color: #d94242;
+        }
+
+        .step-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .step-connector {
+            width: 100px;
+            height: 2px;
+            background-color: #ddd;
+        }
+
+        /* Booking Form */
+        .booking-form {
+            max-width: 1200px;
+            margin: 0 auto 50px;
+            padding: 0 20px;
+            display: flex;
+            gap: 40px;
+        }
+
+        .form-group {
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .date-time-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            flex: 1;
+        }
+
+        .input-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        input[type="date"],
+        input[type="time"] {
+            width: 100%;
+            padding: 12px 40px 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+
+        .format-hint {
+            font-size: 11px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        /* Featured Vehicle */
+        .featured-vehicle {
+            max-width: 1200px;
+            margin: 0 auto 50px;
+            padding: 30px;
+            background-color: white;
+            border-radius: 10px;
+            display: flex;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .vehicle-image {
+            flex: 1;
+        }
+
+        .vehicle-image img {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .vehicle-details {
+            flex: 1;
+        }
+
+        .vehicle-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+
+        .vehicle-name {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .vehicle-price {
+            text-align: right;
+        }
+
+        .price-amount {
+            font-size: 32px;
+            font-weight: 700;
+            color: #d94242;
+        }
+
+        .price-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .vehicle-type {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .vehicle-specs {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .spec-item {
+            text-align: center;
+        }
+
+        .spec-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+            color: #666;
+        }
+
+        .spec-value {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .availability-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .availability-badge {
+            padding: 10px 50px;
+            border: 2px solid #4CAF50;
+            border-radius: 30px;
+            color: #4CAF50;
+            font-weight: 600;
+        }
+
+        .book-btn {
+            padding: 12px 40px;
+            background-color: #d94242;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .book-btn:hover {
+            background-color: #c23535;
+        }
+
+        /* Vehicle Grid */
+        .vehicle-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        .vehicle-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            border: 2px solid #eee;
+        }
+
+        .vehicle-card:hover {
+            border-color: #d94242;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .card-image {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .card-image img {
+            width: 100%;
+            max-width: 250px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 5px;
+        }
+
+        .card-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .card-price {
+            font-size: 22px;
+            font-weight: 700;
+            color: #d94242;
+        }
+
+        .card-type {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .card-specs {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .card-spec {
+            text-align: center;
+        }
+
+        .card-spec-icon {
+            font-size: 18px;
+            margin-bottom: 3px;
+        }
+
+        @media (max-width: 1024px) {
+            .vehicle-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 15px 20px;
+            }
+
+            .nav {
+                display: none;
+            }
+
+            .booking-form {
+                flex-direction: column;
+            }
+
+            .featured-vehicle {
+                flex-direction: column;
+            }
+
+            .vehicle-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
 
@@ -82,7 +400,7 @@ $returnTime = $returnTime ?? '08:00';
         <div class="logo">HASTA</div>
         <nav class="nav">
             <a href="{{ url('/') }}">Home</a>
-            <a href="{{ route('selectVehicle', $vehicle->vehicleID) }}">Vehicles</a>
+            <a href="{{ route('selectVehicle', $featuredVehicle->vehicleID) }}">Vehicles</a>
             <a href="#">Details</a>
             <a href="#">About Us</a>
             <a href="#">Contact Us</a>
@@ -110,7 +428,7 @@ $returnTime = $returnTime ?? '08:00';
 
     <!-- Booking Form -->
     <div class="booking-form">
-        <form action="{{ route('selectVehicle', $vehicle->vehicleID) }}" method="GET">
+        <form action="{{ route('selectVehicle', $featuredVehicle->vehicleID) }}" method="GET">
             <div class="form-group">
                 <label>Pickup</label>
                 <div class="date-time-group">
@@ -148,22 +466,22 @@ $returnTime = $returnTime ?? '08:00';
     <!-- Featured Vehicle -->
     <div class="featured-vehicle">
         <div class="vehicle-image">
-            <img src="{{ asset($featuredVehicle['image']) }}" alt="{{ $featuredVehicle['name'] }}">
+            <img src="{{ asset($featuredVehicle->image ?? 'img/vehicles/default.jpg') }}" alt="{{ $featuredVehicle->model }}">
         </div>
         <div class="vehicle-details">
-            <h2 class="vehicle-name">{{ $featuredVehicle['name'] }}</h2>
-            <p class="vehicle-type">{{ $featuredVehicle['type'] }}</p>
+            <h2 class="vehicle-name">{{ $featuredVehicle->model }}</h2>
+            <p class="vehicle-type">{{ $featuredVehicle->vehicleType }}</p>
             <div class="vehicle-price">
-                <span class="price-amount">RM {{ $featuredVehicle['price'] }}</span> / day
+                <span class="price-amount">RM {{ $featuredVehicle->pricePerDay }}</span> / day
             </div>
             <div class="vehicle-specs">
-                <span>Seats: {{ $featuredVehicle['seats'] }}</span>
-                <span>AC: {{ $featuredVehicle['ac'] }}</span>
-                <span>Transmission: {{ $featuredVehicle['transmission'] }}
-                <span>Fuel: {{ $featuredVehicle['fuelType'] }}</span>
+                <span>Seats: {{ $featuredVehicle->seat }}</span>
+                <span>AC: {{ $featuredVehicle->ac }}</span>
+                <span>Transmission: {{ $featuredVehicle->transmission }}
+                <span>Fuel: {{ $featuredVehicle->fuelType }}</span>
             </div>
-            @if($featuredVehicle['available'])
-                <button class="book-btn">Book</button>
+            @if($featuredVehicle->status == 'available')
+                <button class="availability-badge">Available!</button><button class="book-btn">Book</button>
             @else
                 <span class="availability-badge">Not Available</span>
             @endif
@@ -178,17 +496,15 @@ $returnTime = $returnTime ?? '08:00';
                 <img src="{{ asset($vehicle['image']) }}" alt="{{ $vehicle['name'] }}">
             </div>
             <div class="card-header">
-                <h3 class="card-name">{{ $vehicle['name'] }}</h3>
-                <p class="card-type">{{ $vehicle['type'] }}</p>
-                <div class="card-price">RM{{ $vehicle['price'] }}</div>
+                <h3 class="card-name">{{ $vehicle->model }}</h3>
+                <p class="card-type">{{ $vehicle->vehicleType }}</p>
+                <div class="card-price">RM{{ $vehicle->pricePerDay }}</div>
             </div>
             <div class="card-specs">
-                <span>Seats: {{ $vehicle['seats'] }}</span>
-                <span>Bags: {{ $vehicle['bags'] }}</span>
-                <span>Doors: {{ $vehicle['doors'] }}</span>
-                <span>AC: {{ $vehicle['ac'] }}</span>
-                <span>Transmission: {{ $vehicle['transmission'] }}</span>
-                <span>Fuel: {{ $vehicle['fuel_type'] }}</span>
+                <span>Seats: {{ $vehicle->seat }}</span>
+                <span>AC: {{ $vehicle->ac }}</span>
+                <span>Transmission: {{ $vehicle->transmission }}</span>
+                <span>Fuel: {{ $vehicle->fuelType }}</span>
             </div>
         </div>
         @endforeach

@@ -13,6 +13,10 @@ class Vehicles extends Model
         'model',
         'plateNumber',
         'fuelLevel',
+        'fuelType',
+        'ac',
+        'seat',
+        'transmission',
         'status',
         'pricePerHour',
         'pricePerDay'
