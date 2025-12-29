@@ -1,0 +1,262 @@
+/* simple-profile.css - Combined with Sidebar */
+
+/* ===== Main Layout ===== */
+.content-with-sidebar {
+    display: flex;
+    min-height: calc(100vh - 180px);
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+    gap: 30px;
+}
+
+/* ===== Sidebar Styles ===== */
+.sidebar {
+    width: 250px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 25px 0;
+    flex-shrink: 0;
+    height: fit-content;
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-menu li {
+    margin: 0;
+}
+
+.sidebar-menu a {
+    display: flex;
+    align-items: center;
+    padding: 15px 25px;
+    color: #555;
+    text-decoration: none;
+    transition: all 0.3s;
+    border-left: 4px solid transparent;
+    font-size: 15px;
+}
+
+.sidebar-menu a:hover {
+    background-color: #f8f9fa;
+    color: #bc3737;
+    border-left-color: #bc3737;
+}
+
+.sidebar-menu a.active {
+    background-color: #f8f9fa;
+    color: #bc3737;
+    font-weight: 600;
+    border-left-color: #bc3737;
+}
+
+.sidebar-icon {
+    margin-right: 12px;
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+}
+
+/* ===== Profile Page Styles ===== */
+.profile-page {
+    flex: 1;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 30px;
+}
+
+.profile-title {
+    color: #bc3737;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #eee;
+}
+
+.info-section {
+    margin-bottom: 25px;
+}
+
+.section-label {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.section-value {
+    font-size: 16px;
+    color: #333;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+}
+
+.section-value:last-child {
+    border-bottom: none;
+}
+
+.status-active {
+    color: #27ae60;
+    font-weight: bold;
+}
+
+.status-blacklisted {
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+.balance {
+    font-size: 20px;
+    color: #27ae60;
+    font-weight: bold;
+}
+
+.actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+    justify-content: center;
+}
+
+.btn {
+    padding: 10px 25px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.btn-primary {
+    background-color: #bc3737;
+    color: white;
+    border: 2px solid #bc3737;
+}
+
+.btn-primary:hover {
+    background-color: #a02e2e;
+    border-color: #a02e2e;
+    color: white;
+}
+
+.btn-secondary {
+    background-color: white;
+    color: #333;
+    border: 2px solid #ddd;
+}
+
+.btn-secondary:hover {
+    background-color: #f8f9fa;
+    border-color: #bc3737;
+}
+
+/* ===== Responsive Design ===== */
+@media (max-width: 768px) {
+    .content-with-sidebar {
+        flex-direction: column;
+        padding: 15px;
+        gap: 20px;
+    }
+    
+    .sidebar {
+        width: 100%;
+        padding: 15px 0;
+    }
+    
+    .sidebar-menu {
+        display: flex;
+        overflow-x: auto;
+    }
+    
+    .sidebar-menu li {
+        flex: 1;
+        min-width: 120px;
+    }
+    
+    .sidebar-menu a {
+        flex-direction: column;
+        text-align: center;
+        padding: 12px 15px;
+        border-left: none;
+        border-bottom: 3px solid transparent;
+    }
+    
+    .sidebar-menu a.active {
+        border-left: none;
+        border-bottom: 3px solid #bc3737;
+    }
+    
+    .sidebar-menu a:hover {
+        border-left: none;
+        border-bottom: 3px solid #bc3737;
+    }
+    
+    .sidebar-icon {
+        margin-right: 0;
+        margin-bottom: 5px;
+    }
+    
+    .profile-page {
+        padding: 20px;
+    }
+    
+    .actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* ===== Edit Profile Page Styles ===== */
+.edit-profile-container {
+    flex: 1;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: block;
+    color: #333;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.form-control:focus {
+    border-color: #bc3737;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(188, 55, 55, 0.1);
+}
+
+.button-group {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+}

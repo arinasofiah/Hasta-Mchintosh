@@ -39,20 +39,34 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    // Simple dashboard routes - remove middleware for now
+    // Admin routes
     Route::get('/admin/dashboard', [AdminController::class, 'index'])
         ->name('admin.dashboard');
     
+    // Staff routes
     Route::get('/staff/dashboard', [StaffController::class, 'index'])
         ->name('staff.dashboard');
     
-    Route::get('/customer/dashboard', [CustomerController::class, 'index'])
-        ->name('customer.dashboard');
+    // Customer routes
+    Route::prefix('customer')->group(function () {
+        Route::get('/dashboard', [CustomerController::class, 'index'])
+            ->name('customer.dashboard');
+        
+        Route::get('/profile', [CustomerController::class, 'profile'])
+            ->name('customer.profile');
+        
+        Route::get('/profile/edit', [CustomerController::class, 'edit'])->name('customer.profile.edit');
+        Route::put('/profile/update', [CustomerController::class, 'update'])->name('customer.profile.update');
+            
+        Route::get('/bookings', [CustomerController::class, 'bookings'])
+            ->name('customer.bookings');
+    });
     
-    // Logout route
+    // Common routes for all users
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 });
+
 
 
 Route::middleware('auth')->group(function () {
