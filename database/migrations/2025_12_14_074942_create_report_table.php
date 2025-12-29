@@ -11,12 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('report', function (Blueprint $table) {
-            $table->id('reportID');
-            $table->date('generatedDate');
-            $table->string('facultyName');
-            $table->integer('totalBookings');
-            $table->integer('frequentUsers');
+        Schema::create('inspection', function (Blueprint $table) {
+            $table->id('inspectionID');
+            $table->date('inspectionDate');
+            $table->string('conditionStatus');
+            $table->longText('damageNotes');
+            $table->string('inspectionPhoto');
+            $table->string('inspectionResult');
             $table->timestamps();
         });
     }

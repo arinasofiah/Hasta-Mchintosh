@@ -18,6 +18,9 @@ return new class extends Migration
             $table->string('model', 100);
             $table->string('plateNumber', 20)->unique();
             $table->integer('fuelLevel');
+            $table->string('fuelType');
+            $table->boolean('ac')->default(false);
+            $table->integer('seat');
             $table->enum('status', ['available', 'rented', 'maintenance'])->default('available');
             $table->decimal('pricePerHour', 8, 2);
             $table->decimal('pricePerDay', 8, 2);

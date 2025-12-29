@@ -12,10 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('loyalty_card', function (Blueprint $table) {
-            $table->id('matricNumber');
-            $table->integer('stampCount');
+            $table->string('matricNumber')->primary(); 
+
+            $table->integer('stampCount')->default(0);
             $table->boolean('rewardEligible')->default(false);
-            $table->string('voucherCode',100);
+            $table->decimal('commissionAmount', 8, 2)->default(0.00);
+
+            $table->foreign('matricNumber')
+                ->references('matricNumber')
+                ->on('customer')
+                ->onDelete('cascade');
+
             $table->timestamps();
         });
     }

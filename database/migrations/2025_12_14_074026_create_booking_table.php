@@ -23,7 +23,6 @@ return new class extends Migration
             $table->decimal('totalPrice', 8, 2);
             $table->decimal('depositAmount', 8, 2);
             $table->boolean('rewardApplied')->default(false);
-            $table->boolean('isStaffBooking')->default(false);
 
             $table->timestamps();
         });
