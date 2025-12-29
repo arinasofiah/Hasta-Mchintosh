@@ -8,6 +8,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use App\Models\Admin;
+use App\Models\Staff;
+use App\Models\Customer;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -24,19 +27,31 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request)
 {
+    
     $request->authenticate();
     $request->session()->regenerate();
 
     $user = auth()->user();
 
-    // The logic to send users to their representative dashboards
-    return match($user->userType) {
-        'admin'    => redirect()->intended('/admin/dashboard'),
-        'staff'    => redirect()->intended('/staff/dashboard'),
-        'customer' => redirect()->intended('/customer/dashboard'),
-        default    => redirect('/'),
-    };
+    if (Admin::where('userID', $user->userID)->exists()) {
+        return redirect()->intended('/admin/dashboard');
+    }
+
+    if (Staff::where('userID', $user->userID)->exists()) {
+        return redirect()->intended('/staff/dashboard');
+    }
+
+    if (Customer::where('userID', $user->userID)->exists()) {
+        return redirect()->intended('/customer/dashboard');
+    }
+
+    Auth::logout();
+    return redirect('/login')->withErrors([
+        'email' => 'Unauthorized account.'
+    ]);
 }
+
+
 
     /**
      * Destroy an authenticated session.
