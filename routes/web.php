@@ -34,7 +34,8 @@ Route::get('/admin/fleet', [VehicleController::class, 'adminVehicles'])->name('a
 Route::post('/admin/vehicles/store', [VehicleController::class, 'store'])->name('admin.vehicles.store');
 Route::get('/select-vehicle/{id}', [VehicleController::class, 'select'])
     ->name('selectVehicle');
-
+Route::put('/admin/vehicles/update/{id}', [VehicleController::class, 'update'])->name('admin.vehicles.update');
+Route::delete('/admin/vehicles/delete/{id}', [VehicleController::class, 'destroy'])->name('admin.vehicles.destroy');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
