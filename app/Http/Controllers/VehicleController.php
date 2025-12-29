@@ -70,7 +70,7 @@ public function manage(Request $request)
 
 public function store(Request $request)
 {
-    // 1. Validate the form data
+    
     $validated = $request->validate([
         'model' => 'required|string|max:255',
         'vehicleType' => 'required|string',
@@ -81,15 +81,37 @@ public function store(Request $request)
         'seat' => 'required|integer',
     ]);
 
-    // 2. Create the vehicle record
-    // We manually add 'status' as 'available' and calculate pricePerHour
     \App\Models\Vehicles::create($validated + [
         'status' => 'available',
         'pricePerHour' => $request->pricePerDay / 10, 
     ]);
 
-    // 3. Go back to the fleet page with a success message
     return redirect()->route('admin.fleet')->with('success', 'Vehicle added successfully!');
+}
+
+// 1. Update Method
+public function update(Request $request, $vehicleID)
+{
+    $vehicle = \App\Models\Vehicles::findOrFail($vehicleID);
+    
+    $validated = $request->validate([
+        'model' => 'required|string',
+       'plateNumber' => 'required|unique:vehicles,plateNumber,' . $vehicleID . ',vehicleID',
+        'status' => 'required',
+        'pricePerDay' => 'required|numeric',
+    ]);
+
+    $vehicle->update($validated);
+    return redirect()->back()->with('success', 'Vehicle updated successfully!');
+}
+
+// 2. Delete Method
+public function destroy($id)
+{
+    $vehicle = \App\Models\Vehicles::findOrFail($id);
+    $vehicle->delete();
+    
+    return redirect()->back()->with('success', 'Vehicle deleted successfully!');
 }
 
 public function adminDashboard()
