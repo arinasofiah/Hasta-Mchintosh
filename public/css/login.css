@@ -29,7 +29,7 @@ body, html {
 }
 
 .logo {
-    font-size: 24px;
+    font-size: 10px;
     font-weight: bold;
     letter-spacing: 2px;
     background-color: #E63946; /* A slightly darker red for the background of the logo text */

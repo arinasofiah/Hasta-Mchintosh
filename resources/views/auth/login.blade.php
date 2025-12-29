@@ -12,7 +12,7 @@
 <body>
     <div class="login-container">
         <div class="left-section">
-            <div class="logo"><img src="{{ asset('img/hasta_logo.jpg') }}"></div>
+            <div class="logo"></div>
             <h1 class="headline">
                 For You,<br>
                 From Us
@@ -26,7 +26,6 @@
         </div>
 
         <div class="right-section">
-            <h2 class="welcome-text">Welcome Back !</h2>
             <div class="login-card">
                 
                 <h3 class="login-title">Login</h3>
