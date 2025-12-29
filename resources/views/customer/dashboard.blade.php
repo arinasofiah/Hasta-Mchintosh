@@ -14,7 +14,6 @@
     <link href="{{ asset('css/vehicles.css') }}" rel="stylesheet">
 
     <style>
-        /* Ensures the filter section doesn't clash with your existing car-grid styles */
         .browse-header {
             text-align: center;
             padding: 60px 20px 20px;

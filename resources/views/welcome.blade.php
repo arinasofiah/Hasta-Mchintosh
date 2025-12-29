@@ -7,13 +7,21 @@
 
     {{-- Bootstrap --}}
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     {{-- Custom CSS --}}
     <link href="{{ asset('css/header.css') }}" rel="stylesheet">
     <link href="{{ asset('css/footer.css') }}" rel="stylesheet">
     <link href="{{ asset('css/vehicles.css') }}" rel="stylesheet">
-
+      <style>
+        .browse-header {
+            text-align: center;
+            padding: 60px 20px 20px;
+            background-color: #fff;
+        }
+    </style>
+</head>
 </head>
 
 <body>
@@ -50,6 +58,45 @@
 
     </div>
 </div>
+
+<div class="browse-header">
+        <h1>Our Car Models</h1>
+        <p>Explore our extensive range of car models from compact cars to spacious SUVs.</p>
+
+        <form action="{{ url()->current() }}" method="GET" id="filterForm">
+            <div class="search-container">
+                <div class="search-input-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" name="search" value="{{ request('search') }}" 
+                           placeholder="Search Car Model..." onchange="this.form.submit()">
+                </div>
+            </div>
+
+            <div class="filter-container">
+                <input type="hidden" name="category" id="categoryInput" value="{{ request('category', 'All') }}">
+                
+                @php
+                    $categories = [
+                        'All' => 'All vehicles',
+                        'Sedan' => '🚗 Sedan',
+                        'Hatchback' => '🏎️ Hatchback',
+                        'MPV' => '🚐 MPV',
+                        'SUV' => '🚙 SUV',
+                        'Minivan' => '🚐 Minivan'
+                    ];
+                @endphp
+
+                @foreach($categories as $key => $label)
+                    <button type="button" 
+                            onclick="filterCategory('{{ $key }}')"
+                            class="filter-pill {{ (request('category', 'All') == $key) ? 'active' : '' }}">
+                        {{ $label }}
+                    </button>
+                @endforeach
+            </div>
+        </form>
+    </div>
+
 
 <div id="body">
     <div class="car-grid">
