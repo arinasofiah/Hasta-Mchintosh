@@ -5,26 +5,21 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    {{-- Bootstrap --}}
+    {{-- Bootstrap & CSS --}}
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-    {{-- Custom CSS --}}
     <link href="{{ asset('css/header.css') }}" rel="stylesheet">
     <link href="{{ asset('css/footer.css') }}" rel="stylesheet">
     <link href="{{ asset('css/vehicles.css') }}" rel="stylesheet">
 
     <style>
-        .footer {
-            position: fixed;
-            left: 0;
-            bottom: 0;
-            width: 100%;
-            background-color: #bc3737;
-            color: white;
+        /* Ensures the filter section doesn't clash with your existing car-grid styles */
+        .browse-header {
             text-align: center;
+            padding: 60px 20px 20px;
+            background-color: #fff;
         }
-        
     </style>
 </head>
 
@@ -32,7 +27,6 @@
 
 <div id="header">
     <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}">
-
     <div id="menu">
         <button class="head_button">Home</button>
         <button class="head_button">Vehicles</button>
@@ -54,7 +48,6 @@
                 @endauth
             </div>
         </div>
-
         @auth
             <span id="username">{{ Auth::user()->name }}</span>
         @endauth
@@ -62,58 +55,99 @@
 </div>
 
 <div id="body">
-    <h2 style="text-align: center; margin: 20px 0;">Available Vehicles</h2>
     
+    {{-- Search & Filter Section (Centered at top) --}}
+    <div class="browse-header">
+        <h1>Our Car Models</h1>
+        <p>Explore our extensive range of car models from compact cars to spacious SUVs.</p>
+
+        <form action="{{ url()->current() }}" method="GET" id="filterForm">
+            <div class="search-container">
+                <div class="search-input-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" name="search" value="{{ request('search') }}" 
+                           placeholder="Search Car Model..." onchange="this.form.submit()">
+                </div>
+            </div>
+
+            <div class="filter-container">
+                <input type="hidden" name="category" id="categoryInput" value="{{ request('category', 'All') }}">
+                
+                @php
+                    $categories = [
+                        'All' => 'All vehicles',
+                        'Sedan' => '🚗 Sedan',
+                        'Hatchback' => '🏎️ Hatchback',
+                        'MPV' => '🚐 MPV',
+                        'SUV' => '🚙 SUV',
+                        'Minivan' => '🚐 Minivan'
+                    ];
+                @endphp
+
+                @foreach($categories as $key => $label)
+                    <button type="button" 
+                            onclick="filterCategory('{{ $key }}')"
+                            class="filter-pill {{ (request('category', 'All') == $key) ? 'active' : '' }}">
+                        {{ $label }}
+                    </button>
+                @endforeach
+            </div>
+        </form>
+    </div>
+
+    {{-- The Grid --}}
     <div class="car-grid">
-        
-        @if(count($vehicles) > 0)
-            @foreach($vehicles as $vehicle)
+        @forelse($vehicles as $vehicle)
             <div class="car-card">
-                {{-- Vehicle Image --}}
-                <img src="{{ asset('img/vehicles/'.$vehicle->vehicleID.'.jpg') }}"
-                     onerror="this.src='{{ asset('img/vehicles/default.jpg') }}'"
-                     alt="{{ $vehicle->model }}">
+                <img src="{{ asset('img/vehicles/'.$vehicle->vehicleID.'.jpg') }}" alt="{{ $vehicle->model }}">
                 
-                {{-- Vehicle Model and Type --}}
-                <h4>{{ $vehicle->model }} ({{ $vehicle->vehicleType }})</h4>
+                <h4>{{ $vehicle->model }}</h4>
                 
-                {{-- Pricing --}}
                 <div style="margin: 10px 0;">
                     <h3 style="color: #bc3737; margin: 5px 0;">RM{{ number_format($vehicle->pricePerDay, 2) }}/day</h3>
                     <small>or RM{{ number_format($vehicle->pricePerHour, 2) }}/hour</small>
                 </div>
                 
-                {{-- Specifications --}}
                 <div class="specs">
+                    <span title="Type">🚗 {{ $vehicle->vehicleType }}</span>
+                    <span title="Fuel">⛽ {{ $vehicle->fuelLevel }}%</span>
+                    <span title="Seats">💺 {{ $vehicle->seat }}</span>
+                </div>
+                
+                <div class="specs" style="margin-top: 5px;">
                     <span title="Plate Number">📌 {{ $vehicle->plateNumber }}</span>
-                    <span title="Fuel">⛽ {{ $vehicle->fuelLevel }}% ({{ $vehicle->fuelType }})</span>
-                    <span title="Seats">💺 {{ $vehicle->seat }} seats</span>
+                    <span title="AC">{{ $vehicle->ac ? '❄️ AC' : '🌡️ No AC' }}</span>
                 </div>
-                
-                <div class="specs">
-                    <span title="AC">{{ $vehicle->ac ? '❄️ Has AC' : '🌡️ No AC' }}</span>
-                    <span title="Status">📊 {{ ucfirst($vehicle->status) }}</span>
-                </div>
-                
-                {{-- View Details Button --}}
+
                 @auth
                     <a href="{{ route('booking.form', $vehicle->vehicleID) }}" class="btn">
                         View Details & Book
                     </a>
+                @else
+                    <a href="{{ route('login') }}" class="btn">Login to Book</a>
                 @endauth
-                
             </div>
-            @endforeach
-        @else
-            <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-                <h3>No vehicles available at the moment</h3>
-                <p>Please check back later or contact us for more information.</p>
+        @empty
+            <div style="grid-column: 1 / -1; text-align: center; padding: 60px;">
+                <h3>No vehicles found</h3>
+                <p>Try adjusting your filters or search keywords.</p>
             </div>
-        @endif
-        
+        @endforelse
     </div>
 </div>
 
+<div class="footer">
+    <div class="copyright" style="padding: 15px;">
+        © {{ date('Y') }} Hasta Travel & Tour. All rights reserved.
+    </div>
+</div>
+
+<script>
+    function filterCategory(category) {
+        document.getElementById('categoryInput').value = category;
+        document.getElementById('filterForm').submit();
+    }
+</script>
 
 </body>
 </html>

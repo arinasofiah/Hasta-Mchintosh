@@ -28,6 +28,9 @@ Route::get('/pickup', function () {
 /*nisa add this*/
 Route::get('/vehicles/{id}', [VehicleController::class, 'show'])->name('vehicles.select'); 
 Route::get('/', [VehicleController::class, 'index'])->name('welcome');
+Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
+Route::get('/admin/dashboard', [VehicleController::class, 'adminDashboard'])->name('admin.dashboard');
+Route::get('/admin/fleet', [VehicleController::class, 'adminVehicles'])->name('admin.fleet');
 
 
 Route::middleware('auth')->group(function () {

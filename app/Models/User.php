@@ -50,4 +50,25 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+     public function isAdmin()
+    {
+        return $this->userType === 'admin';
+    }
+    
+    /**
+     * Check if user is staff
+     */
+    public function isStaff()
+    {
+        return $this->userType === 'staff';
+    }
+    
+    /**
+     * Check if user is customer
+     */
+    public function isCustomer()
+    {
+        return $this->userType === 'customer';
+    }
 }
