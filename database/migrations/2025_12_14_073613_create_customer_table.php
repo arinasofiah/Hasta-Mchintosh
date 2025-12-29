@@ -9,24 +9,28 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
+    
     public function up(): void
 {
     Schema::create('customers', function (Blueprint $table) {
-        // Link to User table: userID is the PK and FK
-        $table->foreignId('userID')->primary()->constrained('users', 'userID')->onDelete('cascade');
         
-        // Attributes unique to Customer
-        $table->string('matricNumber')->unique(); 
+        $table->string('matricNumber')->primary(); 
+        
+        
+        $table->foreignId('userID')->unique()->constrained('users', 'userID')->onDelete('cascade');
+
+        
         $table->string('licenseNumber');
         $table->string('college');
         $table->string('faculty');
-        $table->decimal('depoBalance', 10, 2)->default(0.00);
+        $table->decimal('depoBalance', 10, 2)->default(0);
         $table->boolean('isBlacklisted')->default(false);
         $table->string('blacklistReason')->nullable();
-
         $table->timestamps();
     });
 }
+    
+
 
     /**
      * Reverse the migrations.
