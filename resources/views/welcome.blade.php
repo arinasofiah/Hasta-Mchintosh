@@ -7,24 +7,21 @@
 
     {{-- Bootstrap --}}
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     {{-- Custom CSS --}}
     <link href="{{ asset('css/header.css') }}" rel="stylesheet">
     <link href="{{ asset('css/footer.css') }}" rel="stylesheet">
     <link href="{{ asset('css/vehicles.css') }}" rel="stylesheet">
-
-    <style>
-        .footer {
-            position: fixed;
-            left: 0;
-            bottom: 0;
-            width: 100%;
-            background-color: #bc3737;
-            color: white;
+      <style>
+        .browse-header {
             text-align: center;
+            padding: 60px 20px 20px;
+            background-color: #fff;
         }
     </style>
+</head>
 </head>
 
 <body>
@@ -51,12 +48,7 @@
                    
                 @endguest
 
-                @auth
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="dropdown-item">Logout</button>
-                    </form>
-                @endauth
+               
             </div>
         </div>
 
@@ -64,11 +56,47 @@
             <a id="username" href="{{ route('login') }}">Log in</a>
         @endguest
 
-        @auth
-            <span id="username">{{ Auth::user()->name }}</span>
-        @endauth
     </div>
 </div>
+
+<div class="browse-header">
+        <h1>Our Car Models</h1>
+        <p>Explore our extensive range of car models from compact cars to spacious SUVs.</p>
+
+        <form action="{{ url()->current() }}" method="GET" id="filterForm">
+            <div class="search-container">
+                <div class="search-input-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" name="search" value="{{ request('search') }}" 
+                           placeholder="Search Car Model..." onchange="this.form.submit()">
+                </div>
+            </div>
+
+            <div class="filter-container">
+                <input type="hidden" name="category" id="categoryInput" value="{{ request('category', 'All') }}">
+                
+                @php
+                    $categories = [
+                        'All' => 'All vehicles',
+                        'Sedan' => '🚗 Sedan',
+                        'Hatchback' => '🏎️ Hatchback',
+                        'MPV' => '🚐 MPV',
+                        'SUV' => '🚙 SUV',
+                        'Minivan' => '🚐 Minivan'
+                    ];
+                @endphp
+
+                @foreach($categories as $key => $label)
+                    <button type="button" 
+                            onclick="filterCategory('{{ $key }}')"
+                            class="filter-pill {{ (request('category', 'All') == $key) ? 'active' : '' }}">
+                        {{ $label }}
+                    </button>
+                @endforeach
+            </div>
+        </form>
+    </div>
+
 
 <div id="body">
     <div class="car-grid">
@@ -76,8 +104,7 @@
 @foreach($vehicles as $vehicle)
     <div class="car-card">
 
-        <img src="{{ asset('img/vehicles/'.$vehicle->vehicleID.'.jpg') }}"
-             onerror="this.src='{{ asset('img/vehicles/default.jpg') }}'">
+        <img src="{{ asset('img/vehicles/'.$vehicle->vehicleID.'.jpg') }}">
 
         <h3>RM{{ $vehicle->pricePerDay }}</h3>
 
@@ -106,36 +133,40 @@
 </div>
 
 <div class="footer">
+    <div class="footer-content">
+        <div class="logo">
+            <img src="{{ asset('img/hasta_logo.jpg') }}" alt="Hasta Travel Logo">
+        </div>
 
-    <div class="logo">
-        <img src="{{ asset('img/hasta_logo.jpg') }}">
-    </div>
+        <div class="footer-item">
+            <div class="footer-icon">📍</div>
+            <div>
+                <span class="title">Address</span><br>
+                Student Mall UTM<br>
+                Skudai, 81300, Johor Bahru
+            </div>
+        </div>
 
-    <div class="footer-item">
-        <div class="footer-icon">📍</div>
-        <div>
-            <span class="title">Address</span><br>
-            Student Mall UTM<br>
-            Skudai, 81300, Johor Bahru
+        <div class="footer-item">
+            <div class="footer-icon">✉️</div>
+            <div>
+                <span class="title">Email</span><br>
+                <a href="mailto:hastatravel@gmail.com">hastatravel@gmail.com</a>
+            </div>
+        </div>
+
+        <div class="footer-item">
+            <div class="footer-icon">📞</div>
+            <div>
+                <span class="title">Phone</span><br>
+                <a href="tel:01110900700">011-1090 0700</a>
+            </div>
         </div>
     </div>
-
-    <div class="footer-item">
-        <div class="footer-icon">✉️</div>
-        <div>
-            <span class="title">Email</span><br>
-            <a href="mailto:hastatravel@gmail.com">hastatravel@gmail.com</a>
-        </div>
+    
+    <div class="copyright">
+        © {{ date('Y') }} Hasta Travel & Tour. All rights reserved.
     </div>
-
-    <div class="footer-item">
-        <div class="footer-icon">📞</div>
-        <div>
-            <span class="title">Phone</span><br>
-            <a href="tel:01110900700">011-1090 0700</a>
-        </div>
-    </div>
-
 </div>
 
 </body>

@@ -9,6 +9,9 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\StaffController;
+use App\Http\Controllers\CustomerController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -34,6 +37,37 @@ Route::middleware('guest')->group(function () {
     Route::post('reset-password', [NewPasswordController::class, 'store'])
         ->name('password.store');
 });
+
+Route::middleware(['auth'])->group(function () {
+    // Admin routes
+    Route::get('/admin/dashboard', [AdminController::class, 'index'])
+        ->name('admin.dashboard');
+    
+    // Staff routes
+    Route::get('/staff/dashboard', [StaffController::class, 'index'])
+        ->name('staff.dashboard');
+    
+    // Customer routes
+    Route::prefix('customer')->group(function () {
+        Route::get('/dashboard', [CustomerController::class, 'index'])
+            ->name('customer.dashboard');
+        
+        Route::get('/profile', [CustomerController::class, 'profile'])
+            ->name('customer.profile');
+        
+        Route::get('/profile/edit', [CustomerController::class, 'edit'])->name('customer.profile.edit');
+        Route::put('/profile/update', [CustomerController::class, 'update'])->name('customer.profile.update');
+            
+        Route::get('/bookings', [CustomerController::class, 'bookings'])
+            ->name('customer.bookings');
+    });
+    
+    // Common routes for all users
+    Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
+        ->name('logout');
+});
+
+
 
 Route::middleware('auth')->group(function () {
     Route::get('verify-email', EmailVerificationPromptController::class)

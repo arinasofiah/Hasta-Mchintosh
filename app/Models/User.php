@@ -17,10 +17,15 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
+
+    protected $primaryKey = 'userID';
+    
     protected $fillable = [
         'name',
         'email',
         'password',
+        'icNumber', 
+        'userType',
     ];
 
     /**
@@ -44,5 +49,26 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+     public function isAdmin()
+    {
+        return $this->userType === 'admin';
+    }
+    
+    /**
+     * Check if user is staff
+     */
+    public function isStaff()
+    {
+        return $this->userType === 'staff';
+    }
+    
+    /**
+     * Check if user is customer
+     */
+    public function isCustomer()
+    {
+        return $this->userType === 'customer';
     }
 }

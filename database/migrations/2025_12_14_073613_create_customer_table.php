@@ -11,15 +11,16 @@ return new class extends Migration
      */
     public function up(): void
 {
+
     Schema::create('customer', function (Blueprint $table) {
         // Link to User table: userID is the PK and FK
         $table->foreignId('userID')->primary()->constrained('users', 'userID')->onDelete('cascade');
         
         // Attributes unique to Customer
-        $table->string('matricNumber')->unique(); 
-        $table->string('licenseNumber');
-        $table->string('college');
-        $table->string('faculty');
+        $table->string('matricNumber')->unique()->nullable(); 
+        $table->string('licenseNumber')->nullable();
+        $table->string('college')->nullable();
+        $table->string('faculty')->nullable();
         $table->decimal('depoBalance', 10, 2)->default(0.00);
         $table->boolean('isBlacklisted')->default(false);
         $table->string('blacklistReason')->nullable();

@@ -6,21 +6,27 @@ use Illuminate\Database\Eloquent\Model;
 
 class Customer extends Model
 {
-    protected $primaryKey = 'matricNumber'; 
-    protected $keyType = 'string';          
-    public $incrementing = false;         
+    // Tell Laravel to use your singular table name
+    protected $table = 'customer'; 
     
+    protected $primaryKey = 'userID';
+    public $incrementing = false; // Linked to User ID
+
     protected $fillable = [
-        'matricNumber', 
-        'userID', 
-        'licenseNumber', 
-        'college', 
-        'faculty', 
-        'depoBalance'
+        'userID',
+        'matricNumber',
+        'licenseNumber',
+        'college',
+        'faculty',
+        'depoBalance',
     ];
 
+    // 3NF Relationship: Customer belongs to a User
     public function user()
     {
         return $this->belongsTo(User::class, 'userID', 'userID');
     }
-}
+
+    }
+
+
