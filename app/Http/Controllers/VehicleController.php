@@ -9,10 +9,8 @@ class VehicleController extends Controller
 {
     public function index(Request $request)
 {
-    // 1. Start with available vehicles
     $query = Vehicles::where('status', 'available');
 
-    // 2. Search Logic (Model or Plate)
     if ($request->filled('search')) {
         $search = trim($request->search);
         $query->where(function($q) use ($search) {
@@ -21,8 +19,6 @@ class VehicleController extends Controller
         });
     }
 
-    // 3. Category Filter (The Pill Buttons)
-    // We check if category is filled and NOT equal to 'All'
     if ($request->filled('category') && $request->category !== 'All') {
         $query->where('vehicleType', trim($request->category));
     }
@@ -31,6 +27,7 @@ class VehicleController extends Controller
 
     return view('welcome', compact('vehicles'));
 }
+
 
   public function select($id, Request $request)
 {
@@ -56,7 +53,7 @@ class VehicleController extends Controller
 
 public function manage(Request $request)
 {
-    // Fetch vehicles based on status tab (default to active)
+    
     $status = $request->get('status', 'available');
     
     $vehicles = Vehicles::where('status', $status)
