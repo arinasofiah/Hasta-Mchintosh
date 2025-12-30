@@ -78,11 +78,11 @@
                 @php
                     $categories = [
                         'All' => 'All vehicles',
-                        'Sedan' => '🚗 Sedan',
-                        'Hatchback' => '🏎️ Hatchback',
-                        'MPV' => '🚐 MPV',
-                        'SUV' => '🚙 SUV',
-                        'Minivan' => '🚐 Minivan'
+                        'Sedan' => ' Sedan',
+                        'Hatchback' => 'Hatchback',
+                        'MPV' => 'MPV',
+                        'SUV' => 'SUV',
+                        'Minivan' => 'Minivan'
                     ];
                 @endphp
 
@@ -109,9 +109,9 @@
         <h3>RM{{ $vehicle->pricePerDay }}</h3>
 
         <div class="specs">
-            <span>🚗 {{ $vehicle->vehicleType }}</span>
-            <span>⛽ {{ $vehicle->fuelLevel }}%</span>
-            <span>📌 {{ $vehicle->plateNumber }}</span>
+            <span> Type: {{ $vehicle->vehicleType }}</span>
+            <span> Fuel Level: {{ $vehicle->fuelLevel }}%</span>
+            <span> Plate Number: {{ $vehicle->plateNumber }}</span>
         </div>
 
         {{-- View Details Button --}}

@@ -51,12 +51,13 @@
 <div class="sidebar">
     
     <nav class="d-flex flex-column">
-        <a href="{{ route('admin.dashboard') }}" class="nav-item active">📊 Dashboard</a>
-        <a href="#" class="nav-item">📈 Reporting</a>
-        <a href="{{ route('admin.fleet') }}" class="nav-item">🚗 Fleet</a>
-        <a href="#" class="nav-item">👥 Customer</a>
-        <a href="#" class="nav-item">👔 Staff</a>
-        <a href="#" class="nav-item">⚙️ Settings</a>
+        <a href="{{ route('admin.dashboard') }}" class="nav-item active"> Dashboard</a>
+        <a href="#" class="nav-item">Reporting</a>
+        <a href="{{ route('admin.fleet') }}" class="nav-item"> Fleet</a> 
+        <a href="#" class="nav-item">Customer</a>
+        <a href="#" class="nav-item">Staff</a>
+        <a href="#" class="nav-item"> Promotions</a>
+        <a href="#" class="nav-item"> Settings</a>
     </nav>
 </div>
 

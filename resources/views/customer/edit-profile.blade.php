@@ -105,10 +105,10 @@
                 <img id="pfp" src="{{ asset('img/racc_icon.png') }}" alt="Profile">
                 
                 <div id="profile-dropdown">
-                    <a href="{{ route('customer.profile') }}" class="dropdown-item">👤 My Profile</a>
+                    <a href="{{ route('customer.profile') }}" class="dropdown-item"> My Profile</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="dropdown-item">🚪 Logout</button>
+                        <button type="submit" class="dropdown-item"> Logout</button>
                     </form>
                 </div>
             </div>
@@ -118,6 +118,7 @@
             @endauth
         </div>
     </div>
+
 
     <div class="edit-profile-container">
         <div class="edit-card">

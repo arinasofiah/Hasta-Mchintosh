@@ -66,13 +66,13 @@
 
     <div class="sidebar">
         <h5 class="mb-4">Menu</h5>
-        <a href="{{ route('admin.dashboard') }}" class="nav-item">📊 Dashboard</a>
-        <a href="#" class="nav-item">📈 Reporting</a>
-        <a href="{{ route('admin.fleet') }}" class="nav-item active">🚗 Fleet</a> 
-        <a href="#" class="nav-item">👥 Customer</a>
-        <a href="#" class="nav-item">👔 Staff</a>
-        <a href="#" class="nav-item">🎁 Promotions</a>
-        <a href="#" class="nav-item">⚙️ Settings</a>
+        <a href="{{ route('admin.dashboard') }}" class="nav-item"> Dashboard</a>
+        <a href="#" class="nav-item">Reporting</a>
+        <a href="{{ route('admin.fleet') }}" class="nav-item active"> Fleet</a> 
+        <a href="#" class="nav-item">Customer</a>
+        <a href="#" class="nav-item">Staff</a>
+        <a href="#" class="nav-item"> Promotions</a>
+        <a href="#" class="nav-item"> Settings</a>
     </div>
 
     <div class="main-content">
@@ -98,7 +98,7 @@
 
         @foreach($vehicles as $vehicle)
             <div class="vehicle-card">
-                <img src="{{ asset('img/vehicles/'.$vehicle->vehicleID.'.png') }}" class="vehicle-img" alt="Car">
+                <img src="{{ asset('img/vehicles/..'.$vehicle->vehicleID.'.png') }}" class="vehicle-img" alt="Car">
                 
                 <div class="vehicle-info">
                     <h4 class="mb-0">{{ $vehicle->model }}</h4>

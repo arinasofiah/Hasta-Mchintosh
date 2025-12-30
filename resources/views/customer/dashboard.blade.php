@@ -75,11 +75,11 @@
                 @php
                     $categories = [
                         'All' => 'All vehicles',
-                        'Sedan' => '🚗 Sedan',
-                        'Hatchback' => '🏎️ Hatchback',
-                        'MPV' => '🚐 MPV',
-                        'SUV' => '🚙 SUV',
-                        'Minivan' => '🚐 Minivan'
+                        'Sedan' => 'Sedan',
+                        'Hatchback' => 'Hatchback',
+                        'MPV' => 'MPV',
+                        'SUV' => 'SUV',
+                        'Minivan' => 'Minivan'
                     ];
                 @endphp
 
@@ -108,14 +108,14 @@
                 </div>
                 
                 <div class="specs">
-                    <span title="Type">🚗 {{ $vehicle->vehicleType }}</span>
-                    <span title="Fuel">⛽ {{ $vehicle->fuelLevel }}%</span>
-                    <span title="Seats">💺 {{ $vehicle->seat }}</span>
+                    <span title="Type"> Type: {{ $vehicle->vehicleType }}</span>
+                    <span title="Fuel">Fuel Level: {{ $vehicle->fuelLevel }}%</span>
+                    <span title="Seats">Seats: {{ $vehicle->seat }}</span>
                 </div>
                 
                 <div class="specs" style="margin-top: 5px;">
-                    <span title="Plate Number">📌 {{ $vehicle->plateNumber }}</span>
-                    <span title="AC">{{ $vehicle->ac ? '❄️ AC' : '🌡️ No AC' }}</span>
+                    <span title="Plate Number"> Plate Number: {{ $vehicle->plateNumber }}</span>
+                    <span title="AC">{{ $vehicle->ac ? ' AC' : ' No AC' }}</span>
                 </div>
 
                 @auth
