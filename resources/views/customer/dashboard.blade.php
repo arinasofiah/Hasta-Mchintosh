@@ -103,7 +103,6 @@
                 
                 <div style="margin: 10px 0;">
                     <h3 style="color: #bc3737; margin: 5px 0;">RM{{ number_format($vehicle->pricePerDay, 2) }}/day</h3>
-                    <small>or RM{{ number_format($vehicle->pricePerHour, 2) }}/hour</small>
                 </div>
                 
                 <div class="specs">

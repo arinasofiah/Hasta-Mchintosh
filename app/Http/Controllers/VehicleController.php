@@ -92,7 +92,6 @@ public function store(Request $request)
 }
    
 
-// 1. Update Method
 public function update(Request $request, $vehicleID)
 {
     $vehicle = \App\Models\Vehicles::findOrFail($vehicleID);
@@ -108,7 +107,7 @@ public function update(Request $request, $vehicleID)
     return redirect()->back()->with('success', 'Vehicle updated successfully!');
 }
 
-// 2. Delete Method
+
 public function destroy($id)
 {
     $vehicle = \App\Models\Vehicles::findOrFail($id);
@@ -119,13 +118,13 @@ public function destroy($id)
 
 public function adminDashboard()
 {
-    // 1. Prepare all the stats for your dashboard cards
+    
     $totalVehicles = \App\Models\Vehicles::count();
     $availableCount = \App\Models\Vehicles::where('status', 'available')->count();
     $onRentCount = \App\Models\Vehicles::where('status', 'rented')->count();
     $maintenanceCount = \App\Models\Vehicles::where('status', 'maintenance')->count();
 
-    // 2. Fetch the recent vehicles list (THIS FIXES YOUR ERROR)
+    
     $recentVehicles = \App\Models\Vehicles::latest()->take(5)->get();
 
     // 3. Pass EVERYTHING to the view

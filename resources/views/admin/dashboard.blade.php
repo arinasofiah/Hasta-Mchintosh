@@ -55,7 +55,7 @@
             <div class="stat-card">
                 <div class="icon-box bg-light text-dark">🚗</div>
                 <small class="text-muted">Total Fleet</small>
-                <h2 class="fw-bold mb-0">{{ $totalVehicles ?? 0}}</h2>
+                <h2 class="fw-bold mb-0">{{ $totalVehicles ?? 0 }}</h2>
             </div>
         </div>
         <div class="col-md-3">

@@ -98,34 +98,41 @@
 
 
 <div id="body">
-    <div class="car-grid">
+    < <div class="car-grid">
+        @forelse($vehicles as $vehicle)
+            <div class="car-card">
+                <img src="{{ asset('img/vehicles/'.$vehicle->vehicleID.'.jpg') }}" alt="{{ $vehicle->model }}">
+                
+                <h4>{{ $vehicle->model }}</h4>
+                
+                <div style="margin: 10px 0;">
+                    <h3 style="color: #bc3737; margin: 5px 0;">RM{{ number_format($vehicle->pricePerDay, 2) }}/day</h3>
+                </div>
+                
+                <div class="specs">
+                    <span title="Type"> Type: {{ $vehicle->vehicleType }}</span>
+                    <span title="Fuel">Fuel Level: {{ $vehicle->fuelLevel }}%</span>
+                    <span title="Seats">Seats: {{ $vehicle->seat }}</span>
+                </div>
+                
+                <div class="specs" style="margin-top: 5px;">
+                    <span title="Plate Number"> Plate Number: {{ $vehicle->plateNumber }}</span>
+                    <span title="AC">{{ $vehicle->ac ? ' AC' : ' No AC' }}</span>
+                </div>
 
-@foreach($vehicles as $vehicle)
-    <div class="car-card">
-
-        <img src="{{ asset('img/vehicles/'.$vehicle->vehicleID.'.png') }}">
-
-        <h3>RM{{ $vehicle->pricePerDay }}</h3>
-
-        <div class="specs">
-            <span> Type: {{ $vehicle->vehicleType }}</span>
-            <span> Fuel Level: {{ $vehicle->fuelLevel }}%</span>
-            <span> Plate Number: {{ $vehicle->plateNumber }}</span>
-        </div>
-
-        {{-- View Details Button --}}
-        @auth
-            <a href="{{ route('booking.form', $vehicle->vehicleID) }}" class="btn">
-                View Details
-            </a>
-        @else
-            <a href="{{ route('selectVehicle', $vehicle->vehicleID) }}" class="btn">
-                View Details
-            </a>
-        @endauth
-
+                @guest
+                    <a href="{{ route('selectVehicle', $vehicle->vehicleID) }}" class="btn">
+                        View Details & Book
+                    </a>
+                @endguest
+            </div>
+        @empty
+            <div style="grid-column: 1 / -1; text-align: center; padding: 60px;">
+                <h3>No vehicles found</h3>
+                <p>Try adjusting your filters or search keywords.</p>
+            </div>
+        @endforelse
     </div>
-@endforeach
 
 </div>
 
