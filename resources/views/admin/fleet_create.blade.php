@@ -60,7 +60,7 @@
                 <div class="row">
                     <div class="col-md-12 mb-3">
                         <label class="form-label fw-bold">Model Name</label>
-                        <input type="text" name="model" class="form-control" placeholder="e.g. Honda Civic" required>
+                        <input type="text" name="model" class="form-control" placeholder="e.g. Honda Civic 2020" required>
                     </div>
                 </div>
 
@@ -87,11 +87,41 @@
                         <input type="number" name="pricePerDay" class="form-control" required>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Number of Seats</label>
-                        <input type="number" name="seat" class="form-control" value="5" required>
+                         <label class="form-label fw-bold">Price Per Hour (RM)</label>
+                        <input type="number" name="pricePerHour" class="form-control" required>
                     </div>
                 </div>
 
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                         <label class="form-label fw-bold">Number of Seats</label>
+                        <input type="number" name="seat" class="form-control" value="5" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                         <label class="form-label fw-bold">Fuel Type</label>
+                       <select name="fuelType" class="form-select">
+                            <option value="Petrol">Petrol</option>
+                            <option value="Diesel">Diesel</option>
+                            <option value="Electric">Electric</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                         <label class="form-label fw-bold">AC Availability</label>
+                        <input type="number" name="ac" class="form-control" value="5" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                         <label class="form-label fw-bold">Fuel Type</label>
+                       <select name="fuelType" class="form-select">
+                            <option value="available">Available</option>
+                            <option value="rented">Rented</option>
+                            <option value="maintenance">Maintenance</option>
+                        </select>
+                    </div>
+                </div>
+                
                 <div class="mt-4">
                     <button type="submit" class="btn btn-primary px-5" style="background-color: #bc3737; border: none; border-radius: 10px;">Save Vehicle</button>
                     <a href="{{ route('admin.fleet') }}" class="btn btn-light px-4 ms-2">Cancel</a>
