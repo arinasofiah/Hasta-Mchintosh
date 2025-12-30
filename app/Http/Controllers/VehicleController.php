@@ -68,26 +68,32 @@ public function manage(Request $request)
     return view('admin.fleet', compact('vehicles', 'totalCount', 'status'));
 }
 
+public function create()
+{
+    return view('admin.fleet_create');
+}
+
 public function store(Request $request)
 {
-    
     $validated = $request->validate([
         'model' => 'required|string|max:255',
-        'vehicleType' => 'required|string',
-        'plateNumber' => 'required|string|unique:vehicles,plateNumber',
+        'vehicleType' => 'required',
+        'plateNumber' => 'required|unique:vehicles',
         'pricePerDay' => 'required|numeric',
-        'fuelLevel' => 'required|integer',
-        'fuelType' => 'required|string',
         'seat' => 'required|integer',
     ]);
 
     \App\Models\Vehicles::create($validated + [
         'status' => 'available',
-        'pricePerHour' => $request->pricePerDay / 10, 
+        'fuelType' => 'Petrol',
+        'fuelLevel' => 100,
+        'pricePerHour' => $request->pricePerDay / 10,
     ]);
 
-    return redirect()->route('admin.fleet')->with('success', 'Vehicle added successfully!');
+
+    return redirect()->route('admin.fleet')->with('success', 'Vehicle added to fleet successfully!');
 }
+   
 
 // 1. Update Method
 public function update(Request $request, $vehicleID)
