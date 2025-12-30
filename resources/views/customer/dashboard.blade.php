@@ -63,7 +63,6 @@
         <form action="{{ url()->current() }}" method="GET" id="filterForm">
             <div class="search-container">
                 <div class="search-input-wrapper">
-                    <span class="search-icon">🔍</span>
                     <input type="text" name="search" value="{{ request('search') }}" 
                            placeholder="Search Car Model..." onchange="this.form.submit()">
                 </div>
