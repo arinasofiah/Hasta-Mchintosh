@@ -119,7 +119,7 @@
                 </div>
 
                 @auth
-                    <a href="{{ route('booking.form', $vehicle->vehicleID) }}" class="btn">
+                    <a href="{{ route('selectVehicle', $vehicle->vehicleID) }}" class="btn">
                         View Details & Book
                     </a>
                 @endauth
