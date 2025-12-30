@@ -34,7 +34,6 @@
                 
                 <div id="profile-dropdown">
                     <a href="{{ route('customer.profile') }}" class="dropdown-item">👤 My Profile</a>
-                    <a href="{{ route('customer.bookings') }}" class="dropdown-item">📋 My Bookings</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="dropdown-item">🚪 Logout</button>

@@ -104,7 +104,7 @@
 @foreach($vehicles as $vehicle)
     <div class="car-card">
 
-        <img src="{{ asset('img/vehicles/'.$vehicle->vehicleID.'.jpg') }}">
+        <img src="{{ asset('img/vehicles/'.$vehicle->vehicleID.'.png') }}">
 
         <h3>RM{{ $vehicle->pricePerDay }}</h3>
 

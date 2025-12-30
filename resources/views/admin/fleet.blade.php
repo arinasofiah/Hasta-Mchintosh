@@ -98,7 +98,7 @@
 
         @foreach($vehicles as $vehicle)
             <div class="vehicle-card">
-                <img src="{{ asset('img/vehicles/'.$vehicle->vehicleID.'.jpg') }}" class="vehicle-img" alt="Car">
+                <img src="{{ asset('img/vehicles/'.$vehicle->vehicleID.'.png') }}" class="vehicle-img" alt="Car">
                 
                 <div class="vehicle-info">
                     <h4 class="mb-0">{{ $vehicle->model }}</h4>

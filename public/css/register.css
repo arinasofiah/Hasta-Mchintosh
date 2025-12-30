@@ -14,10 +14,12 @@ body {
 }
 
 .left {
-  width: 50%;
-  padding: 80px;
-  color: black;
-  position: relative;
+   position: relative;
+    flex: 0 0 50%; /* Takes half the width */
+    padding: 40px;
+    color: white;
+    /* Gradient Background for the left side */
+    background: linear-gradient(135deg, #FF6F6F 0%, #E63946 100%);
 }
 
 .left h1 {
@@ -37,10 +39,11 @@ body {
 }
 
 .right {
-  width: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  flex: 1; /* Takes the remaining half */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(to top right, #fce4ec, #fff0f5); /* Light pink to white */
 }
 
 .card {

@@ -20,8 +20,6 @@
             <p class="sub-headline">Book your preference car now !</p>
             <div class="car-visuals">
                 <img src="{{ asset('images/redcar.png') }}" alt="Red Car" class="car-image">
-                <div class="circle-decoration circle-large"></div>
-                <div class="circle-decoration circle-small"></div>
             </div>
         </div>
 
