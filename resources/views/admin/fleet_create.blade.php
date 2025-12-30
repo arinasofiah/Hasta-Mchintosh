@@ -41,7 +41,7 @@
         <h5 class="mb-4">Menu</h5>
         <a href="{{ route('admin.dashboard') }}" class="nav-item">📊 Dashboard</a>
         <a href="#" class="nav-item">📈 Reporting</a>
-        <a href="{{ route('admin.fleet') }}" class="nav-item active">🚗 Vehicles</a> 
+        <a href="{{ route('admin.fleet') }}" class="nav-item active">🚗 Fleet</a> 
         <a href="#" class="nav-item">👥 Customer</a>
         <a href="#" class="nav-item">👔 Staff</a>
         <a href="#" class="nav-item">🎁 Promotions</a>

@@ -53,7 +53,7 @@
     <nav class="d-flex flex-column">
         <a href="{{ route('admin.dashboard') }}" class="nav-item active">📊 Dashboard</a>
         <a href="#" class="nav-item">📈 Reporting</a>
-        <a href="{{ route('admin.fleet') }}" class="nav-item">🚗 Vehicles</a>
+        <a href="{{ route('admin.fleet') }}" class="nav-item">🚗 Fleet</a>
         <a href="#" class="nav-item">👥 Customer</a>
         <a href="#" class="nav-item">👔 Staff</a>
         <a href="#" class="nav-item">⚙️ Settings</a>
