@@ -8,21 +8,7 @@
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('css/header.css') }}" rel="stylesheet">
     <link href="{{ asset('css/footer.css') }}" rel="stylesheet">
-    <style>
-        body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; }
-        .sidebar { width: 260px; height: 100vh; background: #fff; position: fixed; border-right: 1px solid #e0e0e0; padding-top: 20px; }
-        .nav-item { padding: 12px 25px; color: #666; text-decoration: none; display: flex; align-items: center; border-left: 4px solid transparent; }
-        
-        /* Highlighted Dashboard Item */
-        .nav-item.active { background: #fff5f5; color: #bc3737; font-weight: 600; border-left: 4px solid #bc3737; }
-        
-        .main-content { margin-left: 260px; padding: 40px; }
-        .stat-card { background: #fff; border-radius: 15px; padding: 25px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: 0.3s; }
-        .stat-card:hover { transform: translateY(-5px); }
-        .icon-box { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 15px; }
-        
-        .recent-table { background: #fff; border-radius: 15px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    </style>
+    <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
 </head>
 <body>
 <div id="header">
