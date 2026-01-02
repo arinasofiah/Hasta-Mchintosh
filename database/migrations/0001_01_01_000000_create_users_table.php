@@ -18,6 +18,13 @@ return new class extends Migration
         $table->string('name');
         $table->string('icNumber')->unique();
         $table->enum('userType', ['admin', 'staff', 'customer']);
+
+        $table->string('phoneNumber');
+        $table->foreign('phoneNumber')
+          ->references('phoneNumber')
+          ->on('telephone')
+          ->onDelete('cascade');
+
         $table->rememberToken();
         $table->timestamps();
   });

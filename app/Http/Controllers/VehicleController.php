@@ -127,7 +127,6 @@ public function adminDashboard()
     
     $recentVehicles = \App\Models\Vehicles::latest()->take(5)->get();
 
-    // 3. Pass EVERYTHING to the view
     return view('admin.dashboard', compact(
         'totalVehicles', 
         'availableCount', 

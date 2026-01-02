@@ -12,20 +12,20 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('booking', function (Blueprint $table) {
-            $table->id('bookingID');
+    $table->id('bookingID');
+    
+    $table->string('bankNum');
+    $table->string('penamaBank');
+    $table->date('startDate');
+    $table->date('endDate');
+    $table->integer('bookingDuration');
+    $table->enum('bookingStatus', ['pending', 'approved', 'cancelled', 'completed']);
+    $table->decimal('totalPrice', 8, 2);
+    $table->decimal('depositAmount', 8, 2);
+    $table->boolean('rewardApplied')->default(false);
 
-            $table->string('bankNum');
-            $table->string('penamaBank');
-            $table->date('startDate');
-            $table->date('endDate');
-            $table->integer('bookingDuration');
-            $table->enum('bookingStatus', ['pending', 'approved', 'cancelled', 'completed']);
-            $table->decimal('totalPrice', 8, 2);
-            $table->decimal('depositAmount', 8, 2);
-            $table->boolean('rewardApplied')->default(false);
-
-            $table->timestamps();
-        });
+    $table->timestamps();
+});
     }
 
     /**
