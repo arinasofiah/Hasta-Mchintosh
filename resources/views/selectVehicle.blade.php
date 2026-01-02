@@ -509,7 +509,7 @@
                 <script>
                     function handleBooking(){
                         @auth
-                            window.location.href = "{{ route('booking.form', ['vehicle' => $featuredVehicle->id]) }}";
+                            window.location.href = "{{ route('booking.form', ['vehicleID' => $featuredVehicle->vehicleID]) }}";
                         @else
                             window.location.href = "{{ route('login') }}";
                         @endauth

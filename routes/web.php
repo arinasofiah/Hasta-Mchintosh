@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OcrController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\VehicleController;
+use App\Http\Controllers\BookingController;
 
 Route::view('/signup', 'signup');
 
@@ -36,6 +37,9 @@ Route::get('/select-vehicle/{id}', [VehicleController::class, 'select'])->name('
 Route::put('/admin/vehicles/update/{id}', [VehicleController::class, 'update'])->name('admin.vehicles.update');
 Route::delete('/admin/vehicles/delete/{id}', [VehicleController::class, 'destroy'])->name('admin.vehicles.destroy');
 Route::get('/admin/vehicles/create', [VehicleController::class, 'create'])->name('admin.vehicles.create');
+
+
+Route::get('/booking/{vehicleID}', [BookingController::class, 'showForm'])->name('booking.form');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
