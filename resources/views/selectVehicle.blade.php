@@ -484,26 +484,40 @@
 
     <!-- Featured Vehicle -->
     <div class="featured-vehicle">
+
         <div class="vehicle-image">
             <img src="{{ asset($featuredVehicle->image ?? 'img/vehicles/default.jpg') }}" alt="{{ $featuredVehicle->model }}">
         </div>
+
         <div class="vehicle-details">
             <h2 class="vehicle-name">{{ $featuredVehicle->model }}</h2>
             <p class="vehicle-type">{{ $featuredVehicle->vehicleType }}</p>
+            
             <div class="vehicle-price">
                 <span class="price-amount">RM {{ $featuredVehicle->pricePerDay }}</span> / day
             </div>
+
             <div class="vehicle-specs">
                 <span>Seats: {{ $featuredVehicle->seat }}</span>
                 <span>AC: {{ $featuredVehicle->ac }}</span>
                 <span>Transmission: {{ $featuredVehicle->transmission }}
                 <span>Fuel: {{ $featuredVehicle->fuelType }}</span>
             </div>
-            @if($featuredVehicle->status == 'available'){
-                <button class="availability-badge">Available!</button><button class="book-btn">Book</button>
-                @if()
-            }
+
+            @if($featuredVehicle->status == 'available')
+                <button class="availability-badge">Available!</button>
+                <button class="book-btn" onclick="handleBooking()">Book</button>
                 
+                <script>
+                    function handleBooking(){
+                        @auth
+                            window.location.href = "{{ route('booking.form', ['vehicle' => $featuredVehicle->id]) }}";
+                        @else
+                            window.location.href = "{{ route('login') }}";
+                        @endauth
+                    }
+                </script>
+
             @else
                 <span class="availability-badge">Not Available</span>
             @endif
@@ -514,22 +528,27 @@
     <div class="vehicle-grid">
         @foreach($otherVehicles as $vehicle)
         <div class="vehicle-card">
+
             <div class="card-image">
                 <img src="{{ asset($vehicle['image']) }}" alt="{{ $vehicle['name'] }}">
             </div>
+
             <div class="card-header">
                 <h3 class="card-name">{{ $vehicle->model }}</h3>
                 <p class="card-type">{{ $vehicle->vehicleType }}</p>
                 <div class="card-price">RM{{ $vehicle->pricePerDay }}</div>
             </div>
+
             <div class="card-specs">
                 <span>Seats: {{ $vehicle->seat }}</span>
                 <span>AC: {{ $vehicle->ac }}</span>
                 <span>Transmission: {{ $vehicle->transmission }}</span>
                 <span>Fuel: {{ $vehicle->fuelType }}</span>
             </div>
+
         </div>
         @endforeach
+
     </div>
 
 </body>
