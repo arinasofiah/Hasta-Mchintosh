@@ -432,18 +432,16 @@
     </div>
 </div>
 
-    <!-- Progress Steps -->
-    <div class="progress-container">
-        <div class="steps">
-            <div class="step active"><span class="step-icon">✓</span><span>Vehicle</span></div>
-            <div class="step-connector"></div>
-            <div class="step"><span class="step-icon">✓</span><span>Register</span></div>
-            <div class="step-connector"></div>
-            <div class="step"><span class="step-icon">✓</span><span>Booking Details</span></div>
-            <div class="step-connector"></div>
-            <div class="step"><span class="step-icon">✓</span><span>Payment</span></div>
-        </div>
+<!-- Progress Steps -->
+<div class="progress-container">
+    <div class="steps">
+        <div class="step active"><span class="step-icon">✓</span><span>Vehicle</span></div>
+        <div class="step-connector"></div>
+        <div class="step"><span class="step-icon">✓</span><span>Booking Details</span></div>
+        <div class="step-connector"></div>
+        <div class="step"><span class="step-icon">✓</span><span>Payment</span></div>
     </div>
+</div>
 
     <!-- Booking Form -->
     <div class="booking-form">
