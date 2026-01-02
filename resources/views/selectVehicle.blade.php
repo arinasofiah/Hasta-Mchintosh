@@ -480,8 +480,11 @@
                 <span>Transmission: {{ $featuredVehicle->transmission }}
                 <span>Fuel: {{ $featuredVehicle->fuelType }}</span>
             </div>
-            @if($featuredVehicle->status == 'available')
+            @if($featuredVehicle->status == 'available'){
                 <button class="availability-badge">Available!</button><button class="book-btn">Book</button>
+                @if()
+            }
+                
             @else
                 <span class="availability-badge">Not Available</span>
             @endif
