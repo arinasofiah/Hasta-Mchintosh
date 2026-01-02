@@ -9,10 +9,8 @@ class VehicleController extends Controller
 {
     public function index(Request $request)
 {
-    // 1. Start with available vehicles
     $query = Vehicles::where('status', 'available');
 
-    // 2. Search Logic (Model or Plate)
     if ($request->filled('search')) {
         $search = trim($request->search);
         $query->where(function($q) use ($search) {
@@ -21,8 +19,6 @@ class VehicleController extends Controller
         });
     }
 
-    // 3. Category Filter (The Pill Buttons)
-    // We check if category is filled and NOT equal to 'All'
     if ($request->filled('category') && $request->category !== 'All') {
         $query->where('vehicleType', trim($request->category));
     }
@@ -31,6 +27,7 @@ class VehicleController extends Controller
 
     return view('welcome', compact('vehicles'));
 }
+
 
   public function select($id, Request $request)
 {
@@ -56,7 +53,7 @@ class VehicleController extends Controller
 
 public function manage(Request $request)
 {
-    // Fetch vehicles based on status tab (default to active)
+    
     $status = $request->get('status', 'available');
     
     $vehicles = Vehicles::where('status', $status)
@@ -68,28 +65,33 @@ public function manage(Request $request)
     return view('admin.fleet', compact('vehicles', 'totalCount', 'status'));
 }
 
+public function create()
+{
+    return view('admin.fleet_create');
+}
+
 public function store(Request $request)
 {
-    
     $validated = $request->validate([
         'model' => 'required|string|max:255',
-        'vehicleType' => 'required|string',
-        'plateNumber' => 'required|string|unique:vehicles,plateNumber',
+        'vehicleType' => 'required',
+        'plateNumber' => 'required|unique:vehicles',
         'pricePerDay' => 'required|numeric',
-        'fuelLevel' => 'required|integer',
-        'fuelType' => 'required|string',
         'seat' => 'required|integer',
     ]);
 
     \App\Models\Vehicles::create($validated + [
         'status' => 'available',
-        'pricePerHour' => $request->pricePerDay / 10, 
+        'fuelType' => 'Petrol',
+        'fuelLevel' => 100,
+        'pricePerHour' => $request->pricePerDay / 10,
     ]);
 
-    return redirect()->route('admin.fleet')->with('success', 'Vehicle added successfully!');
-}
 
-// 1. Update Method
+    return redirect()->route('admin.fleet')->with('success', 'Vehicle added to fleet successfully!');
+}
+   
+
 public function update(Request $request, $vehicleID)
 {
     $vehicle = \App\Models\Vehicles::findOrFail($vehicleID);
@@ -105,7 +107,7 @@ public function update(Request $request, $vehicleID)
     return redirect()->back()->with('success', 'Vehicle updated successfully!');
 }
 
-// 2. Delete Method
+
 public function destroy($id)
 {
     $vehicle = \App\Models\Vehicles::findOrFail($id);
@@ -116,13 +118,13 @@ public function destroy($id)
 
 public function adminDashboard()
 {
-    // 1. Prepare all the stats for your dashboard cards
+    
     $totalVehicles = \App\Models\Vehicles::count();
     $availableCount = \App\Models\Vehicles::where('status', 'available')->count();
     $onRentCount = \App\Models\Vehicles::where('status', 'rented')->count();
     $maintenanceCount = \App\Models\Vehicles::where('status', 'maintenance')->count();
 
-    // 2. Fetch the recent vehicles list (THIS FIXES YOUR ERROR)
+    
     $recentVehicles = \App\Models\Vehicles::latest()->take(5)->get();
 
     // 3. Pass EVERYTHING to the view

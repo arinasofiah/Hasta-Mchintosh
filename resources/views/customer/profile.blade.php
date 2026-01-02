@@ -33,11 +33,10 @@
                 <img id="pfp" src="{{ asset('img/racc_icon.png') }}" alt="Profile">
                 
                 <div id="profile-dropdown">
-                    <a href="{{ route('customer.profile') }}" class="dropdown-item">👤 My Profile</a>
-                    <a href="{{ route('customer.bookings') }}" class="dropdown-item">📋 My Bookings</a>
+                    <a href="{{ route('customer.profile') }}" class="dropdown-item"> My Profile</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="dropdown-item">🚪 Logout</button>
+                        <button type="submit" class="dropdown-item"> Logout</button>
                     </form>
                 </div>
             </div>
@@ -55,25 +54,24 @@
             <ul class="sidebar-menu">
                 <li>
                     <a href="{{ route('customer.profile') }}" class="active">
-                        <span class="sidebar-icon">👤</span>
+        
                         My Profile
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('customer.bookings') }}">
-                        <span class="sidebar-icon">📋</span>
+            
                         My Bookings
                     </a>
                 </li>
                 <li>
                     <a href="#">
-                        <span class="sidebar-icon">💳</span>
                         Loyalty Card
                     </a>
                 </li>
                 <li>
                     <a href="#">
-                        <span class="sidebar-icon">⚙️</span>
+            
                         Settings
                     </a>
                 </li>
@@ -148,11 +146,6 @@
                     <span class="balance">RM{{ number_format($customer->depoBalance ?? 0, 2) }}</span>
                 </div>
                 
-                <div class="section-value">
-                    <span>Joined Date:</span>
-                    <span>{{ $user->created_at->format('d F Y') }}</span>
-                </div>
-            </div>
             
             <div class="actions">
                 <a href="{{ route('customer.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>

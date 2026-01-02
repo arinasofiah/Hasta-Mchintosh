@@ -4,6 +4,7 @@
     <title>Hasta Travel Register</title>
     <link rel="stylesheet" href="{{ asset('css/register.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -30,23 +31,28 @@
                 @csrf
 
                 <label>Email address</label>
-                <input type="email" name="email" required>
-
-                <label>Full Name</label>
-                <input type="text" id="fullName" name="name" required>
-
-                <label>Phone Number</label>
-                <input type="tel" name="phone" required>
-
-                <label>National Identification Card</label>
-                <input type="text" id="icNumber" name="icNumber" required>
+                <input type="email" name="email" required  placeholder="e.g. hebat123@gmail.com">
 
                 <label>Upload National IC (For Autofill)</label>
                 <input type="file" id="icUpload" accept="image/*">
-
-                <small class="hint" id="statusMsg">
+                 <small class="hint" id="statusMsg">
                     Upload your IC to autofill your name and ID number.
                 </small>
+
+                <label>Full Name</label>
+                <input type="text" id="fullName" name="name" required>
+                <small class="hint" id="statusMsg">
+                   Ensure it match your IC (Capital Letter).
+                </small>
+
+                <label>National Identification Card</label>
+                <input type="text" id="icNumber" name="icNumber" required>
+                 <small class="hint" id="statusMsg">
+                   Ensure it match your IC (With Dash (-)).
+                </small>
+
+                 <label>Phone Number</label>
+                <input type="tel" name="phone" required placeholder="e.g. 0196507378">
 
                 <div class="mt-4">
                     <x-input-label for="matricNumber" :value="__('Matric Number')" />

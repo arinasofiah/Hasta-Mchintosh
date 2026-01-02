@@ -32,10 +32,10 @@ Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles.ind
 Route::get('/admin/dashboard', [VehicleController::class, 'adminDashboard'])->name('admin.dashboard');
 Route::get('/admin/fleet', [VehicleController::class, 'adminVehicles'])->name('admin.fleet');
 Route::post('/admin/vehicles/store', [VehicleController::class, 'store'])->name('admin.vehicles.store');
-Route::get('/select-vehicle/{id}', [VehicleController::class, 'select'])
-    ->name('selectVehicle');
+Route::get('/select-vehicle/{id}', [VehicleController::class, 'select'])->name('selectVehicle');
 Route::put('/admin/vehicles/update/{id}', [VehicleController::class, 'update'])->name('admin.vehicles.update');
 Route::delete('/admin/vehicles/delete/{id}', [VehicleController::class, 'destroy'])->name('admin.vehicles.destroy');
+Route::get('/admin/vehicles/create', [VehicleController::class, 'create'])->name('admin.vehicles.create');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

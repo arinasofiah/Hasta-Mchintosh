@@ -31,6 +31,7 @@ $car_image     = $car_image     ?? "car-axia.png";
 <title>HASTA – Booking Details</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="{{ asset('css/header.css') }}" rel="stylesheet">
 
 <style>
 
@@ -275,25 +276,34 @@ body {
 
 <body>
 
-<!-- HEADER -->
-<header class="header">
-    <div class="logo">HASTA</div>
-
-    <div class="header-right">
-        <nav class="nav">
-            <a href="#">Home</a>
-            <a href="#">Vehicles</a>
-            <a href="#">Details</a>
-            <a href="#">About Us</a>
-            <a href="#">Contact Us</a>
-        </nav>
-
-        <div class="user-badge">
-            <div class="user-icon">👤</div>
-            AMINAH TALIB
-        </div>
+<div id="header">
+    <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}">
+    <div id="menu">
+        <button class="head_button">Home</button>
+        <button class="head_button">Vehicles</button>
+        <button class="head_button">Details</button>
+        <button class="head_button">About Us</button>
+        <button class="head_button">Contact Us</button>
     </div>
-</header>
+
+    <div id="profile">
+        <div id="profile-container">
+            <img id="pfp" src="{{ asset('img/racc_icon.png') }}">
+            <div id="profile-dropdown">
+                @auth
+                     <a href="{{ route('customer.profile') }}" class="dropdown-item">My Profile</a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="dropdown-item">Logout</button>
+                    </form>
+                @endauth
+            </div>
+        </div>
+        @auth
+            <span id="username">{{ Auth::user()->name }}</span>
+        @endauth
+    </div>
+</div>
 
 <!-- STEP BAR -->
 <div class="stepper">
