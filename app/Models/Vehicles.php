@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Vehicles extends Model
 {
+    use HasFactory;
+    
     protected $primaryKey = 'vehicleID';
 
     protected $fillable = [
@@ -19,6 +22,12 @@ class Vehicles extends Model
         'transmission',
         'status',
         'pricePerHour',
-        'pricePerDay'
+        'pricePerDay',
+        'image'
     ];
+
+    public function bookings()
+    {
+        return $this->hasMany(Bookings::class, 'vehicle_id');
+    }
 }

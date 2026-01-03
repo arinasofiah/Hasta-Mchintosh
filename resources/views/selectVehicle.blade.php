@@ -20,7 +20,7 @@
             background-color: #f5f5f5;
         }
 
-        /* Header */
+        /* Header 
         .header {
             background-color: #d94242;
             padding: 15px 50px;
@@ -36,7 +36,7 @@
             font-size: 24px;
             font-weight: bold;
             letter-spacing: 2px;
-        }
+        }*/
 
         .nav {
             display: flex;
@@ -62,16 +62,6 @@
             text-decoration: none;
             font-size: 18px;
             font-weight: 600;
-        }
-
-        .login-icon {
-            width: 40px;
-            height: 40px;
-            background-color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         .login-icon svg {
@@ -128,34 +118,25 @@
             margin: 0 auto 50px;
             padding: 0 20px;
             display: flex;
-            gap: 40px;
+            justify-content: center;
         }
 
-        .form-group {
-            flex: 1;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: #333;
-        }
-
-        .date-time-group {
+        .date-time-row {
             display: flex;
             gap: 15px;
+            align-items: end;
         }
 
         .input-wrapper {
             position: relative;
             flex: 1;
+            max-width: 200px;
         }
 
         .input-label {
             font-size: 12px;
             color: #666;
-            margin-bottom: 5px;
+            margin-bottom: 7px;
         }
 
         input[type="date"],
@@ -391,6 +372,10 @@
             .vehicle-grid {
                 grid-template-columns: 1fr;
             }
+
+            .date-time-row {
+                flex-wrap: wrap;
+            }
         }
     </style>
 </head>
@@ -443,111 +428,102 @@
     </div>
 </div>
 
-    <!-- Booking Form -->
-    <div class="booking-form">
-        <form action="{{ route('selectVehicle', $featuredVehicle->vehicleID) }}" method="GET">
-            <div class="form-group">
-                <label>Pickup</label>
-                <div class="date-time-group">
-                    <div class="input-wrapper">
-                        <div class="input-label">Date</div>
-                        <input type="date" name="pickup_date" value="{{ $pickupDate }}">
-                        <span class="input-icon">📅</span>
-                    </div>
-                    <div class="input-wrapper">
-                        <div class="input-label">Time</div>
-                        <input type="time" name="pickup_time" value="{{ $pickupTime }}">
-                        <span class="input-icon">🕐</span>
-                    </div>
-                </div>
+<!-- Booking Form -->
+<div class="booking-form">
+    <form action="{{ route('selectVehicle', $featuredVehicle->vehicleID) }}" method="GET">
+        <div class="date-time-row">
+            <div class="input-wrapper">
+                <div class="input-label">Pickup Date</div>
+                <input type="date" name="pickup_date" value="{{ $pickupDate }}" onchange="this.form.submit()">
+                <span class="input-icon"></span>
             </div>
-            <div class="form-group">
-                <label>Return</label>
-                <div class="date-time-group">
-                    <div class="input-wrapper">
-                        <div class="input-label">Date</div>
-                        <input type="date" name="return_date" value="{{ $returnDate }}">
-                        <span class="input-icon">📅</span>
-                    </div>
-                    <div class="input-wrapper">
-                        <div class="input-label">Time</div>
-                        <input type="time" name="return_time" value="{{ $returnTime }}">
-                        <span class="input-icon">🕐</span>
-                    </div>
-                </div>
+            <div class="input-wrapper">
+                <div class="input-label">Pickup Time</div>
+                <input type="time" name="pickup_time" value="{{ $pickupTime }}" onchange="this.form.submit()">
+                <span class="input-icon"></span>
             </div>
-            <button type="submit" class="book-btn">Update Dates</button>
-        </form>
+            <div class="input-wrapper">
+                <div class="input-label">Return Date</div>
+                <input type="date" name="return_date" value="{{ $returnDate }}" onchange="this.form.submit()">
+                <span class="input-icon"></span>
+            </div>
+            <div class="input-wrapper">
+                <div class="input-label">Return Time</div>
+                <input type="time" name="return_time" value="{{ $returnTime }}" onchange="this.form.submit()">
+                <span class="input-icon"></span>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Featured Vehicle -->
+<div class="featured-vehicle">
+
+    <div class="vehicle-image">
+        <img src="{{ asset($featuredVehicle->image ?? 'img/vehicles/default.jpg') }}" alt="{{ $featuredVehicle->model }}">
     </div>
 
-    <!-- Featured Vehicle -->
-    <div class="featured-vehicle">
-
-        <div class="vehicle-image">
-            <img src="{{ asset($featuredVehicle->image ?? 'img/vehicles/default.jpg') }}" alt="{{ $featuredVehicle->model }}">
+    <div class="vehicle-details">
+        <h2 class="vehicle-name">{{ $featuredVehicle->model }}</h2>
+        <p class="vehicle-type">{{ $featuredVehicle->vehicleType }}</p>
+        
+        <div class="vehicle-price">
+            <span class="price-amount">RM {{ $featuredVehicle->pricePerDay }}</span> / day
         </div>
 
-        <div class="vehicle-details">
-            <h2 class="vehicle-name">{{ $featuredVehicle->model }}</h2>
-            <p class="vehicle-type">{{ $featuredVehicle->vehicleType }}</p>
+        <div class="vehicle-specs">
+            <span>Seats: {{ $featuredVehicle->seat }}</span>
+            <span>AC: {{ $featuredVehicle->ac }}</span>
+            <span>Transmission: {{ $featuredVehicle->transmission }}
+            <span>Fuel: {{ $featuredVehicle->fuelType }}</span>
+        </div>
+
+        @if($featuredVehicle->status == 'available')
+            <button class="availability-badge">Available!</button>
+            <button class="book-btn" onclick="handleBooking()">Book</button>
             
-            <div class="vehicle-price">
-                <span class="price-amount">RM {{ $featuredVehicle->pricePerDay }}</span> / day
-            </div>
+            <script>
+                function handleBooking(){
+                    @auth
+                        window.location.href = "{{ route('booking.form', ['vehicleID' => $featuredVehicle->vehicleID]) }}";
+                    @else
+                        window.location.href = "{{ route('login') }}";
+                    @endauth
+                }
+            </script>
 
-            <div class="vehicle-specs">
-                <span>Seats: {{ $featuredVehicle->seat }}</span>
-                <span>AC: {{ $featuredVehicle->ac }}</span>
-                <span>Transmission: {{ $featuredVehicle->transmission }}
-                <span>Fuel: {{ $featuredVehicle->fuelType }}</span>
-            </div>
-
-            @if($featuredVehicle->status == 'available')
-                <button class="availability-badge">Available!</button>
-                <button class="book-btn" onclick="handleBooking()">Book</button>
-                
-                <script>
-                    function handleBooking(){
-                        @auth
-                            window.location.href = "{{ route('booking.form', ['vehicleID' => $featuredVehicle->vehicleID]) }}";
-                        @else
-                            window.location.href = "{{ route('login') }}";
-                        @endauth
-                    }
-                </script>
-
-            @else
-                <span class="availability-badge">Not Available</span>
-            @endif
-        </div>
+        @else
+            <span class="availability-badge">Not Available</span>
+        @endif
     </div>
+</div>
 
-    <!-- Other Vehicles -->
-    <div class="vehicle-grid">
-        @foreach($otherVehicles as $vehicle)
-        <div class="vehicle-card">
+<!-- Other Vehicles -->
+<div class="vehicle-grid">
+    @foreach($otherVehicles as $vehicle)
+    <div class="vehicle-card">
 
-            <div class="card-image">
-                <img src="{{ asset($vehicle['image']) }}" alt="{{ $vehicle['name'] }}">
-            </div>
-
-            <div class="card-header">
-                <h3 class="card-name">{{ $vehicle->model }}</h3>
-                <p class="card-type">{{ $vehicle->vehicleType }}</p>
-                <div class="card-price">RM{{ $vehicle->pricePerDay }}</div>
-            </div>
-
-            <div class="card-specs">
-                <span>Seats: {{ $vehicle->seat }}</span>
-                <span>AC: {{ $vehicle->ac }}</span>
-                <span>Transmission: {{ $vehicle->transmission }}</span>
-                <span>Fuel: {{ $vehicle->fuelType }}</span>
-            </div>
-
+        <div class="card-image">
+            <img src="{{ asset($vehicle['image']) }}" alt="{{ $vehicle['name'] }}">
         </div>
-        @endforeach
+
+        <div class="card-header">
+            <h3 class="card-name">{{ $vehicle->model }}</h3>
+            <p class="card-type">{{ $vehicle->vehicleType }}</p>
+            <div class="card-price">RM{{ $vehicle->pricePerDay }}</div>
+        </div>
+
+        <div class="card-specs">
+            <span>Seats: {{ $vehicle->seat }}</span>
+            <span>AC: {{ $vehicle->ac }}</span>
+            <span>Transmission: {{ $vehicle->transmission }}</span>
+            <span>Fuel: {{ $vehicle->fuelType }}</span>
+        </div>
 
     </div>
+    @endforeach
+
+</div>
 
 </body>
 </html>
