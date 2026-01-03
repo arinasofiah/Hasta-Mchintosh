@@ -1,0 +1,146 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    max-width: 100%;
+    height:100%;
+    overflow-x: hidden;
+}
+
+#body{
+    width:100%;
+    min-height: calc(100vh - 80px);
+}
+
+.container {
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+.return-layout {
+    display: grid;
+  grid-template-columns: 1fr 1.2fr;
+    gap: 60px;
+    padding: 0 50px;
+}
+.form-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+    margin-top: 25px;
+    width:100%;
+}
+
+input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+}
+#btn_div{
+    display: flex;
+    margin-top:10px;
+    justify-content: flex-end;
+    margin-bottom: 0px;
+    padding-bottom: 0px;
+}
+
+.btn-primary {
+    background: #CB3737;
+    color: white;
+    border: none;
+    padding: 12px 0;
+    border-radius: 10px;
+    width: 200px;
+    cursor: pointer;
+}
+
+#drop-zone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    height: 200px;
+    border: 2px dashed #bbb;
+    border-radius: 20px;
+    background-color: #F4F4F4;
+    margin-bottom: 30px;
+    text-align: center;
+    font-size: 18px;
+}
+
+#drop-zone input{
+    width: auto;
+    margin-left:210px;
+}
+
+
+
+#file-input{
+    border:none;
+}
+
+.main_txt{
+    font-weight: bold;
+    font-size: 24px;
+    margin-bottom: 0px;
+}
+
+.sub_txt{
+    font-size: 18px;
+    color: gray;
+}
+
+#hd {
+    text-align: center;
+    font-size: 32px;
+    font-weight: bold;
+    margin: 20px 0;
+}
+.radio-section {
+    margin: 20px 0;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.radio-section label {
+     display: flex;
+     justify-content: flex-start;
+    margin-left: 15px;
+    font-weight: normal;
+    align-items: center;
+}
+
+.radio-section input{
+    margin-right: 7px;
+}
+
+textarea {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 10px;
+}
+.checkbox{
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    height: 50px;
+    font-weight: bold;
+}
+
+.checkbox input{
+    width: 20px;
+    margin-right: 7px;
+    cursor: pointer;
+}

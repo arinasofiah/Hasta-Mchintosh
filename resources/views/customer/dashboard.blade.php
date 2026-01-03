@@ -38,7 +38,7 @@
         <div id="profile-container">
             <img id="pfp" src="{{ asset('img/racc_icon.png') }}">
             <div id="profile-dropdown">
-                <a href="{{ route('customer.profile') }}" class="dropdown-item">👤 My Profile</a>
+                <a href="{{ route('customer.profile') }}" class="dropdown-item">My Profile</a>
                 @auth
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf

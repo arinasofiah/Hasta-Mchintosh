@@ -27,6 +27,6 @@ class PickUpController extends Controller
         $pickup->pickupDate = $request->pickupDate;
         $pickup->save();
 
-        return redirect()->back()->with('success', 'Data saved successfully!');
+        return redirect()->back()->with('showModal', true);
     }
 }

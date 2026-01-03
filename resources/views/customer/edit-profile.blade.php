@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Profile - Hasta Travel & Tour</title>
     
-    {{-- Bootstrap --}}
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
     
     {{-- Custom CSS --}}
@@ -13,6 +13,9 @@
     <link href="{{ asset('css/footer.css') }}" rel="stylesheet">
     
     <style>
+        * {
+        font-family: 'Poppins', sans-serif;
+        }
         .edit-profile-container {
             max-width: 600px;
             margin: 40px auto;
@@ -83,6 +86,18 @@
             display: flex;
             gap: 15px;
             margin-top: 30px;
+        }
+        
+        .form-hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            display: block;
+        }
+        
+        .readonly-field {
+            background-color: #f8f9fa;
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -155,6 +170,17 @@
                     <input type="email" name="email" class="form-control" value="{{ old('email', $user->email) }}" required>
                 </div>
                 
+                {{-- Phone Number Section --}}
+                <div class="form-group">
+    <label class="form-label">Phone Number</label>
+    <input type="tel" name="phone" class="form-control" 
+           value="{{ old('phone', $user->phone) }}" 
+           pattern="[0-9]{10,11}" 
+           title="Enter 10-11 digit phone number" 
+           required>
+    <small class="form-hint">Format: 10-11 digits (e.g., 0123456789)</small>
+</div>
+                
                 {{-- Customer Information --}}
                 @if($customer)
                     <div class="form-group">
@@ -182,6 +208,7 @@
                 <div class="form-group">
                     <label class="form-label">New Password (leave blank to keep current)</label>
                     <input type="password" name="password" class="form-control">
+                    <small class="form-hint">Leave empty if you don't want to change password</small>
                 </div>
                 
                 <div class="form-group">

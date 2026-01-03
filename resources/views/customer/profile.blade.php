@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Profile - Hasta Travel & Tour</title>
-    
-    {{-- Bootstrap --}}
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
     
     {{-- Custom CSS --}}
@@ -54,13 +53,11 @@
             <ul class="sidebar-menu">
                 <li>
                     <a href="{{ route('customer.profile') }}" class="active">
-        
                         My Profile
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('customer.bookings') }}">
-            
                         My Bookings
                     </a>
                 </li>
@@ -71,14 +68,12 @@
                 </li>
                 <li>
                     <a href="#">
-            
                         Settings
                     </a>
                 </li>
             </ul>
         </div>
 
-    
         <div class="profile-page">
             <h2 class="profile-title">My Profile</h2>
           
@@ -97,12 +92,15 @@
                     <span>{{ $user->icNumber }}</span>
                 </div>
                 <div class="section-value">
+                    <span>Phone Number:</span>
+                    <span>{{ $user->phoneNumber ?? 'Not provided' }}</span>
+                </div>
+                <div class="section-value">
                     <span>Matric Number:</span>
                     <span>{{ $customer->matricNumber ?? 'Not provided' }}</span>
                 </div>
             </div>
             
-    
             <div class="info-section">
                 <div class="section-label">Academic Information</div>
                 <div class="section-value">
@@ -115,7 +113,6 @@
                 </div>
             </div>
             
-        
             <div class="info-section">
                 <div class="section-label">License Information</div>
                 <div class="section-value">
@@ -124,7 +121,6 @@
                 </div>
             </div>
             
-           
             <div class="info-section">
                 <div class="section-label">Account Information</div>
                 <div class="section-value">
@@ -145,7 +141,7 @@
                     <span>Deposit Balance:</span>
                     <span class="balance">RM{{ number_format($customer->depoBalance ?? 0, 2) }}</span>
                 </div>
-                
+            </div>
             
             <div class="actions">
                 <a href="{{ route('customer.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
@@ -153,7 +149,6 @@
             </div>
         </div>
     </div>
-    
 
 </body>
 </html>

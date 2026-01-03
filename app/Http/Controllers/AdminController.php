@@ -21,27 +21,35 @@ class AdminController extends Controller
         return view('admin.dashboard');
     }
 
-   public function customers(Request $request)
-    {
-        if (auth()->user()->userType !== 'admin') {
-            abort(403, 'Unauthorized. Admin access only.');
-        }
-        
-        $status = $request->get('status', 'active');
-        $isBlacklisted = ($status === 'blacklisted') ? 1 : 0;
-        
-        $customers = DB::table('customer')
-            ->join('users', 'customer.userID', '=', 'users.userID')
-            ->where('customer.isBlacklisted', $isBlacklisted)
-            ->where('users.userType', 'customer')
-            ->select('customer.*', 'users.name', 'users.email')
-            ->get();
-        
-        $totalCount = $customers->count();
-        
-        return view('admin.customers', compact('customers', 'totalCount', 'status'));
+public function customers(Request $request)
+{
+    if (auth()->user()->userType !== 'admin') {
+        abort(403, 'Unauthorized. Admin access only.');
     }
-
+    
+    $status = $request->get('status', 'active');
+    $isBlacklisted = ($status === 'blacklisted') ? 1 : 0;
+    
+    // Join with telephone table to get phone numbers
+    $customers = DB::table('customer')
+        ->join('users', 'customer.userID', '=', 'users.userID')
+        ->leftJoin('telephone', 'customer.userID', '=', 'telephone.userID')
+        ->where('customer.isBlacklisted', $isBlacklisted)
+        ->where('users.userType', 'customer')
+        ->select(
+            'customer.*', 
+            'users.name', 
+            'users.email',
+            'users.created_at as user_created_at',
+            'telephone.phoneNumber'
+        )
+        ->orderBy('users.created_at', 'desc')
+        ->get();
+    
+    $totalCount = $customers->count();
+    
+    return view('admin.customers', compact('customers', 'totalCount', 'status'));
+}
 public function updateCustomer(Request $request, $id)
 {
     if (auth()->user()->userType !== 'admin') {
@@ -86,64 +94,60 @@ public function staff()
     }
 
     public function storeStaff(Request $request)
-    {
-        if (auth()->user()->userType !== 'admin') {
-            abort(403, 'Unauthorized. Admin access only.');
-        }
-        
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'icNumber' => 'required|string|unique:users,icNumber',
-            'phoneNumber' => 'required|string',
-            'password' => 'required|string|min:8|confirmed',
-            'position' => 'required|string|max:100',
+{
+    if (auth()->user()->userType !== 'admin') {
+        abort(403, 'Unauthorized. Admin access only.');
+    }
+    
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|string|email|max:255|unique:users',
+        'icNumber' => 'required|string|unique:users,icNumber',
+        'phoneNumber' => 'required|string|unique:telephone,phoneNumber',
+        'password' => 'required|string|min:8|confirmed',
+        'position' => 'required|string|max:100',
+    ]);
+    
+    DB::beginTransaction();
+    
+    try {
+        // Create user WITHOUT phoneNumber in users table
+        $userID = DB::table('users')->insertGetId([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'icNumber' => $validated['icNumber'],
+            'userType' => 'staff',
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
         
-        DB::beginTransaction();
+        // Create phone record in telephone table
+        DB::table('telephone')->insert([
+            'phoneNumber' => $validated['phoneNumber'],
+            'userID' => $userID,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
         
-        try {
-            // Check if phone exists in telephone table
-            $phoneExists = DB::table('telephone')->where('phoneNumber', $validated['phoneNumber'])->exists();
-            
-            if (!$phoneExists) {
-                DB::table('telephone')->insert([
-                    'phoneNumber' => $validated['phoneNumber'],
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            }
-            
-            // Create user
-            $userID = DB::table('users')->insertGetId([
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'password' => Hash::make($validated['password']),
-                'icNumber' => $validated['icNumber'],
-                'phoneNumber' => $validated['phoneNumber'],
-                'userType' => 'staff',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-            
-            // Create staff record
-            DB::table('staff')->insert([
-                'userID' => $userID,
-                'position' => $validated['position'],
-                'commissionCount' => 0,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-            
-            DB::commit();
-            
-            return redirect()->route('admin.staff')->with('success', 'Staff member added successfully!');
-            
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withInput()->withErrors(['error' => 'Failed to create staff member. Please try again.']);
-        }
+        // Create staff record
+        DB::table('staff')->insert([
+            'userID' => $userID,
+            'position' => $validated['position'],
+            'commissionCount' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        
+        DB::commit();
+        
+        return redirect()->route('admin.staff')->with('success', 'Staff member added successfully!');
+        
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->withInput()->withErrors(['error' => 'Failed to create staff member. Please try again.']);
     }
+}
 
     public function updateStaff(Request $request, $id)
 {
@@ -162,35 +166,44 @@ public function staff()
     DB::beginTransaction();
     
     try {
-        // Update users table - only update phoneNumber if it's a column
-        $userUpdateData = [
+        // Update users table
+        DB::table('users')->where('userID', $id)->update([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'updated_at' => now(),
-        ];
+        ]);
         
-        // Check if users table has phoneNumber column
-        if (Schema::hasColumn('users', 'phoneNumber')) {
-            $userUpdateData['phoneNumber'] = $validated['phoneNumber'];
-        }
+        // Update telephone table
+        $existingPhone = DB::table('telephone')->where('userID', $id)->first();
         
-        DB::table('users')->where('userID', $id)->update($userUpdateData);
-        
-        // Also update telephone table if phone number changed
-        if ($validated['phoneNumber']) {
-            $existingPhone = DB::table('telephone')
-                ->where('phoneNumber', $validated['phoneNumber'])
-                ->exists();
-            
-            if (!$existingPhone) {
-                DB::table('telephone')->updateOrInsert(
-                    ['phoneNumber' => $validated['phoneNumber']],
-                    [
+        if ($existingPhone) {
+            // Update existing phone if number changed
+            if ($existingPhone->phoneNumber != $validated['phoneNumber']) {
+                // Check if new phone exists for another user
+                $phoneExists = DB::table('telephone')
+                    ->where('phoneNumber', $validated['phoneNumber'])
+                    ->where('userID', '!=', $id)
+                    ->exists();
+                
+                if ($phoneExists) {
+                    throw new \Exception('Phone number already exists for another user.');
+                }
+                
+                DB::table('telephone')
+                    ->where('userID', $id)
+                    ->update([
                         'phoneNumber' => $validated['phoneNumber'],
                         'updated_at' => now(),
-                    ]
-                );
+                    ]);
             }
+        } else {
+            // Insert new phone record
+            DB::table('telephone')->insert([
+                'phoneNumber' => $validated['phoneNumber'],
+                'userID' => $id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
         }
         
         // Update staff table
@@ -206,7 +219,7 @@ public function staff()
         
     } catch (\Exception $e) {
         DB::rollBack();
-        return back()->withInput()->withErrors(['error' => 'Failed to update staff member. Please try again.']);
+        return back()->withInput()->withErrors(['error' => $e->getMessage()]);
     }
 }
 

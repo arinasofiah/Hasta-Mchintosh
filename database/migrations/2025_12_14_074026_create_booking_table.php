@@ -9,30 +9,34 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up()
-    {
-        Schema::create('booking', function (Blueprint $table) {
-            $table->increments('bookingID'); // Custom primary key as per your model
-            $table->unsignedInteger('vehicleID'); // Foreign key to vehicles.vehicleID
-            $table->unsignedInteger('customerID'); // Foreign key to users.userID (assuming User model has userID as primary key)
-            $table->date('startDate');
-            $table->date('endDate');
-            $table->integer('bookingDuration')->nullable(); // In hours
-            $table->enum('bookingStatus', ['pending', 'confirmed', 'cancelled', 'completed'])->default('pending');
-            $table->decimal('totalPrice', 10, 2)->nullable();
-            $table->decimal('depositAmount', 10, 2)->nullable();
-            $table->string('rewardApplied', 50)->nullable();
-            $table->timestamp('reservation_expires_at')->nullable();
-            $table->timestamps();
+  public function up(): void
+  {
+    Schema::create('booking', function (Blueprint $table) {
+      $table->id('bookingID');
+      $table->unsignedBigInteger('vehicleID');
+      $table->unsignedBigInteger('customerID');
+      $table->string('bankNum')->nullable();
+      $table->string('penamaBank')->nullable();
+      $table->date('startDate');
+      $table->date('endDate');
+      $table->integer('bookingDuration')->nullable();
+      $table->enum('bookingStatus', ['pending', 'confirmed', 'approved', 'cancelled', 'completed'])->default('pending');
+      $table->decimal('totalPrice', 10, 2)->nullable();
+      $table->decimal('depositAmount', 10, 2)->nullable();
+      $table->boolean('rewardApplied')->default(false);
+      $table->timestamp('reservation_expires_at')->nullable();
+      $table->timestamps();
 
-            // Foreign keys
-            $table->foreign('vehicleID')->references('vehicleID')->on('vehicles')->onDelete('cascade');
-            $table->foreign('customerID')->references('userID')->on('users')->onDelete('cascade'); // Assumes users table has userID as primary key
-        });
-    }
+      $table->foreign('vehicleID')->references('vehicleID')->on('vehicles')->onDelete('cascade');
+      $table->foreign('customerID')->references('userID')->on('users')->onDelete('cascade');
+    });
+  }
 
-    public function down()
-    {
-        Schema::dropIfExists('booking');
-    }
+  /**
+   * Reverse the migrations.
+   */
+  public function down(): void
+  {
+    Schema::dropIfExists('booking');
+  }
 };

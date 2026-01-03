@@ -52,16 +52,33 @@ class User extends Authenticatable
         ];
     }
 
-    public function telephone()
-    {
-        return $this->belongsTo(Telephone::class, 'phoneNumber', 'phoneNumber');
-    }
+    public function customer()
+{
+    // Use fully qualified namespace
+    return $this->hasOne(\App\Models\Customer::class, 'userID', 'userID');
+}
 
-    // Accessor to get phone number
-    public function getPhoneAttribute()
-    {
-        return $this->telephone ? $this->telephone->phoneNumber : null;
-    }
+    public function staff()
+{
+    return $this->hasOne(\App\Models\Staff::class, 'userID', 'userID');
+}
+
+// Add this method to your User model:
+public function telephone()
+{
+    return $this->hasOne(Telephone::class, 'userID', 'userID');
+}
+
+// Add accessor for phone number:
+public function getPhoneAttribute()
+{
+    return $this->telephone ? $this->telephone->phoneNumber : null;
+}
+
+public function getPhoneNumberAttribute()
+{
+    return $this->phone;
+}
 
      public function isAdmin()
     {

@@ -10,7 +10,7 @@
 
 <div class="container">
     <div class="left">
-        <img src="{{ asset('img/hasta_logo.jpg') }}" width="120">
+        <!--<img src="{{ asset('img/hasta_logo.jpg') }}" width="120">-->
         <h1>For You,<br>From Us</h1>
         <p>Become our member to start booking now</p>
     </div>
