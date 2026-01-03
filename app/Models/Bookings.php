@@ -12,8 +12,6 @@ class Bookings extends Model
     protected $primaryKey = 'bookingID';
     protected $fillable = [
         'vehicleID',
-        'bankNum',
-        'penamaBank',
         'startDate',
         'endDate',
         'bookingDuration',

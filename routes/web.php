@@ -28,23 +28,19 @@ Route::get('/dashboard', function () {
 Route::post('/pickup', [PickUpController::class,'store'])->name('pickup.store');
 Route::get('/pickup',[PickUpController::class,'show']);
 
-/*nisa add this*/
 Route::get('/vehicles/{id}', [VehicleController::class, 'show'])->name('vehicles.select'); 
 Route::get('/', [VehicleController::class, 'index'])->name('welcome');
 Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
 Route::get('/admin/dashboard', [VehicleController::class, 'adminDashboard'])->name('admin.dashboard');
 Route::get('/admin/fleet', [VehicleController::class, 'adminVehicles'])->name('admin.fleet');
 Route::post('/admin/vehicles/store', [VehicleController::class, 'store'])->name('admin.vehicles.store');
-Route::get('/select-vehicle/{id}', [VehicleController::class, 'select'])->name('selectVehicle');
+Route::get('/vehicles/select/{id}', [VehicleController::class, 'select'])->name('selectVehicle');
+Route::get('/vehicles/available', [VehicleController::class, 'getAvailableVehicles'])->name('vehicles.available');
+
+
 Route::put('/admin/vehicles/update/{id}', [VehicleController::class, 'update'])->name('admin.vehicles.update');
 Route::delete('/admin/vehicles/delete/{id}', [VehicleController::class, 'destroy'])->name('admin.vehicles.destroy');
 Route::get('/admin/vehicles/create', [VehicleController::class, 'create'])->name('admin.vehicles.create');
-
-// Add this anywhere in your routes file (test it outside groups)
-Route::get('/admin/staff/create', [AdminController::class, 'createStaff'])
-    ->name('admin.staff.create')
-    ->middleware('auth');
-
 Route::get('/admin/staff/create', [AdminController::class, 'createStaff'])
     ->name('admin.staff.create')
     ->middleware('auth');
@@ -53,15 +49,22 @@ Route::prefix('admin')->group(function () {
     Route::get('/reporting', [ReportController::class, 'reportingIndex'])->name('admin.reporting');
 });
 
-Route::get('/booking/{vehicleID}', [BookingController::class, 'showForm'])->name('booking.form');
+Route::get('/booking/{vehicleID}', [BookingController::class, 'showForm'])
+    ->name('booking.form')
+    ->middleware('auth');
+
+Route::post('/booking/{vehicleID}', [BookingController::class, 'store'])
+    ->name('booking.store');
+
+Route::post('/booking/start/{vehicleID}', [BookingController::class, 'start'])
+    ->name('booking.start');
+
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::get('/booking/{vehicleID}', function ($vehicleID) {
-        return view('bookingform', compact('vehicleID'));
-    })->name('booking.form');
 });
 
 

@@ -120,11 +120,11 @@
                     <span title="AC">{{ $vehicle->ac ? ' AC' : ' No AC' }}</span>
                 </div>
 
-                @guest
+               
                     <a href="{{ route('selectVehicle', $vehicle->vehicleID) }}" class="btn">
                         View Details & Book
                     </a>
-                @endguest
+                
             </div>
         @empty
             <div style="grid-column: 1 / -1; text-align: center; padding: 60px;">

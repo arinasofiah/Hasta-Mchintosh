@@ -13,6 +13,11 @@ class PickUp extends Model
         'pickupDate',
         'pickupLocation',
         'pickupPhoto',
-        'agreementForm'
+        'agreementForm',
+        'pickupTime'
     ];
+
+    public function booking() {
+        return $this->belongsTo(Booking::class, 'bookingID');
+    }
 };

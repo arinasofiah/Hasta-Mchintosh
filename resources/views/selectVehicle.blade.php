@@ -430,26 +430,26 @@
 
 <!-- Booking Form -->
 <div class="booking-form">
-    <form action="{{ route('selectVehicle', $featuredVehicle->vehicleID) }}" method="GET">
+    <form action="{{ route('selectVehicle', $featuredVehicle->vehicleID) ?? 0 }}" method="GET" id="dateForm">
         <div class="date-time-row">
             <div class="input-wrapper">
                 <div class="input-label">Pickup Date</div>
-                <input type="date" name="pickup_date" value="{{ $pickupDate }}" onchange="this.form.submit()">
+                <input type="date" id="pickup_date" name="pickup_date" value="{{ $pickupDate }}">
                 <span class="input-icon"></span>
             </div>
             <div class="input-wrapper">
                 <div class="input-label">Pickup Time</div>
-                <input type="time" name="pickup_time" value="{{ $pickupTime }}" onchange="this.form.submit()">
+                <input type="time" id="pickup_time" name="pickup_time" value="{{ $pickupTime }}">
                 <span class="input-icon"></span>
             </div>
             <div class="input-wrapper">
                 <div class="input-label">Return Date</div>
-                <input type="date" name="return_date" value="{{ $returnDate }}" onchange="this.form.submit()">
+                <input type="date" id="return_date" name="return_date" value="{{ $returnDate }}">
                 <span class="input-icon"></span>
             </div>
             <div class="input-wrapper">
                 <div class="input-label">Return Time</div>
-                <input type="time" name="return_time" value="{{ $returnTime }}" onchange="this.form.submit()">
+                <input type="time" id="return_time" name="return_time" value="{{ $returnTime }}">
                 <span class="input-icon"></span>
             </div>
         </div>
@@ -483,14 +483,33 @@
             <button class="book-btn" onclick="handleBooking()">Book</button>
             
             <script>
-                function handleBooking(){
-                    @auth
-                        window.location.href = "{{ route('booking.form', ['vehicleID' => $featuredVehicle->vehicleID]) }}";
-                    @else
-                        window.location.href = "{{ route('login') }}";
-                    @endauth
+                function handleBooking() {
+                    const pickupDate  = document.getElementById('pickup_date').value;
+                    const pickupTime  = document.getElementById('pickup_time').value;
+                    const returnDate  = document.getElementById('return_date').value;
+                    const returnTime  = document.getElementById('return_time').value;
+
+                   if (!pickupDate || !pickupTime || !returnDate || !returnTime) {
+                alert('Please select pickup and return date/time first.');
+                return;
+            }
+
+            @auth          
+            const baseUrl = "{{ route('booking.form', ['vehicleID' => $featuredVehicle->vehicleID]) }}";
+            const params = new URLSearchParams({
+                pickup_date: pickupDate,
+                pickup_time: pickupTime,
+                return_date: returnDate,
+                return_time: returnTime
+            });
+            
+            window.location.href = `${baseUrl}?${params.toString()}`;
+        @else
+            window.location.href = "{{ route('login') }}";
+        @endauth
                 }
             </script>
+
 
         @else
             <span class="availability-badge">Not Available</span>
@@ -524,6 +543,129 @@
     @endforeach
 
 </div>
+
+<script>
+const pickupInput = document.getElementById('pickup_date');
+const pickupTimeInput = document.getElementById('pickup_time');
+const returnInput = document.getElementById('return_date');
+const returnTimeInput = document.getElementById('return_time');
+
+// Defaults
+if (!pickupInput.value) pickupInput.value = new Date().toISOString().split('T')[0];
+if (!pickupTimeInput.value) pickupTimeInput.value = '08:00';
+
+// Always sync return = pickup + 24 hours
+function syncReturnDateTime() {
+    const pickupDT = new Date(`${pickupInput.value}T${pickupTimeInput.value}`);
+    if (isNaN(pickupDT)) return;
+
+    pickupDT.setHours(pickupDT.getHours() + 24);
+
+    returnInput.value = pickupDT.toISOString().split('T')[0];
+    returnTimeInput.value = pickupDT.toTimeString().slice(0, 5);
+}
+
+// Initial sync
+syncReturnDateTime();
+
+// When pickup date OR time changes → auto update return
+[pickupInput, pickupTimeInput].forEach(el => {
+    el.addEventListener('change', () => {
+        syncReturnDateTime();
+        updateVehicles();
+    });
+});
+
+// When return manually changed → validate
+[returnInput, returnTimeInput].forEach(el => {
+    el.addEventListener('change', updateVehicles);
+});
+
+function updateVehicles() {
+    const pickupDT = new Date(`${pickupInput.value}T${pickupTimeInput.value}`);
+    const returnDT = new Date(`${returnInput.value}T${returnTimeInput.value}`);
+
+    if (returnDT <= pickupDT) {
+        alert('Return date/time must be after pickup date/time!');
+        return;
+    }
+
+    fetch(`/vehicles/available?pickup_date=${pickupInput.value}&pickup_time=${pickupTimeInput.value}&return_date=${returnInput.value}&return_time=${returnTimeInput.value}`)
+        .then(res => res.json())
+        .then(data => renderVehicles(data))
+        .catch(err => console.error(err));
+}
+
+function renderVehicles(vehicles) {
+    if(!vehicles || vehicles.length === 0) {
+        vehicleGrid.innerHTML = '<p>No vehicles available for the selected date/time.</p>';
+        featuredVehicleContainer.style.display = 'none';
+        return;
+    }
+
+    // Featured vehicle
+    const featured = vehicles[0];
+    featuredVehicleContainer.style.display = 'flex';
+    featuredVehicleContainer.querySelector('img').src = `/storage/${featured.image}`;
+    featuredVehicleContainer.querySelector('.vehicle-name').textContent = featured.model;
+    featuredVehicleContainer.querySelector('.vehicle-type').textContent = featured.vehicleType;
+    featuredVehicleContainer.querySelector('.price-amount').textContent = 'RM ' + featured.pricePerDay;
+    featuredVehicleContainer.querySelector('.vehicle-specs').innerHTML = `
+        <span>Seats: ${featured.seat}</span>
+        <span>AC: ${featured.ac}</span>
+        <span>Transmission: ${featured.transmission}</span>
+        <span>Fuel: ${featured.fuelType}</span>
+    `;
+
+    // Update Book button dynamically
+    const bookBtn = featuredVehicleContainer.querySelector('.book-btn');
+    if(bookBtn) {
+        if(featured.status === 'available') {
+            bookBtn.style.display = 'inline-block';
+            const availabilityBadge = featuredVehicleContainer.querySelector('.availability-badge');
+            if(availabilityBadge) availabilityBadge.textContent = 'Available!';
+
+            bookBtn.onclick = function() {
+                @auth
+                    window.location.href = `/booking/form/${featured.vehicleID}?pickup_date=${pickupInput.value}&pickup_time=${pickupTimeInput.value}&return_date=${returnInput.value}&return_time=${returnTimeInput.value}`;
+                @else
+                    window.location.href = "{{ route('login') }}";
+                @endauth
+            };
+        } else {
+            bookBtn.style.display = 'none';
+            const availabilityBadge = featuredVehicleContainer.querySelector('.availability-badge');
+            if(availabilityBadge) availabilityBadge.textContent = 'Not Available';
+        }
+    }
+
+    // Other vehicles
+    vehicleGrid.innerHTML = '';
+    vehicles.slice(1).forEach(v => {
+        vehicleGrid.innerHTML += `
+        <div class="vehicle-card">
+            <div class="card-image">
+                <img src="/storage/${v.image}" alt="${v.model}">
+            </div>
+            <div class="card-header">
+                <h3 class="card-name">${v.model}</h3>
+                <p class="card-type">${v.vehicleType}</p>
+                <div class="card-price">RM${v.pricePerDay}</div>
+            </div>
+            <div class="card-specs">
+                <span>Seats: ${v.seat}</span>
+                <span>AC: ${v.ac}</span>
+                <span>Transmission: ${v.transmission}</span>
+                <span>Fuel: ${v.fuelType}</span>
+            </div>
+        </div>`;
+    });
+}
+
+// Initial load
+updateVehicles();
+</script>
+
 
 </body>
 </html>
