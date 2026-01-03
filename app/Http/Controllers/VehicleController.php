@@ -3,52 +3,91 @@
 namespace App\Http\Controllers;
 
 use App\Models\Vehicles;
+use App\Models\Bookings;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class VehicleController extends Controller
 {
     public function index(Request $request)
-{
-    $query = Vehicles::where('status', 'available');
+    {
+        $query = Vehicles::where('status', 'available');
 
-    if ($request->filled('search')) {
-        $search = trim($request->search);
-        $query->where(function($q) use ($search) {
-            $q->where('model', 'like', '%' . $search . '%')
-              ->orWhere('plateNumber', 'like', '%' . $search . '%');
-        });
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $query->where(function($q) use ($search) {
+                $q->where('model', 'like', '%' . $search . '%')
+                ->orWhere('plateNumber', 'like', '%' . $search . '%');
+            });
+        }
+
+        if ($request->filled('category') && $request->category !== 'All') {
+            $query->where('vehicleType', trim($request->category));
+        }
+
+        $vehicles = $query->get();
+
+        return view('welcome', compact('vehicles'));
     }
 
-    if ($request->filled('category') && $request->category !== 'All') {
-        $query->where('vehicleType', trim($request->category));
+
+    public function select($id, Request $request)
+    {
+        // Get dates/times from the request (with defaults)
+        $pickupDate = $request->pickupDate ?? date('Y-m-d');
+        $pickupTime = $request->pickupTime ?? '08:00';
+        $returnDate = $request->returnDate ?? date('Y-m-d', strtotime('+1 day'));
+        $returnTime = $request->returnTime ?? '08:00';
+
+        // Combine into Carbon DateTime objects for easy comparison
+        $pickupDateTime = Carbon::createFromFormat('Y-m-d H:i', $pickupDate . ' ' . $pickupTime);
+        $returnDateTime = Carbon::createFromFormat('Y-m-d H:i', $returnDate . ' ' . $returnTime);
+
+        // Validate that return is after pickup (optional but recommended)
+        if ($pickupDateTime >= $returnDateTime) {
+            return back()->withErrors(['error' => 'Return date/time must be after pickup date/time.']);
+        }
+
+        // Query available vehicles: status = 'available' AND no overlapping confirmed bookings
+        $availableVehicles = Vehicles::where('status', 'available')
+            ->whereDoesntHave('booking', function ($query) use ($pickupDateTime, $returnDateTime) {
+                $query->where('bookingStatus', 'confirmed') // Only consider confirmed bookings
+                    ->where(function ($q) use ($pickupDateTime, $returnDateTime) {
+                        // Overlap condition: booking starts before return AND ends after pickup
+                        $q->where('startDate', '<', $returnDateTime->toDateString())
+                          ->where('endDate', '>', $pickupDateTime->toDateString());
+                    });
+            })
+            ->get();
+
+        // Select the featured vehicle (the one with the given $id, if available; otherwise, the first available)
+        $featuredVehicle = $availableVehicles->find($id) ?? $availableVehicles->first();
+
+        // If no featured vehicle is available, handle gracefully (e.g., show a message)
+        if (!$featuredVehicle) {
+            return view('selectVehicle', [
+                'featuredVehicle' => null,
+                'otherVehicles' => collect(),
+                'pickupDate' => $pickupDate,
+                'pickupTime' => $pickupTime,
+                'returnDate' => $returnDate,
+                'returnTime' => $returnTime,
+                'error' => 'No vehicles available for the selected dates.'
+            ]);
+        }
+
+        // Other available vehicles (exclude the featured one)
+        $otherVehicles = $availableVehicles->where('vehicleID', '!=', $featuredVehicle->vehicleID);
+
+        return view('selectVehicle', compact(
+            'featuredVehicle',
+            'otherVehicles',
+            'pickupDate',
+            'pickupTime',
+            'returnDate',
+            'returnTime'
+        ));
     }
-
-    $vehicles = $query->get();
-
-    return view('welcome', compact('vehicles'));
-}
-
-
-  public function select($id, Request $request)
-{
-    $featuredVehicle = Vehicles::findOrFail($id);
-    $otherVehicles = Vehicles::where('vehicleID', '!=', $id)->get();
-
-    // Set default dates and times
-    $pickupDate = $request->pickup_date ?? date('Y-m-d');
-    $pickupTime = $request->pickup_time ?? '08:00';
-    $returnDate = $request->return_date ?? date('Y-m-d', strtotime('+1 day'));
-    $returnTime = $request->return_time ?? '08:00';
-
-    return view('selectVehicle', compact(
-        'featuredVehicle',
-        'otherVehicles',
-        'pickupDate',
-        'pickupTime',
-        'returnDate',
-        'returnTime'
-    ));
-}
 
 
 public function manage(Request $request)
