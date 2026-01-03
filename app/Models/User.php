@@ -58,17 +58,22 @@ class User extends Authenticatable
     return $this->hasOne(\App\Models\Customer::class, 'userID', 'userID');
 }
 
+// Add this method to your User model:
 public function telephone()
 {
-    // Use fully qualified namespace here too
-    return $this->belongsTo(\App\Models\Telephone::class, 'phoneNumber', 'phoneNumber');
+    return $this->hasOne(Telephone::class, 'userID', 'userID');
 }
 
-    // Accessor to get phone number
-    public function getPhoneAttribute()
-    {
-        return $this->telephone ? $this->telephone->phoneNumber : null;
-    }
+// Add accessor for phone number:
+public function getPhoneAttribute()
+{
+    return $this->telephone ? $this->telephone->phoneNumber : null;
+}
+
+public function getPhoneNumberAttribute()
+{
+    return $this->phone;
+}
 
      public function isAdmin()
     {

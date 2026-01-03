@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use App\Models\Telephone;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -34,29 +36,22 @@ class CustomerController extends Controller
     /**
      * Display customer profile.
      */
-   public function profile()
+  public function profile()
 {
-    // Check if user is customer
     if (auth()->user()->userType !== 'customer') {
         abort(403, 'Unauthorized. Customer access only.');
     }
     
     $user = Auth::user();
+    $user->load('telephone'); // Load telephone relationship
     
-    // Get customer details using DB query (not Eloquent)
-    $customer = \DB::table('customer')
+    $customer = DB::table('customer')
         ->where('userID', $user->userID)
         ->first();
-    
-    // Phone number is already in $user->phoneNumber
-    // No need to load telephone relationship
     
     return view('customer.profile', compact('user', 'customer'));
 }
 
-/**
- * Show the form for editing the profile.
- */
 public function edit()
 {
     if (auth()->user()->userType !== 'customer') {
@@ -64,10 +59,18 @@ public function edit()
     }
     
     $user = Auth::user();
-    $customer = DB::table('customer')->where('userID', $user->userID)->first();
+    $user->load('telephone');
     
-    return view('customer.edit-profile', compact('user', 'customer'));
+    $customer = DB::table('customer')
+        ->where('userID', $user->userID)
+        ->first();
+    
+    return view('customer.profile-edit', compact('user', 'customer'));
 }
+
+/**
+ * Show the form for editing the profile.
+ */
 
 /**
  * Update the user's profile.
@@ -76,32 +79,35 @@ public function update(Request $request)
 {
     $user = Auth::user();
     
-    // Basic validation
     $rules = [
         'name' => 'required|string|max:255',
         'email' => 'required|string|email|max:255|unique:users,email,' . $user->userID . ',userID',
         'password' => 'nullable|min:8|confirmed',
+        'phone' => [
+            'required',
+            'string',
+            'max:15',
+            function ($attribute, $value, $fail) use ($user) {
+                // Check if phone exists for another user
+                $exists = DB::table('telephone')
+                    ->where('phoneNumber', $value)
+                    ->where('userID', '!=', $user->userID)
+                    ->exists();
+                    
+                if ($exists) {
+                    $fail('This phone number is already registered by another user.');
+                }
+            }
+        ],
     ];
     
     $request->validate($rules);
     
-    // Custom phone validation
-    if ($request->phone != $user->phoneNumber) {
-        $phoneExists = DB::table('telephone')
-            ->where('phoneNumber', $request->phone)
-            ->exists();
-            
-        if ($phoneExists) {
-            return back()->withErrors(['phone' => 'This phone number is already registered.'])->withInput();
-        }
-    }
-    
-    // Validate customer fields
+    // Customer validation
     $customerExists = DB::table('customer')
         ->where('userID', $user->userID)
         ->exists();
     
-    $customerRules = [];
     if ($customerExists) {
         $customerRules = [
             'matricNumber' => 'nullable|string|max:20|unique:customer,matricNumber,' . $user->userID . ',userID',
@@ -114,27 +120,27 @@ public function update(Request $request)
     }
     
     DB::transaction(function () use ($request, $user, $customerExists) {
-        // Handle phone number update
-        if ($request->phone != $user->phoneNumber) {
-            // Update existing record instead of delete/insert
-            DB::table('telephone')
-                ->where('phoneNumber', $user->phoneNumber)
-                ->update([
-                    'phoneNumber' => $request->phone,
-                    'userID' => $user->userID,
-                    'updated_at' => now(),
-                ]);
+        // Update phone
+        $telephone = Telephone::where('userID', $user->userID)->first();
+        
+        if ($telephone) {
+            if ($telephone->phoneNumber != $request->phone) {
+                $telephone->update(['phoneNumber' => $request->phone]);
+            }
+        } else {
+            Telephone::create([
+                'phoneNumber' => $request->phone,
+                'userID' => $user->userID,
+            ]);
         }
         
         // Update user
         $updateData = [
             'name' => $request->name,
             'email' => $request->email,
-            'phoneNumber' => $request->phone,
             'updated_at' => now(),
         ];
         
-        // Update password if provided
         if ($request->filled('password')) {
             $updateData['password'] = Hash::make($request->password);
         }
@@ -143,15 +149,15 @@ public function update(Request $request)
             ->where('userID', $user->userID)
             ->update($updateData);
         
-        // Update customer if exists
+        // Update customer
         if ($customerExists) {
             DB::table('customer')
                 ->where('userID', $user->userID)
                 ->update([
-                    'matricNumber' => $request->matricNumber,
-                    'college' => $request->college,
-                    'faculty' => $request->faculty,
-                    'licenseNumber' => $request->licenseNumber,
+                    'matricNumber' => $request->matricNumber ?? null,
+                    'college' => $request->college ?? null,
+                    'faculty' => $request->faculty ?? null,
+                    'licenseNumber' => $request->licenseNumber ?? null,
                     'updated_at' => now(),
                 ]);
         }

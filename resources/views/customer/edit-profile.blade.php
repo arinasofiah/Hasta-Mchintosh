@@ -172,14 +172,14 @@
                 
                 {{-- Phone Number Section --}}
                 <div class="form-group">
-                    <label class="form-label">Phone Number</label>
-                    <input type="tel" name="phone" class="form-control" 
-                           value="{{ old('phone', $user->phoneNumber) }}" 
-                           pattern="[0-9]{10,11}" 
-                           title="Enter 10-11 digit phone number (e.g., 0123456789)" 
-                           required>
-                    <small class="form-hint">Format: 10-11 digits (e.g., 0123456789)</small>
-                </div>
+    <label class="form-label">Phone Number</label>
+    <input type="tel" name="phone" class="form-control" 
+           value="{{ old('phone', $user->phone) }}" 
+           pattern="[0-9]{10,11}" 
+           title="Enter 10-11 digit phone number" 
+           required>
+    <small class="form-hint">Format: 10-11 digits (e.g., 0123456789)</small>
+</div>
                 
                 {{-- Customer Information --}}
                 @if($customer)

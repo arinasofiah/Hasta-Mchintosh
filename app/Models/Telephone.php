@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Telephone extends Model
 {
     use HasFactory;
+    
+    protected $table = 'telephone';
 
     protected $primaryKey = 'phoneNumber';
     public $incrementing = false;
@@ -15,6 +17,7 @@ class Telephone extends Model
 
     protected $fillable = [
         'phoneNumber',
+        'userID',
     ];
 
     // Define relationship to users
