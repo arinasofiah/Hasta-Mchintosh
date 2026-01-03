@@ -26,7 +26,5 @@ class PickUpController extends Controller
         $pickup->pickupLocation = $request->pickupLocation;
         $pickup->pickupDate = $request->pickupDate;
         $pickup->save();
-
-        return redirect()->back()->with('success', 'Data saved successfully!');
     }
 }

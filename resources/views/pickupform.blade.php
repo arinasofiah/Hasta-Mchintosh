@@ -20,8 +20,7 @@
 
 <body>
 @include('profile.partials.header')
-<div id="body">
-    
+<div id="body">   
 <div class="container">
     <div class="pickup-layout">
         <div class="vehicle-card">
@@ -42,6 +41,9 @@
             <p id="all_pr">Total MYR 530</p>
 </div>
          <div class="pickup_form">
+            <!--<div class="no-pay">
+                <p>Before confirming Pick Up details, Please pay.</p>
+            </div>-->
             <p id="form_name">Pick Up Details</p>
             <p class="main_txt">Upload Photos</p>
             <p class="sub_txt">Upload photos of the car before pick up</p>
@@ -51,7 +53,6 @@
                 <p>or</p>
                 <p><input type="file" id="file-input" multiple accept="image/*" /></p>
             </div>
-
             <p class="main_txt">Pick Up Information</p>
             <p class="sub_txt">Fill in pick up details</p>
             
