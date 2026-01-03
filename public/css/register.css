@@ -23,7 +23,7 @@ body {
 }
 
 .left h1 {
-  font-size: 60px;
+  font-size: 50px;
   margin-bottom: 20px;
 }
 
@@ -47,30 +47,33 @@ body {
 }
 
 .card {
-  width: 420px;
+  width: 350px;        /* Reduced from 420px */
   background: #fff;
-  padding: 40px;
-  border-radius: 25px;
+  padding: 15px 25px;  /* Reduced vertical padding */
+  border-radius: 20px;
 }
 
 .card h2 {
   text-align: center;
   margin-bottom: 20px;
+  font-size: 14px; 
 }
 
 label {
-  font-size: 14px;
-  margin-top: 12px;
+  font-size: 11px;     /* Smaller text */
+  margin-top: 8px;     /* Reduced from 12px */
   display: block;
 }
 
 input {
   width: 100%;
-  padding: 10px;
-  margin-top: 6px;
+ padding: 6px 10px; /* 6px top/bottom, 10px left/right */
+  margin-top: 4px;     /* Reduced from 6px */
   border-radius: 8px;
   border: 1px solid #ccc;
+  font-size: 11px;
 }
+
 
 input[readonly] {
   background: #f3f3f3;
@@ -79,11 +82,22 @@ input[readonly] {
 button {
   margin-top: 25px;
   width: 100%;
-  padding: 12px;
+  padding: 10px;
   background: #cf3c36;
   color: white;
   border: none;
   border-radius: 10px;
-  font-size: 16px;
+  font-size: 12px;
   cursor: pointer;
+}
+
+#statusMsg {
+  font-size: 11px; /* Adjust this value as needed */
+  color: #666;    /* Optional: makes it a subtle grey */
+  display: block; /* Ensures it sits on its own line */
+  margin-bottom: 10px;
+}
+
+input::placeholder {
+  font-size: 11px;
 }
