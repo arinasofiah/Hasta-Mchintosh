@@ -88,9 +88,8 @@
 <div class="sidebar">
     
     <nav class="d-flex flex-column">
-        <a href="#" class="nav-item">Handle Booking</a>
-        <a href="#" class="nav-item">Commissions</a>
-        <a href="#" class="nav-item">Settings</a>
+        <a href="{{ route('staff.dashboard') }}" class="nav-item active">Handle Booking</a>
+        <a href="{{ route('staff.commission') }}" class="nav-item">Commissions</a>
     </nav>
 </div>
 
@@ -110,9 +109,9 @@
             <div class="col-md-6">
                 <a href="{{ route('staff.payment.verify') }}" class="big-action-card">
                     <h3 class="card-text">Verify<br>Payment</h3>
-                    <!-- @if(isset($pendingPayments) && $pendingPayments > 0)
+                    @if(isset($pendingPayments) && $pendingPayments > 0)
                         <div class="notification-badge">{{ $pendingPayments }}</div>
-                    @endif -->
+                    @endif
                 </a>
             </div>
 

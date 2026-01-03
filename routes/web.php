@@ -11,6 +11,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\ReturnController;
+use App\Http\Controllers\PromotionController;
 
 Route::view('/signup', 'signup');
 
@@ -56,8 +57,13 @@ Route::get('/admin/staff/create', [AdminController::class, 'createStaff'])
     ->name('admin.staff.create')
     ->middleware('auth');
 
-Route::prefix('admin')->group(function () {
+Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/reporting', [ReportController::class, 'reportingIndex'])->name('admin.reporting');
+
+    Route::get('/promotions', [PromotionController::class, 'index'])->name('admin.promotions');
+    Route::post('/promotions/store', [PromotionController::class, 'store'])->name('admin.promotions.store');
+    Route::delete('/promotions/{id}', [PromotionController::class, 'destroy'])->name('admin.promotions.destroy');
+
 });
 
 Route::get('/booking/{vehicleID}', [BookingController::class, 'showForm'])
@@ -86,6 +92,9 @@ Route::middleware(['auth'])->prefix('staff')->name('staff.')->group(function () 
     Route::get('/vehicle/return', [StaffController::class, 'verifyReturn'])->name('vehicle.return');
     Route::get('/booking/history', [StaffController::class, 'history'])->name('booking.history');
     Route::get('/vehicle/status', [StaffController::class, 'updateStatus'])->name('vehicle.status');
+    Route::get('/commission', [StaffController::class, 'commission'])->name('commission');
+    Route::put('/commission/update', [StaffController::class, 'updateBank'])->name('commission.update');
+    Route::post('/commission/redeem', [StaffController::class, 'redeem'])->name('commission.redeem');
 });
 
 require __DIR__.'/auth.php';

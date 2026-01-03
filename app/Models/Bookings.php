@@ -32,4 +32,9 @@ class Bookings extends Model
     {
         return $this->belongsTo(\App\Models\Vehicles::class, 'vehicleID', 'vehicleID');
     }
+
+    public function payment()
+    {
+        return $this->hasOne(\App\Models\Payment::class, 'bookingID', 'bookingID');
+    }
 }

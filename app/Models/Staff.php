@@ -17,6 +17,8 @@ class Staff extends Model
         'userID',
         'position',
         'commissionCount',
+        'bank_name',
+        'bank_account_number',
     ];
 
 

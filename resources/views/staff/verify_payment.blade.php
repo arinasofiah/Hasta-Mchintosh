@@ -46,11 +46,11 @@
                     <td>{{ $booking->bookingID }}</td>
                     <td>RM {{ number_format($booking->totalPrice, 2) }}</td>
                     <td class="text-center">
-                        <!-- @if($booking->payment && $booking->payment->receiptImage)
+                        @if($booking->payment && $booking->payment->receiptImage)
                             <a href="#" class="view-link">View</a>
                         @else
                             <span class="text-muted">No Proof</span>
-                        @endif -->
+                        @endif
                     </td>
                     <td class="text-center">
                         <span class="status-badge bg-yellow">Pending</span>

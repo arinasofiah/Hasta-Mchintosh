@@ -14,13 +14,13 @@ class StaffController extends Controller
             abort(403, 'Unauthorized. Staff access only.');
         }
         
-        // $pendingBookings = Bookings::where('bookingStatus', 'pending')->count(); 
+        $pendingBookings = Bookings::where('bookingStatus', 'pending')->count(); 
         
-        // $pendingPayments = Bookings::whereHas('payment', function($q) {
-        //     $q->where('paymentStatus', 'pending');
-        // })->count();
+        $pendingPayments = Bookings::whereHas('payment', function($q) {
+            $q->where('paymentStatus', 'pending');
+        })->count();
 
-        // $pendingReturns = Vehicles::where('status', 'rented')->count();
+        $pendingReturns = Vehicles::where('status', 'rented')->count();
 
         return view('staff.dashboard');
     }
@@ -35,17 +35,17 @@ class StaffController extends Controller
         return view('staff.booking_confirmation', compact('bookings'));
     }
 
-    // public function verifyPayment()
-    // {
-    //     $bookings = Bookings::whereHas('payment', function($q) {
-    //                             $q->where('paymentStatus', 'pending');
-    //                        })
-    //                        ->with(['customer', 'payment'])
-    //                        ->orderBy('created_at', 'desc')
-    //                        ->paginate(10);
+    public function verifyPayment()
+    {
+        $bookings = Bookings::whereHas('payment', function($q) {
+                                $q->where('paymentStatus', 'pending');
+                           })
+                           ->with(['customer', 'payment'])
+                           ->orderBy('created_at', 'desc')
+                           ->paginate(10);
 
-    //     return view('staff.verify_payment', compact('bookings'));
-    // }
+        return view('staff.verify_payment', compact('bookings'));
+    }
 
     public function viewPickup()
     {
@@ -80,5 +80,39 @@ class StaffController extends Controller
         $vehicles = Vehicles::orderBy('vehicleID', 'asc')->paginate(10);
 
         return view('staff.vehicle_status', compact('vehicles'));
+    }
+
+    public function commission()
+    {
+        $user = auth()->user(); 
+        $staff = $user->staff; 
+
+        return view('staff.commission', compact('user', 'staff'));
+    }
+
+    public function updateBank(Request $request)
+    {
+        $request->validate([
+            'bank_name' => 'required|string',
+            'bank_account_number' => 'required|string',
+        ]);
+
+        auth()->user()->staff->update([
+            'bank_name' => $request->bank_name,
+            'bank_account_number' => $request->bank_account_number,
+        ]);
+
+        return back()->with('success', 'Bank details updated!');
+    }
+
+    public function redeem()
+    {
+        $staff = auth()->user()->staff;
+
+        if ($staff->commissionCount <= 0) {
+            return back()->with('error', 'No commission to redeem!');
+        }
+
+        return back()->with('success', 'Redemption request sent to Admin!');
     }
 }
