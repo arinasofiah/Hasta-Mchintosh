@@ -8,6 +8,7 @@ use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\PickUpController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ReportController;
 
 Route::view('/signup', 'signup');
 
@@ -47,6 +48,10 @@ Route::get('/admin/staff/create', [AdminController::class, 'createStaff'])
 Route::get('/admin/staff/create', [AdminController::class, 'createStaff'])
     ->name('admin.staff.create')
     ->middleware('auth');
+
+Route::prefix('admin')->group(function () {
+    Route::get('/reporting', [ReportController::class, 'reportingIndex'])->name('admin.reporting');
+});
 
 Route::get('/booking/{vehicleID}', [BookingController::class, 'showForm'])->name('booking.form');
 
