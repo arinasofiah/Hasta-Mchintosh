@@ -94,7 +94,7 @@
     <div class="sidebar">
         <h5 class="mb-4">Menu</h5>
         <a href="{{ route('admin.dashboard') }}" class="nav-item">Dashboard</a>
-        <a href="#" class="nav-item">Reporting</a>
+        <a href="{{ route('admin.reporting') }}" class="nav-item">Reporting</a>
         <a href="{{ route('admin.fleet') }}" class="nav-item">Fleet</a> 
         <a href="{{ route('admin.customers') }}" class="nav-item">Customer</a>
         <a href="{{ route('admin.staff') }}" class="nav-item active">Staff</a>

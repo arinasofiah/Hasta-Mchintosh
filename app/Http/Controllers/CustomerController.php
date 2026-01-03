@@ -179,11 +179,11 @@ public function update(Request $request)
         $userId = Auth::user()->userID;
         
         // Get customer bookings (assuming you have a bookings table)
-        $bookings = DB::table('bookings')
+        $bookings = DB::table('booking')
             ->where('customerID', $userId)
-            ->join('vehicles', 'bookings.vehicleID', '=', 'vehicles.vehicleID')
-            ->select('bookings.*', 'vehicles.model', 'vehicles.vehicleType', 'vehicles.plateNumber')
-            ->orderBy('bookings.created_at', 'desc')
+            ->join('vehicles', 'booking.vehicleID', '=', 'vehicles.vehicleID')
+            ->select('booking.*', 'vehicles.model', 'vehicles.vehicleType', 'vehicles.plateNumber')
+            ->orderBy('booking.created_at', 'desc')
             ->get();
         
         return view('customer.bookings', compact('bookings'));
