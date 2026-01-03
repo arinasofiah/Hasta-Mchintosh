@@ -90,6 +90,28 @@
 
 </div>
 
-
+<div class="modal fade" id="emergencyModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center p-4" style="border-radius: 20px;">
+      <div class="modal-body">
+        <h3 class="fw-bold mb-4">Important</h3>
+        <p class="mb-4">In case of an emergency, such as an accident or mechanical problems, please contact our hotline:</p>
+        <h2 class="fw-bold mb-5">+60 12-326 1234</h2>
+        
+        <button type="button" class="btn btn-danger w-100 py-2" id="confirmSave" style="border-radius: 10px; background-color: #CB3737;">
+          Understood
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    @if(session('showModal'))
+        var myModal = new bootstrap.Modal(document.getElementById('emergencyModal'));
+        myModal.show();
+    @endif
+});
+</script>
 </body>
 </html>
