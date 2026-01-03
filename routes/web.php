@@ -10,6 +10,7 @@ use App\Http\Controllers\PickUpController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StaffController;
+use App\Http\Controllers\ReturnController;
 
 Route::view('/signup', 'signup');
 
@@ -28,6 +29,9 @@ Route::get('/dashboard', function () {
 
 Route::post('/pickup', [PickUpController::class,'store'])->name('pickup.store');
 Route::get('/pickup',[PickUpController::class,'show']);
+
+Route::get('/return',[ReturnController::class,'show']);
+Route::post('/return', [ReturnController::class,'store'])->name('return.store');
 
 /*nisa add this*/
 Route::get('/vehicles/{id}', [VehicleController::class, 'show'])->name('vehicles.select'); 
