@@ -23,9 +23,15 @@ class Vehicles extends Model
         'status',
         'pricePerHour',
         'pricePerDay',
-        'image'
+        'reservation_expires_at'
     ];
 
+    protected $dates = [
+        'reservation_expires_at',
+        'created_at',
+        'updated_at'
+    ];
+    
     public function booking()
     {
         return $this->hasMany(\App\Models\Bookings::class, 'vehicleID', 'vehicleID');

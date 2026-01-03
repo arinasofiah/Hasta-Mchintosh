@@ -4,177 +4,295 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>HASTA – Booking Details</title>
-
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Inter',sans-serif;background:#fafafa;color:#222}
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            padding-bottom: 120px;
+        }
 
-    /* HEADER 
-    .header{
-        background:#d94242;
-        padding:15px 50px;
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-    }
-    .logo{
-        border:3px solid #fff;
-        padding:6px 14px;
-        color:#fff;
-        font-size:22px;
-        font-weight:800;
-        letter-spacing:2px;
-    }
-    .header-right{display:flex;align-items:center;gap:20px}
-    .nav a{color:#fff;text-decoration:none;font-weight:500}
-    .user-badge{
-        display:flex;align-items:center;gap:10px;color:#fff;font-weight:600
-    }
-    .user-icon{
-        width:38px;height:38px;background:#fff;border-radius:50%;
-        display:flex;align-items:center;justify-content:center;color:#d94242
-    }*/
+        /* HEADER */
+        #header {
+            background-color: #d94242;
+            padding: 15px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-    /* STEP BAR */
-    .steps {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-bottom: 50px;
-    }
+        #logo {
+            height: 45px;
+        }
 
-    .step {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 15px 40px;
-        border: 2px solid #ddd;
-        border-radius: 50px;
-        background-color: white;
-        color: #999;
-        font-weight: 600;
-    }
+        #menu {
+            display: flex;
+            gap: 10px;
+        }
 
-    .step.active {
-        border-color: #d94242;
-        color: #d94242;
-    }
+        .head_button {
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
 
-    .step-icon {
-        width: 24px;
-        height: 24px;
-    }
+        .head_button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
 
-    .step-connector {
-        width: 100px;
-        height: 2px;
-        background-color: #ddd;
-    }
+        #profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
 
+        #profile-container {
+            width: 45px;
+            height: 45px;
+            background: white;
+            border-radius: 50%;
+            overflow: hidden;
+            cursor: pointer;
+        }
 
-    /* PAGE LAYOUT */
-    .container{
-        max-width:1150px;
-        margin:10px auto 140px;
-        display:grid;
-        grid-template-columns:2fr 1fr;
-        gap:25px;
-    }
+        #pfp {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
 
-    /* LEFT FORM */
-    .card{
-        background:#fff;
-        border-radius:12px;
-        padding:25px;
-        border:1px solid #eee;
-    }
+        #username {
+            color: white;
+            font-weight: 600;
+        }
 
-    .section-title{
-        font-weight:700;
-        margin-bottom:12px;
-    }
+        /* PROGRESS STEPS */
+        .progress-container {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
 
-    .row2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-    .row3{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+        .steps {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 50px;
+        }
 
-    .field-label{font-size:12px;font-weight:600;color:#666;margin-bottom:4px}
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 40px;
+            border: 2px solid #ddd;
+            border-radius: 50px;
+            background-color: white;
+            color: #999;
+            font-weight: 600;
+        }
 
-    .input{
-        width:100%;
-        padding:11px 12px;
-        border:1px solid #ddd;
-        border-radius:6px;
-    }
+        .step.filled {
+            border-color: #d94242;
+            background-color: #d94242;
+            color: white;
+        }
 
-    /* DURATION BOX */
-    .duration-box input{
-        background:#f7f7f7;
-    }
+        .step.active {
+            border-color: #d94242;
+            color: #d94242;
+        }
 
-    /* RIGHT SUMMARY */
-    .summary-box{
-        background:#fff;border-radius:12px;
-        border:1px solid #eee;padding:22px
-    }
-    .summary-title{color:#d94242;font-weight:700;margin-bottom:10px}
+        .step-icon {
+            width: 24px;
+            height: 24px;
+        }
 
-    .timeline{
-        display:flex;flex-direction:column;gap:10px;margin-bottom:14px
-    }
-    .time-item{display:flex;gap:10px;align-items:center}
+        .step-connector {
+            width: 100px;
+            height: 2px;
+            background-color: #ddd;
+        }
 
-    .charges{
-        border-top:1px solid #eee;
-        margin-top:15px;padding-top:12px
-    }
-    .charge-row{
-        display:flex;justify-content:space-between;
-        margin-bottom:6px;font-size:14px
-    }
-    .grand{
-        margin-top:10px;
-        padding-top:8px;
-        border-top:1px solid #ddd;
-        font-weight:800
-    }
+        /* CONTAINER */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
 
-    /* BOTTOM BAR */
-    .bottom-bar{
-        position:fixed;
-        bottom:0;left:0;right:0;
-        background:#fff;
-        border-top:1px solid #eee;
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        padding:12px 60px;
-    }
+        /* CARD */
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            border: 2px solid #eee;
+        }
 
-    .selected-car{
-        display:flex;align-items:center;gap:16px
-    }
-    .car-badge{
-        background:#ffe5e5;
-        color:#d94242;
-        font-size:11px;
-        padding:4px 10px;
-        border-radius:20px;
-    }
-    .next-btn{
-        background:#d94242;
-        color:#fff;
-        border:none;
-        padding:12px 26px;
-        border-radius:8px;
-        font-size:16px;
-        font-weight:700;
-        cursor:pointer;
-    }
-    .next-btn:hover{background:#b83535}
+        .section-title {
+            font-weight: 700;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
 
+        .row2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .field-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 7px;
+        }
+
+        .input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: #d94242;
+        }
+
+        .duration-box .input {
+            background: #f7f7f7;
+            font-weight: 600;
+            cursor: not-allowed;
+        }
+
+        textarea.input {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* SUMMARY */
+        .summary-box {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            border: 2px solid #eee;
+        }
+
+        .summary-title {
+            color: #d94242;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .timeline {
+            margin-bottom: 20px;
+        }
+
+        .time-item {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .charges {
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+
+        .charge-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .grand {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #ddd;
+            font-weight: 800;
+        }
+
+        /* BOTTOM BAR */
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 60px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+
+        .selected-car {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .car-badge {
+            background: #ffe5e5;
+            color: #d94242;
+            font-size: 11px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .next-btn {
+            background: #d94242;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .next-btn:hover {
+            background: #c23535;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            #header {
+                padding: 15px 20px;
+            }
+            
+            #menu {
+                display: none;
+            }
+        }
     </style>
 </head>
 
@@ -184,14 +302,6 @@
 <div id="header">
     <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}">
 
-    <div id="menu">
-        <button class="head_button">Home</button>
-        <button class="head_button">Vehicles</button>
-        <button class="head_button">Details</button>
-        <button class="head_button">About Us</button>
-        <button class="head_button">Contact Us</button>
-    </div>
-
     <div id="profile">
         <div id="profile-container">
             <img id="pfp" src="{{ asset('img/racc_icon.png') }}">
@@ -199,25 +309,16 @@
     </div>
 </div>
 
-
-<!-- STEP BAR -->
-<div class="stepper">
-    <div class="step">Vehicle</div>
-    <div class="step">Register</div>
-    <div class="step active">Booking Details</div>
-    <div class="step">Payment</div>
-</div>
-
 <!-- Progress Steps -->
-    <div class="progress-container">
-        <div class="steps">
-            <div class="step active"><span class="step-icon">✓</span><span>Vehicle</span></div>
-            <div class="step-connector"></div>
-            <div class="step active"><span class="step-icon">✓</span><span>Booking Details</span></div>
-            <div class="step-connector"></div>
-            <div class="step"><span class="step-icon">✓</span><span>Payment</span></div>
-        </div>
+<div class="progress-container">
+    <div class="steps">
+        <div class="step filled"><span class="step-icon">✓</span><span>Vehicle</span></div>
+        <div class="step-connector"></div>
+        <div class="step active"><span class="step-icon">✓</span><span>Booking Details</span></div>
+        <div class="step-connector"></div>
+        <div class="step"><span class="step-icon">✓</span><span>Payment</span></div>
     </div>
+</div>
 
 <!-- MAIN CONTENT -->
 <div class="container">
@@ -237,8 +338,6 @@
             </div>
         </div>
 
-        <br>
-
         <div class="section-title">Return</div>
         <div class="row2">
             <div>
@@ -250,8 +349,6 @@
                 <input type="time" class="input">
             </div>
         </div>
-
-        <br>
 
         <div class="row2">
             <div>
@@ -265,8 +362,6 @@
             </div>
         </div>
 
-        <br>
-
         <div class="row2">
             <div>
                 <div class="field-label">Pickup Location</div>
@@ -278,8 +373,6 @@
                 <input type="text" class="input" placeholder="Full Address">
             </div>
         </div>
-
-        <br>
 
         <div>
             <div class="field-label">Remark</div>
@@ -307,6 +400,8 @@
                     ⏰ 8:00 am, 17 Dec 2025
                 </div>
                 📍 H20, Kolej Tun Fatimah, UTM Skudai
+
+                <br>
 
                 <div class="time-item">
                     ⏰ 8:00 am, 18 Dec 2025

@@ -197,4 +197,34 @@ public function adminVehicles(Request $request)
         'status'
     ));
 }
+
+public function reserveVehicle(Request $request, $vehicleID)
+{
+    $user = auth()->user();
+
+    // 1. Check if vehicle is still available
+    $vehicle = Vehicles::findOrFail($vehicleID);
+
+    if ($vehicle->status !== 'available') {
+        return back()->with('error', 'Sorry, this vehicle is no longer available.');
+    }
+
+    // 2. Reserve the vehicle for 10 minutes
+    $vehicle->status = 'reserved';
+    $vehicle->reservation_expires_at = now()->addMinutes(10);
+    $vehicle->save();
+
+    // 3. Create booking record
+    $booking = Bookings::create([
+        'vehicleID' => $vehicle->vehicleID,
+        'customerID' => $user->userID,
+        'bookingStatus' => 'pending',
+        'reservation_expires_at' => now()->addMinutes(10),
+        // You can fill in other fields like totalPrice, startDate, endDate later
+    ]);
+
+    return redirect()->route('customer.payment', $booking->bookingID)
+        ->with('success', 'Vehicle reserved! Complete payment within 10 minutes.');
+}
+
 }

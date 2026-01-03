@@ -21,8 +21,15 @@ class Bookings extends Model
         'totalPrice',
         'depositAmount',
         'rewardApplied',
+        'reservation_expires_at'
     ];
 
+    protected $dates = [
+        'reservation_expires_at',
+        'created_at',
+        'updated_at'
+    ];
+    
     public function vehicle()
     {
         return $this->belongsTo(\App\Models\Vehicles::class, 'vehicleID', 'vehicleID');
