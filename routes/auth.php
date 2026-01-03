@@ -42,6 +42,14 @@ Route::middleware(['auth'])->group(function () {
     // Admin routes
     Route::get('/admin/dashboard', [AdminController::class, 'index'])
         ->name('admin.dashboard');
+   Route::get('/admin/customers', [AdminController::class, 'customers'])
+        ->name('admin.customers');
+    
+    // Add this update route
+    Route::put('/admin/customers/{id}', [AdminController::class, 'updateCustomer'])
+        ->name('admin.customers.update');
+    Route::get('/admin/staff', [AdminController::class, 'staff'])->name('admin.staff');
+    
     
     // Staff routes
     Route::get('/staff/dashboard', [StaffController::class, 'index'])
@@ -60,6 +68,10 @@ Route::middleware(['auth'])->group(function () {
             
         Route::get('/bookings', [CustomerController::class, 'bookings'])
             ->name('customer.bookings');
+
+        Route::get('/customers', [CustomerController::class, 'adminIndex'])->name('customers.index');
+   
+        Route::put('/customers/{id}', [CustomerController::class, 'adminUpdate'])->name('customers.update');
     });
     
     // Common routes for all users

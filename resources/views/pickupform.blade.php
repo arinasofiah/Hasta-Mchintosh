@@ -26,21 +26,19 @@
     <div class="pickup-layout">
         <div class="vehicle-card">
             <p id="res_txt">Reserved Vehicle</p>
-            <p id="car_name">Perodua Axia 2024<p>
-            <p id="car_type">Hatchback</p>
+            <p id="car_name">{{$vehicle->model}}<p>
+            <p id="car_type">{{$vehicle->vehicleType}}</p>
 
             <img src="{{ asset('img/redcar.png') }}">
 
             <p id="car_det">Full Vehicle Details<p>
             <ul class="features">
-                <li> <img src="{{ asset('img/car_icon.png') }}"><span>Automatic</span></li>
-                <li><img src="{{ asset('img/car_icon.png') }}"><span>RON 95</span></li>
-                <li><img src="{{ asset('img/car_icon.png') }}"><span>Air Conditioner</span></li>
-                <li> <img src="{{ asset('img/car_icon.png') }}"><span>5 Seats</span></li>
-                <li><img src="{{ asset('img/car_icon.png') }}"><span>4 Doors</span></li>
-                <li><img src="{{ asset('img/car_icon.png') }}"><span>1.3k km</span></li>
+                 <li> <img src="{{ asset('img/car_icon.png') }}"><span>{{$vehicle->vehicleType}}</span></li>
+                <li><img src="{{ asset('img/car_icon.png') }}"><span>{{$vehicle->fuelType}}</span></li>
+                <li><img src="{{ asset('img/car_icon.png') }}"><span>{{ $vehicle->ac ? 'AC' : 'No AC' }}</span></li>
+                <li> <img src="{{ asset('img/car_icon.png') }}"><span>{{$vehicle->seat}} Seat</span></li>
             </ul>
-            <p id="day_pr">RM130 / Day</p>
+            <p id="day_pr">{{$vehicle->pricePerDay}} / Day</p>
             <p id="all_pr">Total MYR 530</p>
 </div>
          <div class="pickup_form">
@@ -57,20 +55,27 @@
             <p class="main_txt">Pick Up Information</p>
             <p class="sub_txt">Fill in pick up details</p>
             
-            <form method="POST" enctype="multipart/form-data">
+           @if(session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+@endif
+            <form action="{{ route('pickup.store') }}" method="POST" enctype="multipart/form-data">
+    @csrf
+    <input type="hidden" name="vehicle_id" value="{{ $vehicle->id }}">
                 <div class="form-row">
                     <div>
-                    <label for="loc">Pickup Location:</label>
-                    <input type="text" id="loc">
+                    <label for="loc">Location:</label>
+                   <input type="text" id="loc" name="pickupLocation" required>
                     </div>
                     <div>
-                    <label for="date_pickup">Pickup Location:</label>
-                    <input type="date" id="date_pickup">
+                    <label for="date_pickup">Pickup date:</label>
+                    <input type="date" id="date_pickup" name="pickupDate" required>
                     </div>
                 </div>
 
                 <label class="checkbox">
-                    <input type="checkbox"> 
+                     <input type="checkbox" name="terms" required> 
                     <span>I have read and accepted the Terms and Conditions</span>
                 </label>
 

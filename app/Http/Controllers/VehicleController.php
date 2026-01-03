@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Vehicles;
+use App\Models\Bookings;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class VehicleController extends Controller
 {
@@ -32,10 +34,10 @@ class VehicleController extends Controller
     public function select($id, Request $request)
     {
         // Get dates/times from the request (with defaults)
-        $pickupDate = $request->pickup_date ?? date('Y-m-d');
-        $pickupTime = $request->pickup_time ?? '08:00';
-        $returnDate = $request->return_date ?? date('Y-m-d', strtotime('+1 day'));
-        $returnTime = $request->return_time ?? '08:00';
+        $pickupDate = $request->pickupDate ?? date('Y-m-d');
+        $pickupTime = $request->pickupTime ?? '08:00';
+        $returnDate = $request->returnDate ?? date('Y-m-d', strtotime('+1 day'));
+        $returnTime = $request->returnTime ?? '08:00';
 
         // Combine into Carbon DateTime objects for easy comparison
         $pickupDateTime = Carbon::createFromFormat('Y-m-d H:i', $pickupDate . ' ' . $pickupTime);
@@ -48,12 +50,12 @@ class VehicleController extends Controller
 
         // Query available vehicles: status = 'available' AND no overlapping confirmed bookings
         $availableVehicles = Vehicles::where('status', 'available')
-            ->whereDoesntHave('bookings', function ($query) use ($pickupDateTime, $returnDateTime) {
-                $query->where('status', 'confirmed') // Only consider confirmed bookings
+            ->whereDoesntHave('booking', function ($query) use ($pickupDateTime, $returnDateTime) {
+                $query->where('bookingStatus', 'confirmed') // Only consider confirmed bookings
                     ->where(function ($q) use ($pickupDateTime, $returnDateTime) {
                         // Overlap condition: booking starts before return AND ends after pickup
-                        $q->where('start_date', '<', $returnDateTime->toDateString())
-                          ->where('end_date', '>', $pickupDateTime->toDateString());
+                        $q->where('startDate', '<', $returnDateTime->toDateString())
+                          ->where('endDate', '>', $pickupDateTime->toDateString());
                     });
             })
             ->get();
@@ -164,7 +166,6 @@ public function adminDashboard()
     
     $recentVehicles = \App\Models\Vehicles::latest()->take(5)->get();
 
-    // 3. Pass EVERYTHING to the view
     return view('admin.dashboard', compact(
         'totalVehicles', 
         'availableCount', 

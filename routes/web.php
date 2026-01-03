@@ -6,6 +6,7 @@ use App\Http\Controllers\OcrController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\PickUpController;
 
 Route::view('/signup', 'signup');
 
@@ -22,9 +23,8 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/pickup', function () {
-    return view('pickupform');
-});
+Route::post('/pickup', [PickUpController::class,'store'])->name('pickup.store');
+Route::get('/pickup',[PickUpController::class,'show']);
 
 /*nisa add this*/
 Route::get('/vehicles/{id}', [VehicleController::class, 'show'])->name('vehicles.select'); 

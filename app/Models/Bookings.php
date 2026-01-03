@@ -8,12 +8,23 @@ class Bookings extends Model
 {
     use HasFactory;
 
+    protected $table = 'booking';
+    protected $primaryKey = 'bookingID';
     protected $fillable = [
-        'vehicle_id', 'user_id', 'start_date', 'start_time', 'end_date', 'end_time', 'status'
+        'vehicleID',
+        'bankNum',
+        'penamaBank',
+        'startDate',
+        'endDate',
+        'bookingDuration',
+        'bookingStatus',
+        'totalPrice',
+        'depositAmount',
+        'rewardApplied',
     ];
 
     public function vehicle()
     {
-        return $this->belongsTo(Vehicles::class, 'vehicle_id');
+        return $this->belongsTo(\App\Models\Vehicles::class, 'vehicleID', 'vehicleID');
     }
 }

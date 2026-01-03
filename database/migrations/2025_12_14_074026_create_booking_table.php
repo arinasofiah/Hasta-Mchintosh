@@ -13,20 +13,24 @@ return new class extends Migration
     {
         Schema::create('booking', function (Blueprint $table) {
             $table->id('bookingID');
-            $table->foreignId('vehicleID')->constrained('vehicles')->onDelete('cascade');
-            $table->foreignId('userID')->constrained('users')->onDelete('cascade');
+
+            $table->unsignedBigInteger('vehicleID')->after('bookingID');
+            $table->foreign('vehicleID')
+                  ->references('vehicleID')
+                  ->on('vehicles')
+                  ->onDelete('cascade');
             $table->string('bankNum');
             $table->string('penamaBank');
             $table->date('startDate');
             $table->date('endDate');
             $table->integer('bookingDuration');
-            $table->enum('bookingStatus', ['pending', 'confirmed', 'cancelled', 'completed']);
+            $table->enum('bookingStatus', ['pending', 'approved', 'cancelled', 'completed']);
             $table->decimal('totalPrice', 8, 2);
             $table->decimal('depositAmount', 8, 2);
             $table->boolean('rewardApplied')->default(false);
 
-            $table->timestamps();
-        });
+    $table->timestamps();
+});
     }
 
     /**
@@ -34,6 +38,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('booking');
+        Schema::table('booking', function (Blueprint $table) {
+        $table->dropForeign(['vehicleID']);
+        $table->dropColumn('vehicleID');
+    });
     }
 };

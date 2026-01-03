@@ -166,4 +166,68 @@ public function update(Request $request)
         
         return view('customer.booking-form', compact('vehicle'));
     }
+
+   public function adminIndex(Request $request)
+{
+    // 1. Get status from URL (default to 'active')
+    $status = $request->get('status', 'active'); 
+    
+    // 2. Map 'active'/'blacklisted' strings to boolean 0/1 for the database
+    $isBlacklisted = ($status === 'blacklisted') ? true : false;
+
+    // 3. Build query joining with 'users' for the name and email
+    $query = DB::table('customer')
+        ->join('users', 'customer.userID', '=', 'users.userID')
+        ->where('customer.isBlacklisted', $isBlacklisted)
+        ->select('customer.*', 'users.name', 'users.email');
+
+    // 4. Handle Search
+    if ($request->filled('search')) {
+        $search = $request->input('search');
+        $query->where(function($q) use ($search) {
+            $q->where('users.name', 'LIKE', "%{$search}%")
+              ->orWhere('customer.userID', 'LIKE', "%{$search}%");
+        });
+    }
+
+    // 5. Handle Faculty/College Filter
+    if ($request->filled('filter')) {
+        $filter = $request->input('filter');
+        $query->where(function($q) use ($filter) {
+            $q->where('customer.faculty', $filter)
+              ->orWhere('customer.college', $filter);
+        });
+    }
+
+    $customers = $query->get();
+    $totalCount = $customers->count();
+
+    // 6. Calculate outstanding payments from bookings table
+    foreach ($customers as $customer) {
+        $customer->outstanding_payment = DB::table('bookings')
+            ->where('customerID', $customer->userID)
+            ->where('paymentStatus', 'unpaid')
+            ->sum('totalPrice');
+    }
+
+    return view('admin.customers', compact('customers', 'totalCount', 'status'));
+}
+public function adminUpdate(Request $request, $id)
+{
+    $request->validate([
+        'isBlacklisted' => 'required|boolean',
+        'blacklistReason' => 'nullable|string|max:255'
+    ]);
+
+    DB::table('customer')->where('userID', $id)->update([
+        'isBlacklisted' => $request->isBlacklisted,
+        'blacklistReason' => $request->blacklistReason,
+        'updated_at' => now(),
+    ]);
+
+    $message = $request->isBlacklisted ? 'Customer blacklisted.' : 'Customer activated.';
+    return back()->with('success', $message);
+}
+
+
 }

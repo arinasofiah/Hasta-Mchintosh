@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Vehicles extends Model
 {
     use HasFactory;
-    
+
     protected $primaryKey = 'vehicleID';
 
     protected $fillable = [
@@ -26,8 +26,8 @@ class Vehicles extends Model
         'image'
     ];
 
-    public function bookings()
+    public function booking()
     {
-        return $this->hasMany(Bookings::class, 'vehicle_id');
+        return $this->hasMany(\App\Models\Bookings::class, 'vehicleID', 'vehicleID');
     }
 }
