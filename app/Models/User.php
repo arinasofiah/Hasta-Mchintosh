@@ -26,6 +26,7 @@ class User extends Authenticatable
         'password',
         'icNumber', 
         'userType',
+        'phoneNumber',
     ];
 
     /**
@@ -49,6 +50,17 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function telephone()
+    {
+        return $this->belongsTo(Telephone::class, 'phoneNumber', 'phoneNumber');
+    }
+
+    // Accessor to get phone number
+    public function getPhoneAttribute()
+    {
+        return $this->telephone ? $this->telephone->phoneNumber : null;
     }
 
      public function isAdmin()

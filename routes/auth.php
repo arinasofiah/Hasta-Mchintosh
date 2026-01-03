@@ -48,12 +48,17 @@ Route::middleware(['auth'])->group(function () {
     // Add this update route
     Route::put('/admin/customers/{id}', [AdminController::class, 'updateCustomer'])
         ->name('admin.customers.update');
+   
     Route::get('/admin/staff', [AdminController::class, 'staff'])->name('admin.staff');
-    
+        Route::get('/staff/create', [AdminController::class, 'createStaff'])->name('admin.staff.create');
+        Route::post('/staff', [AdminController::class, 'storeStaff'])->name('admin.staff.store'); // ← This one was missing
+        Route::put('/staff/{id}', [AdminController::class, 'updateStaff'])->name('admin.staff.update');
+        Route::delete('/staff/{id}', [AdminController::class, 'destroyStaff'])->name('admin.staff.destroy');
     
     // Staff routes
     Route::get('/staff/dashboard', [StaffController::class, 'index'])
         ->name('staff.dashboard');
+
     
     // Customer routes
     Route::prefix('customer')->group(function () {
