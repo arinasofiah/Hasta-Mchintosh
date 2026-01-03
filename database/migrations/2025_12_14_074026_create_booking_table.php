@@ -14,11 +14,12 @@ return new class extends Migration
         Schema::create('booking', function (Blueprint $table) {
             $table->id('bookingID');
 
-            $table->unsignedBigInteger('vehicleID')->after('bookingID');
-            $table->foreign('vehicleID')
-                  ->references('vehicleID')
-                  ->on('vehicles')
-                  ->onDelete('cascade');
+           // $table->unsignedBigInteger('vehicleID');
+        //$table->foreign('vehicleID')
+          //        ->references('vehicleID')
+            //      ->on('vehicles')
+              //    ->onDelete('cascade');
+
             $table->string('bankNum');
             $table->string('penamaBank');
             $table->date('startDate');

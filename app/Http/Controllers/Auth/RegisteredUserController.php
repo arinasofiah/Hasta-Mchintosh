@@ -28,42 +28,49 @@ class RegisteredUserController extends Controller
      * @throws \Illuminate\Validation\ValidationException
      */
     public function store(Request $request): RedirectResponse
-    {
-        // 1. Validate exactly what is in your screenshot
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'icNumber' => ['required', 'string', 'unique:users,icNumber'],
-            'matricNumber' => ['required', 'string', 'unique:customer,matricNumber'],
+{
+    // 1. Add 'phone' to validation
+    $request->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+        'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        'icNumber' => ['required', 'string', 'unique:users,icNumber'],
+        'matricNumber' => ['required', 'string', 'unique:customer,matricNumber'],
+        'phone' => ['required', 'string', 'unique:telephone,phoneNumber'], // Add phone validation
+    ]);
+
+    // 2. Use a transaction to ensure all tables are updated
+    DB::transaction(function () use ($request) {
+        
+        // 3. FIRST: Insert phone number into telephone table
+        DB::table('telephone')->insert([
+            'phoneNumber' => $request->phone,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
-        // 2. Use a transaction to ensure both tables are updated or none
-        DB::transaction(function () use ($request) {
-            
-            // Create the User in the 'users' table (Supertype)
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'icNumber' => $request->icNumber,
-                'userType' => 'customer', // Identifies the role
-            ]);
+        // 4. Create the User in the 'users' table (includes phoneNumber foreign key)
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'icNumber' => $request->icNumber,
+            'userType' => 'customer',
+            'phoneNumber' => $request->phone, // Add phone number here
+        ]);
 
-            // 3. Create the entry in the separate 'customer' table (Subtype)
-            // We use the ID directly from the $user object we just created
-            DB::table('customer')->insert([
-                'userID'       => $user->userID, // Links the two tables
-                'matricNumber' => $request->matricNumber, 
-                'depoBalance'  => 0.00,
-                'created_at'   => now(),
-                'updated_at'   => now(),
-                // matricNumber, license, etc., remain NULL for now
-            ]);
+        // 5. Create entry in 'customer' table
+        DB::table('customer')->insert([
+            'userID'       => $user->userID,
+            'matricNumber' => $request->matricNumber, 
+            'depoBalance'  => 0.00,
+            'created_at'   => now(),
+            'updated_at'   => now(),
+        ]);
 
-            event(new Registered($user));
-        });
+        event(new Registered($user));
+    });
 
-        return redirect()->route('login')->with('status', 'Registration successful! Please login.');
-    }
+    return redirect()->route('login')->with('status', 'Registration successful! Please login.');
+}
 }

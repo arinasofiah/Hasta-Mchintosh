@@ -52,10 +52,17 @@ class User extends Authenticatable
         ];
     }
 
-    public function telephone()
-    {
-        return $this->belongsTo(Telephone::class, 'phoneNumber', 'phoneNumber');
-    }
+    public function customer()
+{
+    // Use fully qualified namespace
+    return $this->hasOne(\App\Models\Customer::class, 'userID', 'userID');
+}
+
+public function telephone()
+{
+    // Use fully qualified namespace here too
+    return $this->belongsTo(\App\Models\Telephone::class, 'phoneNumber', 'phoneNumber');
+}
 
     // Accessor to get phone number
     public function getPhoneAttribute()
