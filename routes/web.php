@@ -7,6 +7,8 @@ use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\PickUpController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ReportController;
 
 Route::view('/signup', 'signup');
 
@@ -38,6 +40,18 @@ Route::put('/admin/vehicles/update/{id}', [VehicleController::class, 'update'])-
 Route::delete('/admin/vehicles/delete/{id}', [VehicleController::class, 'destroy'])->name('admin.vehicles.destroy');
 Route::get('/admin/vehicles/create', [VehicleController::class, 'create'])->name('admin.vehicles.create');
 
+// Add this anywhere in your routes file (test it outside groups)
+Route::get('/admin/staff/create', [AdminController::class, 'createStaff'])
+    ->name('admin.staff.create')
+    ->middleware('auth');
+
+Route::get('/admin/staff/create', [AdminController::class, 'createStaff'])
+    ->name('admin.staff.create')
+    ->middleware('auth');
+
+Route::prefix('admin')->group(function () {
+    Route::get('/reporting', [ReportController::class, 'reportingIndex'])->name('admin.reporting');
+});
 
 Route::get('/booking/{vehicleID}', [BookingController::class, 'showForm'])->name('booking.form');
 
