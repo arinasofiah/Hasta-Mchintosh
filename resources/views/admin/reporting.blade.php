@@ -20,8 +20,8 @@
         .stats-header { font-weight: 600; color: #888; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; }
         
         .tab-menu { border-bottom: 1px solid #eee; margin-bottom: 20px; }
-        .tab-link { padding: 10px 20px; text-decoration: none; color: #666; display: inline-block; transition: 0.3s; }
-        .tab-link.active { color: #1a8f36; border-bottom: 3px solid #1a8f36; font-weight: 600; }
+          .tab-link { padding: 10px 20px; text-decoration: none; color: #666; display: inline-block; }
+        .tab-link.active { color: #000; border-bottom: 2px solid #000; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -36,7 +36,7 @@
         <a href="{{ route('admin.reporting') }}" class="nav-item active">Reporting</a>
         <a href="{{ route('admin.fleet') }}" class="nav-item"> Fleet</a> 
         <a href="{{ route('admin.customers') }}" class="nav-item">Customer</a>
-        <a href="#" class="nav-item">Staff</a>
+        <a href="{{ route('admin.staff') }}" class="nav-item">Staff</a>
         <a href="#" class="nav-item"> Promotions</a>
         <a href="#" class="nav-item"> Settings</a>
     </div>
