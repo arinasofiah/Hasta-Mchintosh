@@ -58,6 +58,11 @@ class User extends Authenticatable
     return $this->hasOne(\App\Models\Customer::class, 'userID', 'userID');
 }
 
+    public function staff()
+{
+    return $this->hasOne(\App\Models\Staff::class, 'userID', 'userID');
+}
+
 // Add this method to your User model:
 public function telephone()
 {

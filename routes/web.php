@@ -9,6 +9,7 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\PickUpController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\StaffController;
 
 Route::view('/signup', 'signup');
 
@@ -45,8 +46,8 @@ Route::get('/admin/staff/create', [AdminController::class, 'createStaff'])
     ->name('admin.staff.create')
     ->middleware('auth');
 
-Route::get('/admin/staff/create', [AdminController::class, 'createStaff'])
-    ->name('admin.staff.create')
+Route::post('/admin/staff/store', [AdminController::class, 'storeStaff'])
+    ->name('admin.staff.store')
     ->middleware('auth');
 
 Route::prefix('admin')->group(function () {
@@ -64,5 +65,14 @@ Route::middleware('auth')->group(function () {
     })->name('booking.form');
 });
 
+Route::middleware(['auth'])->prefix('staff')->name('staff.')->group(function () {
+    Route::get('/dashboard', [StaffController::class, 'index'])->name('dashboard');
+    Route::get('/booking/confirmation', [StaffController::class, 'confirmation'])->name('booking.confirmation');
+    Route::get('/payment/verify', [StaffController::class, 'verifyPayment'])->name('payment.verify');
+    Route::get('/vehicle/pickup', [StaffController::class, 'viewPickup'])->name('vehicle.pickup');
+    Route::get('/vehicle/return', [StaffController::class, 'verifyReturn'])->name('vehicle.return');
+    Route::get('/booking/history', [StaffController::class, 'history'])->name('booking.history');
+    Route::get('/vehicle/status', [StaffController::class, 'updateStatus'])->name('vehicle.status');
+});
 
 require __DIR__.'/auth.php';
