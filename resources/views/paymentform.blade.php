@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link href="{{ asset('css/header.css') }}" rel="stylesheet">
     <title>HASTA - Payment</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -195,6 +196,117 @@
         <div class="info-row"><span class="info-label">Date :</span><span class="info-value">{{ $dateRange }}</span></div>
         <div class="info-row"><span class="info-label">Duration :</span><span class="info-value">{{ $durationText }}</span></div>
         <div class="info-row"><span class="info-label">Rental :</span><span class="info-value">MYR {{ number_format($finalSubtotal, 2) }}</span></div>
+        <!-- Payment Details -->
+        <div class="section">
+            <h2>Payment Details</h2>
+            
+            <!-- Voucher Section -->
+            <div class="form-group">
+                <label>Apply Voucher (Optional)</label>
+                <div class="voucher-tabs">
+                    <button type="button" class="tab-btn active" data-tab="eligible">Eligible</button>
+                    <button type="button" class="tab-btn" data-tab="enter">Enter Code</button>
+                </div>
+
+                <div id="tab-eligible" class="tab-content active">
+                    <div class="voucher-list">
+                        @if(isset($eligibleVouchers) && count($eligibleVouchers) > 0)
+                            @foreach($eligibleVouchers as $v)
+                                <div class="voucher-item" 
+                                     data-id="{{ $v->promoID }}" 
+                                     data-val="{{ $v->discountValue }}"
+                                     onclick="selectVoucher(this)">
+                                    <strong>{{ $v->title }}</strong><br>
+                                    <small>Code: {{ $v->code }} (Disc: RM{{ $v->discountValue }})</small>
+                                </div>
+                            @endforeach
+                        @else
+                            <p style="color:#999; font-size:13px; padding:10px;">No eligible vouchers found.</p>
+                        @endif
+                    </div>
+                </div>
+
+                <div id="tab-enter" class="tab-content">
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="voucher_code" placeholder="Enter voucher code">
+                        <button type="button" id="apply_voucher" class="browse-btn" style="padding:10px 20px;">Apply</button>
+                    </div>
+                    <div id="voucher_message" style="margin-top:5px; font-size:13px;"></div>
+                </div>
+            </div>
+            
+            <div class="info-row discount-row" id="voucher_discount_row" style="display:none;">
+                <span class="info-label">Voucher Discount :</span>
+                <span class="info-value" id="voucher_discount_display">- MYR 0.00</span>
+            </div>
+
+            <div class="form-group">
+                <label>Bank Name</label>
+                <select name="bank_name" required>
+                    <option value="">Select Bank</option>
+                    <option value="Maybank">Maybank</option>
+                    <option value="CIMB Bank">CIMB Bank</option>
+                    <option value="Public Bank">Public Bank</option>
+                    <option value="RHB Bank">RHB Bank</option>
+                    <option value="Hong Leong Bank">Hong Leong Bank</option>
+                    <option value="Affin Bank">Affin Bank</option>
+                    <option value="Alliance Bank">Alliance Bank</option>
+                    <option value="AmBank">AmBank</option>
+                    <option value="BSN">BSN</option>
+                    <option value="Bank Islam">Bank Islam</option>
+                    <option value="Bank Muamalat">Bank Muamalat</option>
+                    <option value="Bank Rakyat">Bank Rakyat</option>
+                    <option value="Touch 'n Go eWallet">Touch 'n Go eWallet</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Bank Owner Name</label>
+                <input type="text" name="bank_owner_name" placeholder="Enter account holder name" required>
+            </div>
+
+            <div class="form-group">
+                <label>Pay Amount</label>
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="payAmount" value="full" checked> Full
+                    </label>
+                    <label>
+                        <input type="radio" name="payAmount" value="deposit"> Deposit
+                    </label>
+                </div>
+            </div>
+
+            <div class="qr-section">
+                <label>Scan QR here to make the payment</label>
+                <div class="qr-code">
+                    @if(file_exists(public_path('storage/qrImage.jpeg')))
+                        <img src="{{ asset('storage/qrImage.jpeg') }}" alt="HASTA Payment QR Code">
+                    @else
+                        <div style="color:#999;">QR Code Not Available</div>
+                    @endif
+                </div>
+                <p class="company-name">HASTA TRAVEL SDN BHD</p>
+            </div>
+
+
+            <div class="form-group">
+                <label>Upload Receipt</label>
+                <p style="color: #999; font-size: 13px; margin-bottom: 10px;">Kindly upload a screenshot of receipt payment</p>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📄</div>
+                    <p class="upload-text" id="uploadText">Drag files here or click "Browse" to upload</p>
+                    <button type="button" class="browse-btn" id="browseBtn">Browse</button>
+                    <input type="file" id="fileInput" name="payment_receipt" accept="image/*" style="display: none;" required>
+                    <!-- Preview container -->
+                    <div id="imagePreview" style="display: none; margin-top: 15px;">
+                        <img id="previewImage" src="" alt="Receipt Preview" style="max-width: 100%; max-height: 200px; border: 1px solid #ddd; border-radius: 5px;">
+                        <button type="button" id="removeImage" style="margin-top: 10px; background: #d94444; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Remove</button>
+                    </div>
+                    <!-- Error message container -->
+                    <div id="fileError" style="color: red; font-size: 12px; margin-top: 5px; display: none;"></div>
+                </div>
+            </div>
 
         @if($promotionDiscount > 0)
         <div class="info-row discount-row">
@@ -281,3 +393,268 @@
 
 </body>
 </html>
+<!-- Terms Modal -->
+<div id="termsModal" class="modal">
+    <div class="modal-content">
+        <h3>Terms and Conditions</h3>
+        <p style="text-align:left;margin:20px 0;line-height:1.5;">
+            By proceeding with this booking, you agree to the following terms:<br>
+            - Vehicle must be returned in the same condition as received.<br>
+            - Full liability applies for damages or late return.<br>
+            - HASTA Travel reserves the right to cancel bookings for suspicious activity.
+        </p>
+        <button class="modal-btn btn-primary" onclick="document.getElementById('termsModal').style.display='none'">Close</button>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div id="successModal" class="modal">
+    <div class="modal-content">
+        <h3>Booking Submitted!</h3>
+        <p style="margin:20px 0;">
+            Your booking form has been submitted.<br>
+            We have notified our staff and will confirm your booking shortly.<br>
+            Kindly trace your booking below.
+        </p>
+        <div class="modal-btns">
+            <button class="modal-btn btn-primary" onclick="window.location='{{ route('booking.history') }}'">View My Bookings</button>
+            <button class="modal-btn btn-secondary" onclick="window.location='{{ route('booking.history') }}'">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    let originalTotal = {{ $finalTotal ?? 0 }};
+    let currentVoucherValue = 0;
+
+    // Toggle voucher tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+        });
+    });
+
+    document.querySelectorAll('.voucher-item').forEach(item => {
+        item.addEventListener('click', () => {
+            document.querySelectorAll('.voucher-item').forEach(i => i.classList.remove('selected'));
+            item.classList.add('selected');
+            
+            const id = item.dataset.id;
+            const amount = parseFloat(item.dataset.val);
+            
+            applyVoucherMath(id, amount);
+        });
+    });
+
+    document.getElementById('apply_voucher').addEventListener('click', function() {
+        const code = document.getElementById('voucher_code').value;
+        const msgEl = document.getElementById('voucher_message');
+
+        if (!code) {
+            msgEl.innerHTML = '<span style="color:red;">Please enter a code</span>';
+            return;
+        }
+
+        fetch("{{ route('validate.voucher') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ code: code })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.valid) {
+                msgEl.innerHTML = '<span style="color:green;">' + data.message + '</span>';
+                applyVoucherMath(data.voucher_id, parseFloat(data.amount));
+            } else {
+                msgEl.innerHTML = '<span style="color:red;">' + (data.message || 'Invalid voucher') + '</span>';
+                resetVoucher(); 
+            }
+        })
+        .catch(() => {
+            msgEl.innerHTML = '<span style="color:red;">Error validating voucher</span>';
+        });
+    });
+
+    function applyVoucherMath(id, amount) {
+        document.getElementById('selected_voucher_id').value = id;
+        currentVoucherValue = amount;
+
+        const discountRow = document.getElementById('voucher_discount_row');
+        const discountDisplay = document.getElementById('voucher_discount_display');
+        
+        if(discountRow && discountDisplay) {
+            discountRow.style.display = 'flex';
+            discountDisplay.textContent = '- MYR ' + amount.toFixed(2);
+        }
+
+        updateGrandTotal();
+    }
+
+    function resetVoucher() {
+        document.getElementById('selected_voucher_id').value = '';
+        currentVoucherValue = 0;
+        const discountRow = document.getElementById('voucher_discount_row');
+        if(discountRow) discountRow.style.display = 'none';
+        updateGrandTotal();
+    }
+
+    function updateGrandTotal() {
+        let newTotal = Math.max(0, originalTotal - currentVoucherValue);
+        let deposit = newTotal * 0.5;
+
+        const totalRows = document.querySelectorAll('.total-row span:last-child');
+        
+        if (totalRows.length >= 2) {
+            totalRows[0].textContent = 'MYR ' + deposit.toFixed(2);
+            totalRows[1].textContent = 'MYR ' + newTotal.toFixed(2);
+        }
+    }
+
+
+    const fileInput = document.getElementById('fileInput');
+    const browseBtn = document.getElementById('browseBtn');
+    const uploadText = document.getElementById('uploadText');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewImage = document.getElementById('previewImage');
+    const removeImageBtn = document.getElementById('removeImage');
+    const fileError = document.getElementById('fileError');
+    const uploadArea = document.getElementById('uploadArea');
+
+    if (browseBtn) {
+        browseBtn.addEventListener('click', function(e) {
+            e.preventDefault(); e.stopPropagation();
+            fileInput.click();
+        });
+    }
+
+    if (fileInput) {
+        fileInput.addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                validateAndPreview(file);
+            }
+        });
+    }
+
+    if (uploadArea) {
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#d94444';
+            uploadArea.style.backgroundColor = '#fff';
+        });
+        uploadArea.addEventListener('dragleave', function(e) {
+            uploadArea.style.borderColor = '#ddd';
+            uploadArea.style.backgroundColor = '#fafafa';
+        });
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#ddd';
+            uploadArea.style.backgroundColor = '#fafafa';
+            if (e.dataTransfer.files.length > 0) {
+                validateAndPreview(e.dataTransfer.files[0]);
+            }
+        });
+    }
+
+    function validateAndPreview(file) {
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        if (!validTypes.includes(file.type)) {
+            showError('Please select a valid image file.'); return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            showError('File size exceeds 5MB.'); return;
+        }
+        
+        if (fileInput.files[0] !== file) {
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
+        }
+
+        uploadText.textContent = file.name;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImage.src = e.target.result;
+            imagePreview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+        hideError();
+    }
+
+    if (removeImageBtn) {
+        removeImageBtn.addEventListener('click', function(e) {
+            e.preventDefault(); e.stopPropagation();
+            fileInput.value = '';
+            uploadText.textContent = 'Drag files here or click "Browse" to upload';
+            imagePreview.style.display = 'none';
+            previewImage.src = '';
+            hideError();
+        });
+    }
+
+    function showError(message) {
+        if (fileError) { fileError.textContent = message; fileError.style.display = 'block'; }
+    }
+    function hideError() {
+        if (fileError) { fileError.style.display = 'none'; fileError.textContent = ''; }
+    }
+    function showTermsModal() {
+        const termsModal = document.getElementById('termsModal');
+        if (termsModal) termsModal.style.display = 'block';
+    }
+
+    document.getElementById('paymentForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const termsCheckbox = document.getElementById('termsCheckbox');
+        if (termsCheckbox && !termsCheckbox.checked) {
+            alert('Please accept Terms and Conditions');
+            return;
+        }
+
+        if (!fileInput.files.length) {
+            showError('Please upload a payment receipt.');
+            return;
+        }
+        
+        const submitBtn = this.querySelector('.submit-btn');
+        if(submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processing...';
+        }
+
+        const formData = new FormData(this);
+
+        formData.set('voucher_id', document.getElementById('selected_voucher_id').value);
+
+        fetch("{{ route('booking.confirm') }}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const successModal = document.getElementById('successModal');
+                if (successModal) successModal.style.display = 'block';
+            } else {
+                alert(data.message || 'Submission failed. Please try again.');
+                if(submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit'; }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+            if(submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit'; }
+        });
+    });
+</script>

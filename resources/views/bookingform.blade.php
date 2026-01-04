@@ -97,6 +97,13 @@ textarea.input {resize:vertical; min-height:100px;}
     margin-top: 10px;
 }
 
+.hint {
+    font-size: 11px;
+    color: #999;
+    margin-top: 3px;
+    display: block;
+}
+
 @media(max-width:768px){
     .container{grid-template-columns:1fr;}
     .bottom-bar{flex-wrap:wrap; gap:15px; padding:15px 20px;}
@@ -111,9 +118,7 @@ textarea.input {resize:vertical; min-height:100px;}
 
     <div id="menu">
         <button class="head_button">Home</button>
-
         <button class="head_button">Vehicles</button>
-    
         <button class="head_button">Details</button>
         <button class="head_button">About Us</button>
         <button class="head_button">Contact Us</button>
@@ -147,6 +152,7 @@ textarea.input {resize:vertical; min-height:100px;}
         <span id="username">{{ Auth::user()->name }}</span>
     @endauth
 </div>
+</div>
 
 <!-- Progress Steps -->
 <div class="progress-container">
@@ -160,9 +166,10 @@ textarea.input {resize:vertical; min-height:100px;}
 </div>
 
 <!-- FORM START -->
-<form action="{{ route('payment.form')}}" method="POST">
+<form id="bookingForm" action="{{ route('payment.form', $vehicle->vehicleID )}}" method="POST">
     @csrf
     <input type="hidden" name="vehicleID" value="{{ $vehicle->vehicleID }}">
+    
     <div class="container">
         <!-- Booking Details Card -->
         <div class="card">
@@ -237,7 +244,7 @@ textarea.input {resize:vertical; min-height:100px;}
 
                 <div class="duration-box">
                     <div class="field-label">Duration</div>
-                    <input type="text" class="input" readonly>
+                    <input type="text" id="durationInput" class="input" readonly>
                 </div>
             </div>
 
@@ -247,70 +254,70 @@ textarea.input {resize:vertical; min-height:100px;}
             </div>
 
             <div style="margin-top: 20px;">
-    <label style="font-size:13px; display:flex; align-items:center; gap:8px; cursor:pointer;">
-        <input type="checkbox" id="forSomeoneElse" name="for_someone_else" value="1" onchange="toggleDriverInfo()">
-        <span>I am not a driver for this vehicle. I am making this reservation for someone else.</span>
-    </label>
-</div>
+                <label style="font-size:13px; display:flex; align-items:center; gap:8px; cursor:pointer;">
+                    <input type="checkbox" id="forSomeoneElse" name="for_someone_else" value="1" onchange="toggleDriverInfo()">
+                    <span>I am not a driver for this vehicle. I am making this reservation for someone else.</span>
+                </label>
+            </div>
 
-<!-- Driver Info Section (Hidden by default) -->
-<div id="driverInfoSection" style="display: none; border: 1px solid #ddd; padding: 15px; margin-top: 15px; border-radius: 5px; background: #f9f9f9;">
-    <h5 style="margin-bottom: 15px;">Driver Information</h5>
-    
-    <!-- Success/Error Messages -->
-    <div id="driverMessage" style="display: none; padding: 10px; margin-bottom: 15px; border-radius: 5px;"></div>
-    
-    <div style="margin-bottom: 15px;">
-        <div class="field-label">Email Address</div>
-        <input type="email" id="driverEmail" name="driver_email" class="input" placeholder="e.g. driver@gmail.com">
-    </div>
-    
-    <div style="margin-bottom: 15px;">
-        <div class="field-label">Full Name</div>
-        <input type="text" id="driverName" name="driver_name" class="input" placeholder="Enter full name (as per IC)">
-        <small class="hint">Ensure it matches IC (Capital Letters).</small>
-    </div>
-    
-    <div style="margin-bottom: 15px;">
-        <div class="field-label">IC/Passport Number</div>
-        <input type="text" id="driverIC" name="driver_ic" class="input" placeholder="e.g. 990101-01-1234">
-        <small class="hint">With dash (-).</small>
-    </div>
-    
-    <div style="margin-bottom: 15px;">
-        <div class="field-label">Phone Number</div>
-        <input type="tel" id="driverPhone" name="driver_phone" class="input" placeholder="e.g. 0196507378">
-    </div>
-    
-    <div style="margin-bottom: 15px;">
-        <div class="field-label">Matric Number</div>
-        <input type="text" id="matricNumber" name="driver_matric" class="input" placeholder="e.g. A21CS0001">
-    </div>
-    
-    <div style="margin-bottom: 15px;">
-        <div class="field-label">License Number</div>
-        <input type="text" id="licenseNumber" name="driver_license" class="input" placeholder="Enter license number">
-    </div>
-    
-    <div style="margin-bottom: 15px;">
-        <div class="field-label">College</div>
-        <input type="text" id="college" name="driver_college" class="input" placeholder="Enter college">
-    </div>
-    
-    <div style="margin-bottom: 15px;">
-        <div class="field-label">Faculty</div>
-        <input type="text" id="faculty" name="driver_faculty" class="input" placeholder="Enter faculty">
-    </div>
-    
-    <div style="margin-bottom: 15px;">
-        <div class="field-label">Deposit Balance (RM)</div>
-        <input type="number" step="0.01" id="depoBalance" name="driver_deposit" class="input" placeholder="0.00">
-    </div>
-    
-    <button type="button" id="registerDriverBtn" class="book-btn" style="width: 100%;">
-        Register Driver
-    </button>
-</div>
+            <!-- Driver Info Section (Hidden by default) -->
+            <div id="driverInfoSection" style="display: none; border: 1px solid #ddd; padding: 15px; margin-top: 15px; border-radius: 5px; background: #f9f9f9;">
+                <h5 style="margin-bottom: 15px;">Driver Information</h5>
+                
+                <!-- Success/Error Messages -->
+                <div id="driverMessage" style="display: none; padding: 10px; margin-bottom: 15px; border-radius: 5px;"></div>
+                
+                <div style="margin-bottom: 15px;">
+                    <div class="field-label">Email Address</div>
+                    <input type="email" id="driverEmail" name="driver_email" class="input" placeholder="e.g. driver@gmail.com">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <div class="field-label">Full Name</div>
+                    <input type="text" id="driverName" name="driver_name" class="input" placeholder="Enter full name (as per IC)">
+                    <small class="hint">Ensure it matches IC (Capital Letters).</small>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <div class="field-label">IC/Passport Number</div>
+                    <input type="text" id="driverIC" name="driver_ic" class="input" placeholder="e.g. 990101-01-1234">
+                    <small class="hint">With dash (-).</small>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <div class="field-label">Phone Number</div>
+                    <input type="tel" id="driverPhone" name="driver_phone" class="input" placeholder="e.g. 0196507378">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <div class="field-label">Matric Number</div>
+                    <input type="text" id="matricNumber" name="matricNumber" class="input" placeholder="e.g. A21CS0001">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <div class="field-label">License Number</div>
+                    <input type="text" id="licenseNumber" name="licenseNumber" class="input" placeholder="Enter license number">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <div class="field-label">College</div>
+                    <input type="text" id="college" name="college" class="input" placeholder="Enter college">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <div class="field-label">Faculty</div>
+                    <input type="text" id="faculty" name="faculty" class="input" placeholder="Enter faculty">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <div class="field-label">Deposit Balance (RM)</div>
+                    <input type="number" step="0.01" id="depoBalance" name="depoBalance" class="input" placeholder="0.00">
+                </div>
+                
+                <button type="button" id="registerDriverBtn" class="next-btn" style="width: 100%;">
+                    Register Driver
+                </button>
+            </div>
         </div>
 
         <!-- Charges Card -->
@@ -335,7 +342,7 @@ textarea.input {resize:vertical; min-height:100px;}
             </div>
             <div class="charge-row" style="color: #28a745;">
                 <span>Promotion Discount</span>
-                <span id="promotionDiscount">MYR -0.00</span>
+                <span id="promotionDiscount">- MYR 0.00</span>
             </div>
             <div class="charge-row grand">
                 <span>Grand Total</span>
@@ -347,7 +354,11 @@ textarea.input {resize:vertical; min-height:100px;}
     <!-- Bottom Bar -->
     <div class="bottom-bar">
         <div class="selected-car">
-            <img src="{{ asset('img/car-axia.png') }}" width="60" style="object-fit:contain;" alt="Car">
+            @if($vehicle->vehiclePhoto)
+                <img src="{{ Storage::url($vehicle->vehiclePhoto) }}" width="60" style="object-fit:contain;" alt="Car">
+            @else
+                <img src="{{ asset('img/car-axia.png') }}" width="60" style="object-fit:contain;" alt="Car">
+            @endif
             <div>
                 <div class="car-badge">Selected Car</div>
                 <b>{{ $vehicle->model }}</b>
@@ -358,11 +369,18 @@ textarea.input {resize:vertical; min-height:100px;}
             <div class="grand-amount" id="bottomBarTotal">MYR 0.00</div>
         </div>
         <div>
-        <button type="button" class="next-btn" onclick="goToPayment()">Next →</button>
+            <button type="button" class="next-btn" onclick="goToPayment()">Next →</button>
+        </div>
     </div>
 </form>
 
 <script>
+// Global variables
+let baseGrandTotal = 0;
+let promotionDiscount = 0;
+const pricePerHour = {{ $vehicle->pricePerHour }};
+const pricePerDay = {{ $vehicle->pricePerDay }};
+
 // Open Google Maps in new tab
 function openMap(type) {
     const loc = type === 'pickup' ? document.getElementById('pickupLocation') : 
@@ -371,11 +389,9 @@ function openMap(type) {
     const addr = loc.value;
     
     if (addr) {
-        // Open Google Maps in new tab with the address
         const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
         window.open(mapUrl, '_blank');
         
-        // Store the map link
         const mapLinkField = type === 'pickup' ? document.getElementById('pickupMapLink') : 
                              type === 'return' ? document.getElementById('returnMapLink') : 
                              document.getElementById('destinationMapLink');
@@ -413,7 +429,6 @@ document.getElementById('registerDriverBtn')?.addEventListener('click', function
     const button = this;
     const message = document.getElementById('driverMessage');
     
-    // Get form data
     const driverData = {
         email: document.getElementById('driverEmail').value,
         name: document.getElementById('driverName').value,
@@ -427,17 +442,14 @@ document.getElementById('registerDriverBtn')?.addEventListener('click', function
         _token: '{{ csrf_token() }}'
     };
     
-    // Validate required fields
     if (!driverData.email || !driverData.name || !driverData.icNumber || !driverData.phone || !driverData.matricNumber) {
         showMessage('Please fill in all required fields.', 'error');
         return;
     }
     
-    // Disable button and show loading
     button.disabled = true;
     button.textContent = 'Registering...';
     
-    // Send AJAX request
     fetch('/register-customer', {
         method: 'POST',
         headers: {
@@ -450,7 +462,6 @@ document.getElementById('registerDriverBtn')?.addEventListener('click', function
     .then(data => {
         if (data.success) {
             showMessage('Driver registered successfully!', 'success');
-            // Optionally disable inputs after successful registration
             document.querySelectorAll('#driverInfoSection input').forEach(input => {
                 input.setAttribute('readonly', 'readonly');
             });
@@ -478,121 +489,110 @@ function showMessage(text, type) {
     message.style.border = type === 'success' ? '1px solid #c3e6cb' : '1px solid #f5c6cb';
 }
 
-   let baseGrandTotal = 0;
-    let promotionDiscount = 0;
 // Calculate duration and prices
-document.addEventListener('DOMContentLoaded', function() {
-    const pickupDateInput = document.querySelector('input[name="pickup_date"]');
-    const pickupTimeInput = document.querySelector('input[name="pickup_time"]');
-    const returnDateInput = document.querySelector('input[name="return_date"]');
-    const returnTimeInput = document.querySelector('input[name="return_time"]');
-    const durationInput = document.querySelector('.duration-box input');
+function calculateDurationAndPrice() {
+    const pickupDate = '{{ $pickupDate }}';
+    const pickupTime = '{{ $pickupTime }}';
+    const returnDate = '{{ $returnDate }}';
+    const returnTime = '{{ $returnTime }}';
 
-    const durationDisplayEl = document.getElementById('durationDisplay');
-    const totalByHourEl = document.getElementById('totalByHour');
-    const grandTotalEl = document.getElementById('grandTotal');
-    const bottomBarTotalEl = document.getElementById('bottomBarTotal');
-    const promotionDiscountEl = document.getElementById('promotionDiscount');
+    if (!pickupDate || !pickupTime || !returnDate || !returnTime) {
+        console.log('Missing date/time values');
+        return;
+    }
 
-    const pricePerHour = {{ $vehicle->pricePerHour }};
-    const pricePerDay = {{ $vehicle->pricePerDay }};
+    const pickup = new Date(`${pickupDate}T${pickupTime}`);
+    const returnDT = new Date(`${returnDate}T${returnTime}`);
 
-    function calculateDurationAndPrice() {
-        const pickup = new Date(`${pickupDateInput.value}T${pickupTimeInput.value}`);
-        const returnDT = new Date(`${returnDateInput.value}T${returnTimeInput.value}`);
+    console.log('Pickup:', pickup);
+    console.log('Return:', returnDT);
 
-        if (!pickupDateInput.value || !pickupTimeInput.value || !returnDateInput.value || !returnTimeInput.value || returnDT <= pickup) {
-            durationInput.value = '';
-            durationDisplayEl.textContent = '-';
-            totalByHourEl.textContent = 'MYR 0.00';
-            promotionDiscountEl.textContent = 'MYR 0.00';
-            grandTotalEl.textContent = 'MYR 0.00';
-            bottomBarTotalEl.textContent = 'MYR 0.00';
-            baseGrandTotal = 0;
-            return;
+    if (returnDT <= pickup) {
+        console.error('Invalid date range');
+        return;
+    }
+
+    const diffMs = returnDT - pickup;
+    const diffHours = Math.ceil(diffMs / (1000 * 60 * 60));
+
+    const days = Math.floor(diffHours / 24);
+    const remainingHours = diffHours % 24;
+
+    const durationText = days > 0
+        ? `${days} day${days > 1 ? 's' : ''} ${remainingHours} hour${remainingHours !== 1 ? 's' : ''}`
+        : `${diffHours} hour${diffHours !== 1 ? 's' : ''}`;
+
+    document.getElementById('durationInput').value = durationText;
+    document.getElementById('durationDisplay').textContent = durationText;
+
+    const totalByHour = diffHours * pricePerHour;
+    baseGrandTotal = (days * pricePerDay) + (remainingHours * pricePerHour);
+
+    document.getElementById('totalByHour').textContent = `MYR ${totalByHour.toFixed(2)}`;
+
+    console.log('Duration Hours:', diffHours);
+    console.log('Base Grand Total:', baseGrandTotal);
+
+    checkPromotion();
+}
+
+function checkPromotion() {
+    const today = new Date();
+    const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
+
+    fetch('/check-promotion', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({
+            day: dayName,
+            amount: baseGrandTotal
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Promotion response:', data);
+        
+        if (data.hasPromotion) {
+            promotionDiscount = data.discount;
+            document.getElementById('promotionDiscount').textContent = `- MYR ${promotionDiscount.toFixed(2)}`;
+            document.getElementById('promotionDiscount').style.color = '#28a745';
+            
+            let promoInput = document.getElementById('appliedPromoId');
+            if (!promoInput) {
+                promoInput = document.createElement('input');
+                promoInput.type = 'hidden';
+                promoInput.id = 'appliedPromoId';
+                promoInput.name = 'promo_id';
+                document.querySelector('form').appendChild(promoInput);
+            }
+            promoInput.value = data.promoID;
+        } else {
+            promotionDiscount = 0;
+            document.getElementById('promotionDiscount').textContent = '- MYR 0.00';
+            document.getElementById('promotionDiscount').style.color = '#333';
         }
 
-        const diffMs = returnDT - pickup;
-        const diffHours = Math.ceil(diffMs / (1000 * 60 * 60));
-
-        const days = Math.floor(diffHours / 24);
-        const remainingHours = diffHours % 24;
-
-        const durationText = days > 0
-            ? `${days} day${days > 1 ? 's' : ''} ${remainingHours} hour${remainingHours !== 1 ? 's' : ''}`
-            : `${diffHours} hour${diffHours !== 1 ? 's' : ''}`;
-
-        durationInput.value = durationText;
-        durationDisplayEl.textContent = durationText;
-
-        const totalByHour = diffHours * pricePerHour;
-        baseGrandTotal = (days * pricePerDay) + (remainingHours * pricePerHour);
-
-        totalByHourEl.textContent = `MYR ${totalByHour.toFixed(2)}`;
-
-        checkPromotion();
-    }
-
-    function checkPromotion() {
-        const today = new Date();
-        const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
-
-        fetch('/check-promotion', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({
-                day: dayName,
-                amount: baseGrandTotal
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.hasPromotion) {
-                promotionDiscount = data.discount;
-                promotionDiscountEl.textContent = `- MYR ${promotionDiscount.toFixed(2)}`;
-                promotionDiscountEl.style.color = '#28a745';
-                
-                let promoInput = document.getElementById('appliedPromoId');
-                if (!promoInput) {
-                    promoInput = document.createElement('input');
-                    promoInput.type = 'hidden';
-                    promoInput.id = 'appliedPromoId';
-                    promoInput.name = 'promo_id';
-                    document.querySelector('form').appendChild(promoInput);
-                }
-                promoInput.value = data.promoID;
-            } else {
-                promotionDiscount = 0;
-                promotionDiscountEl.textContent = 'MYR 0.00';
-                promotionDiscountEl.style.color = '#333';
-            }
-
-            const finalTotal = baseGrandTotal - promotionDiscount;
-            grandTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
-            bottomBarTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
-        })
-        .catch(error => {
-            console.error('Error checking promotion:', error);
-            promotionDiscount = 0;
-            promotionDiscountEl.textContent = 'MYR 0.00';
-            const finalTotal = baseGrandTotal;
-            grandTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
-            bottomBarTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
-        });
-    }
-
-    calculateDurationAndPrice();
-
-    [pickupDateInput, pickupTimeInput, returnDateInput, returnTimeInput].forEach(el =>
-        el.addEventListener('change', calculateDurationAndPrice)
-    );
-});
+        const finalTotal = baseGrandTotal - promotionDiscount;
+        document.getElementById('grandTotal').textContent = `MYR ${finalTotal.toFixed(2)}`;
+        document.getElementById('bottomBarTotal').textContent = `MYR ${finalTotal.toFixed(2)}`;
+        
+        console.log('Final Total:', finalTotal);
+    })
+    .catch(error => {
+        console.error('Error checking promotion:', error);
+        promotionDiscount = 0;
+        document.getElementById('promotionDiscount').textContent = '- MYR 0.00';
+        const finalTotal = baseGrandTotal;
+        document.getElementById('grandTotal').textContent = `MYR ${finalTotal.toFixed(2)}`;
+        document.getElementById('bottomBarTotal').textContent = `MYR ${finalTotal.toFixed(2)}`;
+    });
+}
 
 function goToPayment() {
-    const form = document.querySelector('form');
+    const form = document.getElementById('bookingForm');
     
     // Validate form
     if (!form.checkValidity()) {
@@ -600,14 +600,21 @@ function goToPayment() {
         return;
     }
     
-    // Remove any existing dynamic fields (to prevent duplicates)
+    // Check if locations are filled
+    if (!document.getElementById('pickupLocation').value || !document.getElementById('returnLocation').value) {
+        alert('Please fill in both pickup and return locations');
+        return;
+    }
+    
+    // Remove any existing dynamic fields
     document.querySelectorAll('input.dynamic-field').forEach(el => el.remove());
     
     const hiddenFields = [
         { name: 'subtotal', value: baseGrandTotal },
         { name: 'promotionDiscount', value: promotionDiscount },
         { name: 'total', value: (baseGrandTotal - promotionDiscount) },
-        { name: 'duration', value: document.querySelector('.duration-box input').value }
+        { name: 'duration', value: document.getElementById('durationInput').value },
+        { name: 'promo_id', value: document.getElementById('appliedPromoId')?.value || '' }
     ];
     
     hiddenFields.forEach(field => {
@@ -615,13 +622,25 @@ function goToPayment() {
         input.type = 'hidden';
         input.name = field.name;
         input.value = field.value;
-        input.classList.add('dynamic-field'); // For easy removal later
+        input.classList.add('dynamic-field');
         form.appendChild(input);
+    });
+    
+    console.log('Submitting form with data:', {
+        subtotal: baseGrandTotal,
+        promotionDiscount: promotionDiscount,
+        total: (baseGrandTotal - promotionDiscount)
     });
     
     // Submit form
     form.submit();
 }
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Page loaded, calculating prices...');
+    calculateDurationAndPrice();
+});
 </script>
 
 </body>
