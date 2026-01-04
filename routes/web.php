@@ -105,10 +105,6 @@ Route::middleware(['auth'])->prefix('staff')->name('staff.')->group(function () 
     Route::post('/payment/approve/{id}', [StaffController::class, 'approvePayment'])->name('payment.approve');
 });
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('welcome');
-
 Route::get('/fleet', function () {
     return view('fleet');
 })->name('fleet');

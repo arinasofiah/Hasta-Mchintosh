@@ -48,11 +48,7 @@ Route::middleware(['auth'])->group(function () {
     // Add this update route
     Route::put('/admin/customers/{id}', [AdminController::class, 'updateCustomer'])
         ->name('admin.customers.update');
-    Route::get('/fleet', [AdminController::class, 'fleet'])->name('admin.fleet');
-    Route::get('/vehicles/create', [AdminController::class, 'createVehicle'])->name('admin.vehicles.create');
-    Route::post('/vehicles', [AdminController::class, 'storeVehicle'])->name('admin.vehicles.store');
-    Route::put('/vehicles/{vehicleID}', [AdminController::class, 'updateVehicle'])->name('admin.vehicles.update');
-    Route::delete('/vehicles/{vehicleID}', [AdminController::class, 'destroyVehicle'])->name('admin.vehicles.destroy');
+    
    
     Route::get('/admin/staff', [AdminController::class, 'staff'])->name('admin.staff');
         Route::get('/staff/create', [AdminController::class, 'createStaff'])->name('admin.staff.create');
