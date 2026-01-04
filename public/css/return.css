@@ -63,7 +63,7 @@ textarea,
     cursor: pointer;
 }
 
-#drop-zone {
+#drop-zone-ticket,#drop-zone-photo {
     display: flex;
     align-items: center;
     justify-content: center;
