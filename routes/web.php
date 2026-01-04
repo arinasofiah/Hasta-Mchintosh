@@ -33,6 +33,7 @@ Route::get('/dashboard', function () {
 // Pickup & Return (public or auth? assuming auth later)
 Route::get('/pickup/{bookingID}', [PickUpController::class, 'show'])->name('pickup.show');
 Route::get('/pickup', [PickUpController::class, 'show']);
+Route::post('/pickup', [PickUpController::class, 'store'])->name('pickup.store');
 
 Route::get('/return/{bookingID}', [ReturnController::class, 'show'])->name('return.show');
 Route::post('/return', [ReturnController::class, 'store'])->name('return.store');
@@ -110,21 +111,5 @@ Route::middleware(['auth'])->prefix('staff')->name('staff.')->group(function () 
     Route::post('/commission/redeem', [StaffController::class, 'redeem'])->name('commission.redeem');
     Route::post('/payment/approve/{id}', [StaffController::class, 'approvePayment'])->name('payment.approve');
 });
-
-Route::get('/fleet', function () {
-    return view('fleet');
-})->name('fleet');
-
-Route::get('/select-vehicle', function () {
-    return view('selectVehicle');
-})->name('vehicle.select');
-
-Route::get('/booking-form', function () {
-    return view('bookingform');
-})->name('booking.form');
-
-Route::get('/payment-form', function () {
-    return view('paymentform');
-})->name('payment.form');
 
 require __DIR__.'/auth.php';

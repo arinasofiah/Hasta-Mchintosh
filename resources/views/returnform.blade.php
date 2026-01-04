@@ -31,8 +31,8 @@
  <form action="{{ route('return.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
         <input type="hidden" name="returnID" value="{{ $returnCar->returnID }}">
-        <input type="hidden" name="returnID" value="{{ $returnCar->returnID }}">
         <input type="hidden" name="vehicle_id" value="{{ $vehicle->id }}">
+        <input type="hidden" name="bookingID" value="{{ $booking->bookingID }}">
             <div id="drop-zone">
                 <p>Drop files to upload</p>
                 <span>or</span>
