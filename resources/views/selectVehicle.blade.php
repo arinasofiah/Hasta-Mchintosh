@@ -443,7 +443,13 @@
                     <a href="{{ route('register') }}" class="dropdown-item">Register</a>
                    
                 @endguest
-
+                @auth
+                <a href="{{ route('customer.profile') }}" class="dropdown-item" role="menuitem">My Profile</a>
+                <form method="POST" action="{{ route('logout') }}" class="dropdown-form">
+                    @csrf
+                    <button type="submit" class="dropdown-item" role="menuitem">Logout</button>
+                </form>
+            @endauth
                
             </div>
         </div>
@@ -451,6 +457,9 @@
         @guest
             <a id="username" href="{{ route('login') }}">Log in</a>
         @endguest
+            @auth
+        <span id="username">{{ Auth::user()->name }}</span>
+    @endauth
 
          </div>
     </div>
