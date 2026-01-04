@@ -27,11 +27,12 @@
         <div class="photo-upload">
             <p class="main_txt">Upload Photos</p>
             <p class="sub_txt">Upload photos of the car before returning it</p>
-
+ <form action="{{ route('return.store') }}" method="POST" enctype="multipart/form-data">
+    @csrf
             <div id="drop-zone">
                 <p>Drop files to upload</p>
                 <span>or</apan>
-                <p><input type="file" id="file-input" multiple accept="image/*" /></p>
+                <p><input type="file" id="file-input" name="returnPhoto" multiple accept="image/*" /></p>
             </div>
 
             <p class="main_txt">Upload Traffic Tickets</p>
@@ -40,17 +41,14 @@
             <div id="drop-zone">
                 <p>Drop files to upload</p>
                 <span>or</span>
-                <p><input type="file" id="file-input" multiple accept="image/*" /></p>
+                <p><input type="file" id="file-input" name="trafficTicketPhoto" multiple accept="image/*" /></p>
             </div>
-
         </div>
          <div class="return_form">
             <p class="main_txt">Return Details</p>
             <p class="sub_txt">Fill in return details</p>
             
 
-            <form action="{{ route('return.store') }}" method="POST" enctype="multipart/form-data">
-    @csrf
     <input type="hidden" name="vehicle_id" value="{{ $vehicle->id }}">
                 <div class="form-row">
                     <div class="input-group">

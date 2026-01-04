@@ -125,12 +125,11 @@
         @foreach($staffs as $staff)
             <div class="staff-card">
                 <div class="staff-info">
-                    <h4 class="mb-0">{{ $staff->name }}</h4>
-                    <p class="text-muted mb-0">{{ $staff->email }}</p>
-                    <p class="mb-0">
-                        <span class="badge bg-secondary">{{ $staff->position }}</span>
-                        <small class="text-muted ms-2">ID: {{ $staff->userID }}</small>
-                    </p>
+                    <h4 class="mb-2">{{ $staff->name }}</h4>
+                    <div class="text-muted small mt-3">
+                        <p class="mb-1">Email: {{ $staff->email }}</p>
+                        <p class="mb-0">Phone: {{ $staff->phoneNumber ?? 'N/A' }}</p>
+                    </div>
                 </div>
 
                 <div class="d-flex">

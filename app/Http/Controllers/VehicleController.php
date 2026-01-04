@@ -109,15 +109,19 @@ class VehicleController extends Controller
             'plateNumber' => 'required|unique:vehicles',
             'pricePerDay' => 'required|numeric',
             'seat' => 'required|integer',
+            'transmission' => 'required|in:Manual,Automatic',
+            'ac' => 'required|in:1,0',
+            'fuelType' => 'nullable|string|max:50',
+            'fuelLevel' => 'nullable|integer|min:0|max:100',
         ]);
 
         \App\Models\Vehicles::create($validated + [
             'status' => 'available',
-            'fuelType' => 'Petrol',
-            'fuelLevel' => 100,
+            'fuelType' => $request->fuelType ?? 'Petrol',
+            'fuelLevel' => $request->fuelLevel ?? 100,
             'pricePerHour' => $request->pricePerDay / 10,
+            'ac' => $request->ac == '1' ? 1 : 0, // Convert to integer
         ]);
-
 
         return redirect()->route('admin.fleet')->with('success', 'Vehicle added to fleet successfully!');
     }
@@ -129,10 +133,19 @@ class VehicleController extends Controller
         
         $validated = $request->validate([
             'model' => 'required|string',
-        'plateNumber' => 'required|unique:vehicles,plateNumber,' . $vehicleID . ',vehicleID',
+            'plateNumber' => 'required|unique:vehicles,plateNumber,' . $vehicleID . ',vehicleID',
             'status' => 'required',
             'pricePerDay' => 'required|numeric',
+            'transmission' => 'nullable|in:Manual,Automatic',
+            'ac' => 'nullable|in:1,0',
+            'fuelType' => 'nullable|string|max:50',
+            'fuelLevel' => 'nullable|integer|min:0|max:100',
         ]);
+
+        // Convert AC value to integer if provided
+        if ($request->has('ac')) {
+            $validated['ac'] = $request->ac == '1' ? 1 : 0;
+        }
 
         $vehicle->update($validated);
         return redirect()->back()->with('success', 'Vehicle updated successfully!');
@@ -260,17 +273,14 @@ class VehicleController extends Controller
     }
 
     public function start($vehicleID, Request $request)
-{
-    session([
-        'pickup_date'  => $request->pickup_date,
-        'pickup_time'  => $request->pickup_time,
-        'return_date'  => $request->return_date,
-        'return_time'  => $request->return_time,
-    ]);
+    {
+        session([
+            'pickup_date'  => $request->pickup_date,
+            'pickup_time'  => $request->pickup_time,
+            'return_date'  => $request->return_date,
+            'return_time'  => $request->return_time,
+        ]);
 
-    return redirect()->route('booking.form', $vehicleID);
-}
-
-
-
+        return redirect()->route('booking.form', $vehicleID);
+    }
 }

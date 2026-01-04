@@ -70,7 +70,7 @@
                         <label class="form-label fw-bold">Vehicle Type</label>
                         <select name="vehicleType" class="form-select">
                             <option value="Sedan">Sedan</option>
-                            <option value="Sedan">Hatchback</option>
+                            <option value="Hatchback">Hatchback</option>
                             <option value="SUV">SUV</option>
                             <option value="MPV">MPV</option>
                             <option value="Luxury">Luxury</option>
@@ -84,12 +84,47 @@
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Transmission Type</label>
+                        <select name="transmission" class="form-select" required>
+                            <option value="">Select Transmission</option>
+                            <option value="Manual">Manual</option>
+                            <option value="Automatic">Automatic</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Air Conditioning</label>
+                        <select name="ac" class="form-select" required>
+                            <option value="">Select AC Status</option>
+                            <option value="1">Yes</option>
+                            <option value="0">No</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold">Price Per Day (RM)</label>
                         <input type="number" name="pricePerDay" class="form-control" required>
                     </div>
                     <div class="col-md-6 mb-3">
-                          <label class="form-label fw-bold">Number of Seats</label>
+                        <label class="form-label fw-bold">Number of Seats</label>
                         <input type="number" name="seat" class="form-control" value="5" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Fuel Type</label>
+                        <select name="fuelType" class="form-select">
+                            <option value="Petrol">Petrol</option>
+                            <option value="Diesel">Diesel</option>
+                            <option value="Electric">Electric</option>
+                            <option value="Hybrid">Hybrid</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Fuel Level (%)</label>
+                        <input type="number" name="fuelLevel" class="form-control" min="0" max="100" value="100" required>
                     </div>
                 </div>
 

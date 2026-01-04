@@ -36,135 +36,145 @@ class CustomerController extends Controller
     /**
      * Display customer profile.
      */
-  public function profile()
-{
-    if (auth()->user()->userType !== 'customer') {
-        abort(403, 'Unauthorized. Customer access only.');
-    }
-    
-    $user = Auth::user();
-    $user->load('telephone'); // Load telephone relationship
-    
-    $customer = DB::table('customer')
-        ->where('userID', $user->userID)
-        ->first();
-    
-    return view('customer.profile', compact('user', 'customer'));
-}
-
-public function edit()
-{
-    if (auth()->user()->userType !== 'customer') {
-        abort(403, 'Unauthorized. Customer access only.');
-    }
-    
-    $user = Auth::user();
-    $user->load('telephone');
-    
-    $customer = DB::table('customer')
-        ->where('userID', $user->userID)
-        ->first();
-    
-    return view('customer.profile-edit', compact('user', 'customer'));
-}
-
-/**
- * Show the form for editing the profile.
- */
-
-/**
- * Update the user's profile.
- */
-public function update(Request $request)
-{
-    $user = Auth::user();
-    
-    $rules = [
-        'name' => 'required|string|max:255',
-        'email' => 'required|string|email|max:255|unique:users,email,' . $user->userID . ',userID',
-        'password' => 'nullable|min:8|confirmed',
-        'phone' => [
-            'required',
-            'string',
-            'max:15',
-            function ($attribute, $value, $fail) use ($user) {
-                // Check if phone exists for another user
-                $exists = DB::table('telephone')
-                    ->where('phoneNumber', $value)
-                    ->where('userID', '!=', $user->userID)
-                    ->exists();
-                    
-                if ($exists) {
-                    $fail('This phone number is already registered by another user.');
-                }
-            }
-        ],
-    ];
-    
-    $request->validate($rules);
-    
-    // Customer validation
-    $customerExists = DB::table('customer')
-        ->where('userID', $user->userID)
-        ->exists();
-    
-    if ($customerExists) {
-        $customerRules = [
-            'matricNumber' => 'nullable|string|max:20|unique:customer,matricNumber,' . $user->userID . ',userID',
-            'college' => 'nullable|string|max:100',
-            'faculty' => 'nullable|string|max:100',
-            'licenseNumber' => 'nullable|string|max:20',
-        ];
-        
-        $request->validate($customerRules);
-    }
-    
-    DB::transaction(function () use ($request, $user, $customerExists) {
-        // Update phone
-        $telephone = Telephone::where('userID', $user->userID)->first();
-        
-        if ($telephone) {
-            if ($telephone->phoneNumber != $request->phone) {
-                $telephone->update(['phoneNumber' => $request->phone]);
-            }
-        } else {
-            Telephone::create([
-                'phoneNumber' => $request->phone,
-                'userID' => $user->userID,
-            ]);
+    public function profile()
+    {
+        if (auth()->user()->userType !== 'customer') {
+            abort(403, 'Unauthorized. Customer access only.');
         }
         
-        // Update user
-        $updateData = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'updated_at' => now(),
-        ];
+        $user = Auth::user();
+        $user->load('telephone'); // Load telephone relationship
         
-        if ($request->filled('password')) {
-            $updateData['password'] = Hash::make($request->password);
-        }
-        
-        DB::table('users')
+        $customer = DB::table('customer')
             ->where('userID', $user->userID)
-            ->update($updateData);
+            ->first();
         
-        // Update customer
-        if ($customerExists) {
-            DB::table('customer')
-                ->where('userID', $user->userID)
-                ->update([
-                    'matricNumber' => $request->matricNumber ?? null,
-                    'college' => $request->college ?? null,
-                    'faculty' => $request->faculty ?? null,
-                    'licenseNumber' => $request->licenseNumber ?? null,
-                    'updated_at' => now(),
-                ]);
+        return view('customer.profile', compact('user', 'customer'));
+    }
+
+    public function edit()
+    {
+        if (auth()->user()->userType !== 'customer') {
+            abort(403, 'Unauthorized. Customer access only.');
         }
-    });
+        
+        $user = Auth::user();
+        $user->load('telephone');
+        
+        $customer = DB::table('customer')
+            ->where('userID', $user->userID)
+            ->first();
+        
+        return view('customer.edit-profile', compact('user', 'customer'));
+    }
+
+    /**
+     * Update the user's profile.
+     */
+    public function update(Request $request)
+    {
+        $user = Auth::user();
+        
+        $rules = [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->userID . ',userID',
+            'password' => 'nullable|min:8|confirmed',
+            'phone' => [
+                'required',
+                'string',
+                'max:15',
+                function ($attribute, $value, $fail) use ($user) {
+                    // Check if phone exists for another user
+                    $exists = DB::table('telephone')
+                        ->where('phoneNumber', $value)
+                        ->where('userID', '!=', $user->userID)
+                        ->exists();
+                        
+                    if ($exists) {
+                        $fail('This phone number is already registered by another user.');
+                    }
+                }
+            ],
+            // Emergency contact validation rules
+            'emergency_contact_name' => 'nullable|string|max:255',
+            'emergency_contact_phone' => 'nullable|string|max:20',
+            'emergency_contact_relationship' => 'nullable|string|max:50',
+        ];
+        
+        $request->validate($rules);
+        
+        // Customer validation
+        $customerExists = DB::table('customer')
+            ->where('userID', $user->userID)
+            ->exists();
+        
+        if ($customerExists) {
+            $customerRules = [
+                'matricNumber' => 'nullable|string|max:20|unique:customer,matricNumber,' . $user->userID . ',userID',
+                'college' => 'nullable|string|max:100',
+                'faculty' => 'nullable|string|max:100',
+                'licenseNumber' => 'nullable|string|max:20',
+            ];
+            
+            $request->validate($customerRules);
+        }
+        
+        DB::transaction(function () use ($request, $user, $customerExists) {
+            // Update phone
+            $telephone = Telephone::where('userID', $user->userID)->first();
+            
+            if ($telephone) {
+                if ($telephone->phoneNumber != $request->phone) {
+                    $telephone->update(['phoneNumber' => $request->phone]);
+                }
+            } else {
+                Telephone::create([
+                    'phoneNumber' => $request->phone,
+                    'userID' => $user->userID,
+                ]);
+            }
+            
+            // Update user
+            $updateData = [
+                'name' => $request->name,
+                'email' => $request->email,
+                'updated_at' => now(),
+            ];
+            
+            if ($request->filled('password')) {
+                $updateData['password'] = Hash::make($request->password);
+            }
+            
+            DB::table('users')
+                ->where('userID', $user->userID)
+                ->update($updateData);
+            
+            // Update or create customer
+            $customerData = [
+                'matricNumber' => $request->matricNumber ?? null,
+                'college' => $request->college ?? null,
+                'faculty' => $request->faculty ?? null,
+                'licenseNumber' => $request->licenseNumber ?? null,
+                // Emergency contact data
+                'emergency_contact_name' => $request->emergency_contact_name ?? null,
+                'emergency_contact_phone' => $request->emergency_contact_phone ?? null,
+                'emergency_contact_relationship' => $request->emergency_contact_relationship ?? null,
+                'updated_at' => now(),
+            ];
+            
+            if ($customerExists) {
+                DB::table('customer')
+                    ->where('userID', $user->userID)
+                    ->update($customerData);
+            } else {
+                $customerData['userID'] = $user->userID;
+                DB::table('customer')->insert($customerData);
+            }
+        });
+        
+        return redirect()->route('customer.profile')->with('success', 'Profile updated successfully!');
+    }
     
-    return redirect()->route('customer.profile')->with('success', 'Profile updated successfully!');
-}
     /**
      * Display customer bookings.
      */
@@ -213,67 +223,69 @@ public function update(Request $request)
         return view('customer.booking-form', compact('vehicle'));
     }
 
-   public function adminIndex(Request $request)
-{
-    // 1. Get status from URL (default to 'active')
-    $status = $request->get('status', 'active'); 
+    public function adminIndex(Request $request)
+    {
+        // 1. Get status from URL (default to 'active')
+        $status = $request->get('status', 'active'); 
+        
+        // 2. Map 'active'/'blacklisted' strings to boolean 0/1 for the database
+        $isBlacklisted = ($status === 'blacklisted') ? true : false;
+
+        // 3. Build query joining with 'users' for the name and email
+        $query = DB::table('customer')
+            ->join('users', 'customer.userID', '=', 'users.userID')
+            ->where('customer.isBlacklisted', $isBlacklisted)
+            ->select('customer.*', 'users.name', 'users.email');
+
+        // 4. Handle Search
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function($q) use ($search) {
+                $q->where('users.name', 'LIKE', "%{$search}%")
+                  ->orWhere('customer.userID', 'LIKE', "%{$search}%")
+                  ->orWhere('customer.matricNumber', 'LIKE', "%{$search}%")
+                  ->orWhere('customer.emergency_contact_name', 'LIKE', "%{$search}%")
+                  ->orWhere('customer.emergency_contact_phone', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // 5. Handle Faculty/College Filter
+        if ($request->filled('filter')) {
+            $filter = $request->input('filter');
+            $query->where(function($q) use ($filter) {
+                $q->where('customer.faculty', $filter)
+                  ->orWhere('customer.college', $filter);
+            });
+        }
+
+        $customers = $query->get();
+        $totalCount = $customers->count();
+
+        // 6. Calculate outstanding payments from bookings table
+        foreach ($customers as $customer) {
+            $customer->outstanding_payment = DB::table('bookings')
+                ->where('customerID', $customer->userID)
+                ->where('paymentStatus', 'unpaid')
+                ->sum('totalPrice');
+        }
+
+        return view('admin.customers', compact('customers', 'totalCount', 'status'));
+    }
     
-    // 2. Map 'active'/'blacklisted' strings to boolean 0/1 for the database
-    $isBlacklisted = ($status === 'blacklisted') ? true : false;
+    public function adminUpdate(Request $request, $id)
+    {
+        $request->validate([
+            'isBlacklisted' => 'required|boolean',
+            'blacklistReason' => 'nullable|string|max:255'
+        ]);
 
-    // 3. Build query joining with 'users' for the name and email
-    $query = DB::table('customer')
-        ->join('users', 'customer.userID', '=', 'users.userID')
-        ->where('customer.isBlacklisted', $isBlacklisted)
-        ->select('customer.*', 'users.name', 'users.email');
+        DB::table('customer')->where('userID', $id)->update([
+            'isBlacklisted' => $request->isBlacklisted,
+            'blacklistReason' => $request->blacklistReason,
+            'updated_at' => now(),
+        ]);
 
-    // 4. Handle Search
-    if ($request->filled('search')) {
-        $search = $request->input('search');
-        $query->where(function($q) use ($search) {
-            $q->where('users.name', 'LIKE', "%{$search}%")
-              ->orWhere('customer.userID', 'LIKE', "%{$search}%");
-        });
+        $message = $request->isBlacklisted ? 'Customer blacklisted.' : 'Customer activated.';
+        return back()->with('success', $message);
     }
-
-    // 5. Handle Faculty/College Filter
-    if ($request->filled('filter')) {
-        $filter = $request->input('filter');
-        $query->where(function($q) use ($filter) {
-            $q->where('customer.faculty', $filter)
-              ->orWhere('customer.college', $filter);
-        });
-    }
-
-    $customers = $query->get();
-    $totalCount = $customers->count();
-
-    // 6. Calculate outstanding payments from bookings table
-    foreach ($customers as $customer) {
-        $customer->outstanding_payment = DB::table('bookings')
-            ->where('customerID', $customer->userID)
-            ->where('paymentStatus', 'unpaid')
-            ->sum('totalPrice');
-    }
-
-    return view('admin.customers', compact('customers', 'totalCount', 'status'));
-}
-public function adminUpdate(Request $request, $id)
-{
-    $request->validate([
-        'isBlacklisted' => 'required|boolean',
-        'blacklistReason' => 'nullable|string|max:255'
-    ]);
-
-    DB::table('customer')->where('userID', $id)->update([
-        'isBlacklisted' => $request->isBlacklisted,
-        'blacklistReason' => $request->blacklistReason,
-        'updated_at' => now(),
-    ]);
-
-    $message = $request->isBlacklisted ? 'Customer blacklisted.' : 'Customer activated.';
-    return back()->with('success', $message);
-}
-
-
 }

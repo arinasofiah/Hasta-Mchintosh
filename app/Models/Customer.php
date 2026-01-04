@@ -14,12 +14,19 @@ class Customer extends Model
     public $incrementing = false; // Linked to User ID
 
     protected $fillable = [
-        'userID',
+         'userID',
         'matricNumber',
         'licenseNumber',
+        'licenseExpiryDate',
         'college',
         'faculty',
+        'emergency_contact_name',
+        'emergency_contact_phone',
+        'emergency_contact_relationship',
         'depoBalance',
+        'rewardPoints',
+        'isBlacklisted',
+        'blacklistReason'
     ];
 
     // 3NF Relationship: Customer belongs to a User

@@ -53,6 +53,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/staff/create', [AdminController::class, 'createStaff'])->name('admin.staff.create');
 
     Route::get('/reporting', [ReportController::class, 'reportingIndex'])->name('admin.reporting');
+    Route::get('/admin/reporting/export', [ReportController::class, 'exportReport'])->name('admin.reporting.export');
 
     Route::get('/promotions', [PromotionController::class, 'index'])->name('admin.promotions');
     Route::post('/promotions/store', [PromotionController::class, 'store'])->name('admin.promotions.store');

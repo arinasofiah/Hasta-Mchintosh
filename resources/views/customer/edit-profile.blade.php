@@ -11,95 +11,8 @@
     {{-- Custom CSS --}}
     <link href="{{ asset('css/header.css') }}" rel="stylesheet">
     <link href="{{ asset('css/footer.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/profile.css') }}" rel="stylesheet">
     
-    <style>
-        * {
-        font-family: 'Poppins', sans-serif;
-        }
-        .edit-profile-container {
-            max-width: 600px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-        
-        .edit-card {
-            background: white;
-            border-radius: 8px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-label {
-            font-weight: 600;
-            margin-bottom: 8px;
-            display: block;
-            color: #333;
-        }
-        
-        .form-control {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        
-        .form-control:focus {
-            border-color: #bc3737;
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(188, 55, 55, 0.1);
-        }
-        
-        .btn {
-            padding: 10px 25px;
-            border-radius: 5px;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-        
-        .btn-primary {
-            background-color: #bc3737;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background-color: #a02e2e;
-        }
-        
-        .btn-secondary {
-            background-color: #6c757d;
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            background-color: #545b62;
-        }
-        
-        .button-group {
-            display: flex;
-            gap: 15px;
-            margin-top: 30px;
-        }
-        
-        .form-hint {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-            display: block;
-        }
-        
-        .readonly-field {
-            background-color: #f8f9fa;
-            cursor: not-allowed;
-        }
-    </style>
 </head>
 <body class="has-scrollable-content">
     
@@ -134,20 +47,46 @@
         </div>
     </div>
 
+    {{-- Main Content with Sidebar --}}
+    <div class="content-with-sidebar">
+        {{-- Sidebar Menu --}}
+        <div class="sidebar">
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="{{ route('customer.profile') }}">
+                        My Profile
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('customer.bookings') }}">
+                        My Bookings
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        Loyalty Card
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('customer.profile.edit') }}" class="active">
+                        Edit Profile
+                    </a>
+                </li>
+            </ul>
+        </div>
 
-    <div class="edit-profile-container">
-        <div class="edit-card">
-            <h2 class="text-center mb-4" style="color: #bc3737;">Edit Profile</h2>
+        <div class="edit-profile-container">
+            <h2 class="profile-title">Edit Profile</h2>
             
             @if(session('success'))
-                <div class="alert alert-success">
+                <div class="alert alert-success" style="background: #d4edda; color: #155724; padding: 12px; border-radius: 5px; margin-bottom: 20px;">
                     {{ session('success') }}
                 </div>
             @endif
             
             @if($errors->any())
-                <div class="alert alert-danger">
-                    <ul>
+                <div class="alert alert-danger" style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 5px; margin-bottom: 20px;">
+                    <ul style="margin: 0; padding-left: 20px;">
                         @foreach($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach
@@ -159,30 +98,34 @@
                 @csrf
                 @method('PUT')
                 
-                {{-- User Information --}}
-                <div class="form-group">
-                    <label class="form-label">Full Name</label>
-                    <input type="text" name="name" class="form-control" value="{{ old('name', $user->name) }}" required>
+                {{-- User Information Section --}}
+                <div class="info-section">
+                    <div class="section-label">Personal Information</div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" name="name" class="form-control" value="{{ old('name', $user->name) }}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Email Address *</label>
+                        <input type="email" name="email" class="form-control" value="{{ old('email', $user->email) }}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Phone Number *</label>
+                        <input type="tel" name="phone" class="form-control" 
+                               value="{{ old('phone', $user->phoneNumber ?? $user->telephone->phoneNumber ?? '') }}" 
+                               required>
+                        <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">Format: 10-11 digits (e.g., 0123456789)</small>
+                    </div>
                 </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Email Address</label>
-                    <input type="email" name="email" class="form-control" value="{{ old('email', $user->email) }}" required>
-                </div>
-                
-                {{-- Phone Number Section --}}
-                <div class="form-group">
-    <label class="form-label">Phone Number</label>
-    <input type="tel" name="phone" class="form-control" 
-           value="{{ old('phone', $user->phone) }}" 
-           pattern="[0-9]{10,11}" 
-           title="Enter 10-11 digit phone number" 
-           required>
-    <small class="form-hint">Format: 10-11 digits (e.g., 0123456789)</small>
-</div>
                 
                 {{-- Customer Information --}}
                 @if($customer)
+                <div class="info-section">
+                    <div class="section-label">Customer Information</div>
+                    
                     <div class="form-group">
                         <label class="form-label">Matric Number</label>
                         <input type="text" name="matricNumber" class="form-control" value="{{ old('matricNumber', $customer->matricNumber) }}">
@@ -190,33 +133,97 @@
                     
                     <div class="form-group">
                         <label class="form-label">College</label>
-                        <input type="text" name="college" class="form-control" value="{{ old('college', $customer->college) }}">
+                        <select name="college" class="form-control">
+                            <option value="">Select College</option>
+                            <option value="KTR" {{ old('college', $customer->college) == 'KTR' ? 'selected' : '' }}>KOLEJ TUN RAZAK (KTR)</option>
+                            <option value="KTF" {{ old('college', $customer->college) == 'KTF' ? 'selected' : '' }}>KOLEJ TUN FATIMAH (KTF)</option>
+                            <option value="KRP" {{ old('college', $customer->college) == 'KRP' ? 'selected' : '' }}>KOLEJ RAHMAN PUTRA (KRP)</option>
+                            <option value="KTDI" {{ old('college', $customer->college) == 'KTDI' ? 'selected' : '' }}>KOLEJ TUN DR. ISMAIL (KTDI)</option>
+                            <option value="KTC" {{ old('college', $customer->college) == 'KTC' ? 'selected' : '' }}>KOLEJ TUANKU CANSELOR (KTC)</option>
+                            <option value="KTHO" {{ old('college', $customer->college) == 'KTHO' ? 'selected' : '' }}>KOLEJ TUN HUSSEIN ONN (KTHO)</option>
+                            <option value="KDSE" {{ old('college', $customer->college) == 'KDSE' ? 'selected' : '' }}>MeKOLEJ DATIN SRI ENDON (KDSE)rbau</option>
+                            <option value="K9/K10" {{ old('college', $customer->college) == 'K9/K10' ? 'selected' : '' }}>KOLEJ 9/10</option>
+                            <option value="KP" {{ old('college', $customer->college) == 'KP' ? 'selected' : '' }}>KOLEJ PERDANA (KP)</option>
+                            <option value="KDOJ" {{ old('college', $customer->college) == 'KDOJ' ? 'selected' : '' }}>KOLEJ DATO’ ONN JAAFAR (KDOJ)</option>
+                            <option value="KLG" {{ old('college', $customer->college) == 'KLG' ? 'selected' : '' }}>KLG</option>
+                            <option value="UTMI" {{ old('college', $customer->college) == 'UTMI' ? 'selected' : '' }}>UTM International</option>
+                            <option value="Outside UTM" {{ old('college', $customer->college) == 'Outside UTM' ? 'selected' : '' }}>None</option>
+                        </select>
                     </div>
                     
                     <div class="form-group">
                         <label class="form-label">Faculty</label>
-                        <input type="text" name="faculty" class="form-control" value="{{ old('faculty', $customer->faculty) }}">
+                        <select name="faculty" class="form-control">
+                            <option value="">Select Faculty</option>
+                            <option value="FKM" {{ old('faculty', $customer->faculty) == 'FKM' ? 'selected' : '' }}>MECHANICAL ENGINEERING</option>
+                            <option value="FS" {{ old('faculty', $customer->faculty) == 'FS' ? 'selected' : '' }}>SCIENCE </option>
+                            <option value="FM" {{ old('faculty', $customer->faculty) == 'FM' ? 'selected' : '' }}>MANAGEMENT </option>
+                            <option value="FKA" {{ old('faculty', $customer->faculty) == 'FKA' ? 'selected' : '' }}>CIVIL ENGINEERING</option>
+                            <option value="FC" {{ old('faculty', $customer->faculty) == 'FC' ? 'selected' : '' }}>COMPUTING </option>
+                            <option value="FKE" {{ old('faculty', $customer->faculty) == 'FKE' ? 'selected' : '' }}>ELECTRICAL ENGINEERING</option>
+                            <option value="FSSH" {{ old('faculty', $customer->faculty) == 'FSSH' ? 'selected' : '' }}>SOCIAL SCIENCES AND HUMANITIES</option>
+                            <option value="FKT" {{ old('faculty', $customer->faculty) == 'FKT' ? 'selected' : '' }}>CHEMICAL AND ENERGY ENGINEERING</option>
+                            <option value="FABU" {{ old('faculty', $customer->faculty) == 'FABU' ? 'selected' : '' }}>BUILT ENVIRONMENT AND SURVEYING</option>
+                            <option value="FEST" {{ old('faculty', $customer->faculty) == 'FEST' ? 'selected' : '' }}>EDUCATIONAL SCIENCES AND TECHNOLOGY</option>
+
+                        </select>
                     </div>
                     
                     <div class="form-group">
-                        <label class="form-label">License Number</label>
+                        <label class="form-label">License Number *</label>
                         <input type="text" name="licenseNumber" class="form-control" value="{{ old('licenseNumber', $customer->licenseNumber) }}">
                     </div>
+                </div>
                 @endif
                 
-                {{-- Password Update (Optional) --}}
-                <div class="form-group">
-                    <label class="form-label">New Password (leave blank to keep current)</label>
-                    <input type="password" name="password" class="form-control">
-                    <small class="form-hint">Leave empty if you don't want to change password</small>
+                {{-- Emergency Contact Section --}}
+                <div class="info-section">
+                    <div class="section-label">Emergency Contact Information</div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Emergency Contact Name</label>
+                        <input type="text" name="emergency_contact_name" class="form-control" 
+                               value="{{ old('emergency_contact_name', $customer->emergency_contact_name ?? '') }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Emergency Contact Phone</label>
+                        <input type="tel" name="emergency_contact_phone" class="form-control" 
+                               value="{{ old('emergency_contact_phone', $customer->emergency_contact_phone ?? '') }}">
+                        <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">Format: 10-11 digits (e.g., 0123456789)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Relationship</label>
+                        <select name="emergency_contact_relationship" class="form-control">
+                            <option value="">Select Relationship</option>
+                            <option value="Parent" {{ old('emergency_contact_relationship', $customer->emergency_contact_relationship ?? '') == 'Parent' ? 'selected' : '' }}>Parent</option>
+                            <option value="Spouse" {{ old('emergency_contact_relationship', $customer->emergency_contact_relationship ?? '') == 'Spouse' ? 'selected' : '' }}>Spouse</option>
+                            <option value="Sibling" {{ old('emergency_contact_relationship', $customer->emergency_contact_relationship ?? '') == 'Sibling' ? 'selected' : '' }}>Sibling</option>
+                            <option value="Relative" {{ old('emergency_contact_relationship', $customer->emergency_contact_relationship ?? '') == 'Relative' ? 'selected' : '' }}>Relative</option>
+                            <option value="Friend" {{ old('emergency_contact_relationship', $customer->emergency_contact_relationship ?? '') == 'Friend' ? 'selected' : '' }}>Friend</option>
+                            <option value="Other" {{ old('emergency_contact_relationship', $customer->emergency_contact_relationship ?? '') == 'Other' ? 'selected' : '' }}>Other</option>
+                        </select>
+                    </div>
                 </div>
                 
-                <div class="form-group">
-                    <label class="form-label">Confirm New Password</label>
-                    <input type="password" name="password_confirmation" class="form-control">
+                {{-- Password Update Section --}}
+                <div class="info-section">
+                    <div class="section-label">Password Update (Optional)</div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">New Password</label>
+                        <input type="password" name="password" class="form-control">
+                        <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">Leave empty if you don't want to change password</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Confirm New Password</label>
+                        <input type="password" name="password_confirmation" class="form-control">
+                    </div>
                 </div>
                 
-                <div class="button-group">
+                <div class="actions">
                     <button type="submit" class="btn btn-primary">Update Profile</button>
                     <a href="{{ route('customer.profile') }}" class="btn btn-secondary">Cancel</a>
                 </div>
