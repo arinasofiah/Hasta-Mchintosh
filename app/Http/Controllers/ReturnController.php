@@ -30,7 +30,8 @@ class ReturnController extends Controller
             'isFined' =>  'required|in:yes,no',
             'returnPhoto' => 'required|image|mimes:jpeg,png,jpg|max:2048',
             'trafficTicketPhoto' => 'image|mimes:jpeg,png,jpg|max:2048',
-            'feedback' => 'required|min:20'
+            'feedback' => 'required|min:20',
+            'fuelAmount' => 'required'
         ]);
 
         $returnCar = ReturnCar::findOrFail($request->returnID);
@@ -48,6 +49,7 @@ class ReturnController extends Controller
         $returnCar->trafficTicketPhoto = 'uploads/tickets/' . $fileName;
     }
         $returnCar->bookingID = $request->bookingID;
+        $returnCar->fuelAmount = $request->fuelAmount;
         $returnCar->isfined = ($request->isFined === 'yes') ? 1 : 0;
         $returnCar->feedback = $request->feedback;
         $returnCar->save();

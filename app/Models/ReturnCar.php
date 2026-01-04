@@ -16,7 +16,8 @@ class ReturnCar extends Model
         'returnPhoto',
         'isfined',
         'trafficTicketPhoto',
-        'feedback'
+        'feedback',
+        'fuelAmount'
     ];
 
      public function booking()

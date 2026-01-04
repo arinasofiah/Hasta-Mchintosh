@@ -38,7 +38,6 @@
                 <span>or</span>
                 <p><input type="file" id="file-input" name="returnPhoto" multiple accept="image/*" /></p>
             </div>
-
             <p class="main_txt">Upload Traffic Tickets</p>
             <p class="sub_txt">Upload traffic tickets, if you received any</p>
 
@@ -62,10 +61,13 @@
                         <p class="static-data">{{ $returnCar->returnDate }}</p>
                     </div>
                 </div>
-
+                 <div class="fuel_gr">
+            <label for="fuel">Fuel amount:</label>
+            <input type="text" id="fuel" name="fuelAmount" placeholder="e.g. 0">
+            </div>
                     <div class="radio-section">
                         <span>Were any traffic tickets received?</span>
-                        <label class="radio-label"><input type="radio" name="isFined" value="yes"> <psna>Yes</span></label>
+                        <label class="radio-label"><input type="radio" name="isFined" value="yes"> <span>Yes</span></label>
                         <label class="radio-label"><input type="radio" name="isFined" value="no"> <span>No</span></label>
                     </div>
 
