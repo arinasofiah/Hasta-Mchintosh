@@ -5,27 +5,34 @@ namespace App\Http\Controllers;
 use App\Models\Vehicles;
 use Illuminate\Http\Request;
 use App\Models\ReturnCar;
+use App\Models\Bookings;
 
 class ReturnController extends Controller
 {
-    public function show()
+    public function show($bookingID)
     {
-        $vehicle = Vehicles::findOrFail(1);
-        return view('returnform',compact('vehicle'));
+        $booking = Bookings::with('vehicle')->findOrFail($bookingID);
+
+        $returnCar = ReturnCar::where('bookingID', $bookingID)->first();
+        
+        return view('returnform', [
+            'booking' => $booking,
+            'vehicle' => $booking->vehicle,
+            'returnCar' => $returnCar
+        ]);
     }
 
      public function store(Request $request)
     {
         $request->validate([
-            'returnLocation' => 'required|string|max:255',
-            'returnDate' => 'required|date',
+            'returnID' => 'required|exists:return,returnID',
             'isFined' =>  'required|in:yes,no',
             'returnPhoto' => 'required|image|mimes:jpeg,png,jpg|max:2048',
             'trafficTicketPhoto' => 'image|mimes:jpeg,png,jpg|max:2048',
             'feedback' => 'required|min:20'
         ]);
 
-        $returnCar = new ReturnCar();
+        $returnCar = ReturnCar::findOrFail($request->returnID);
 
          if ($request->hasFile('returnPhoto')) {
         $file = $request->file('returnPhoto');
@@ -39,9 +46,7 @@ class ReturnController extends Controller
         $file->move(public_path('uploads/tickets'), $fileName);
         $returnCar->trafficTicketPhoto = 'uploads/tickets/' . $fileName;
     }
-
-        $returnCar->returnLocation = $request->returnLocation;
-        $returnCar->returnDate = $request->returnDate;
+        $returnCar->bookingID = $request->bookingID;
         $returnCar->isfined = ($request->isFined === 'yes') ? 1 : 0;
         $returnCar->feedback = $request->feedback;
         $returnCar->save();

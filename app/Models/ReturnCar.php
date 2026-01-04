@@ -10,6 +10,7 @@ class ReturnCar extends Model
     protected $primaryKey = 'returnID';       
     
     protected $fillable = [
+        'bookingID',
         'returnDate',
         'returnLocation',
         'returnPhoto',
@@ -17,4 +18,9 @@ class ReturnCar extends Model
         'trafficTicketPhoto',
         'feedback'
     ];
+
+     public function booking()
+    {
+        return $this->belongsTo(Bookings::class, 'bookingID', 'bookingID');
+    }
 };
