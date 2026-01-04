@@ -54,6 +54,6 @@ class ReturnController extends Controller
         $returnCar->feedback = $request->feedback;
         $returnCar->save();
 
-        return redirect()->back()->with('success', 'Data saved successfully!');
+        return redirect()->route('dashboard')->with('success', 'Return completed!');
     }
 }

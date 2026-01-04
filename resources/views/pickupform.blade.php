@@ -114,6 +114,12 @@ document.addEventListener('DOMContentLoaded', function () {
         var myModal = new bootstrap.Modal(document.getElementById('emergencyModal'));
         myModal.show();
     @endif
+    const understoodBtn = document.getElementById('confirmSave');
+    if (understoodBtn) {
+        understoodBtn.addEventListener('click', function() {
+            window.location.href = "{{ route('dashboard') }}";
+        });
+    }
 });
 </script>
 
