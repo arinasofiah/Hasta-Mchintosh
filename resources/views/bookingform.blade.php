@@ -189,41 +189,70 @@ textarea.input {resize:vertical; min-height:100px;}
             </div>
 
             <div style="margin-top: 20px;">
-                <label style="font-size:13px; display:flex; align-items:center; gap:8px; cursor:pointer;">
-                    <input type="checkbox" id="forSomeoneElse" name="for_someone_else" value="1" onchange="toggleDriverInfo()">
-                    <span>I am not a driver for this vehicle. I am making this reservation for someone else.</span>
-                </label>
-            </div>
+    <label style="font-size:13px; display:flex; align-items:center; gap:8px; cursor:pointer;">
+        <input type="checkbox" id="forSomeoneElse" name="for_someone_else" value="1" onchange="toggleDriverInfo()">
+        <span>I am not a driver for this vehicle. I am making this reservation for someone else.</span>
+    </label>
+</div>
 
-            <!-- Driver Info Section (Hidden by default) -->
-            <div id="driverInfoSection" style="display: none; border: 1px solid #ddd; padding: 15px; margin-top: 15px; border-radius: 5px; background: #f9f9f9;">
-                <h5 style="margin-bottom: 15px;">Driver Information</h5>
-                
-                <div style="margin-bottom: 15px;">
-                    <div class="field-label">Matric Number</div>
-                    <input type="text" id="matricNumber" name="matricNumber" class="input" placeholder="Enter matric number">
-                </div>
-                
-                <div style="margin-bottom: 15px;">
-                    <div class="field-label">License Number</div>
-                    <input type="text" id="licenseNumber" name="licenseNumber" class="input" placeholder="Enter license number">
-                </div>
-                
-                <div style="margin-bottom: 15px;">
-                    <div class="field-label">College</div>
-                    <input type="text" id="college" name="college" class="input" placeholder="Enter college">
-                </div>
-                
-                <div style="margin-bottom: 15px;">
-                    <div class="field-label">Faculty</div>
-                    <input type="text" id="faculty" name="faculty" class="input" placeholder="Enter faculty">
-                </div>
-                
-                <div>
-                    <div class="field-label">Deposit Balance (RM)</div>
-                    <input type="number" step="0.01" id="depoBalance" name="depoBalance" class="input" placeholder="0.00">
-                </div>
-            </div>
+<!-- Driver Info Section (Hidden by default) -->
+<div id="driverInfoSection" style="display: none; border: 1px solid #ddd; padding: 15px; margin-top: 15px; border-radius: 5px; background: #f9f9f9;">
+    <h5 style="margin-bottom: 15px;">Driver Information</h5>
+    
+    <!-- Success/Error Messages -->
+    <div id="driverMessage" style="display: none; padding: 10px; margin-bottom: 15px; border-radius: 5px;"></div>
+    
+    <div style="margin-bottom: 15px;">
+        <div class="field-label">Email Address</div>
+        <input type="email" id="driverEmail" name="driver_email" class="input" placeholder="e.g. driver@gmail.com">
+    </div>
+    
+    <div style="margin-bottom: 15px;">
+        <div class="field-label">Full Name</div>
+        <input type="text" id="driverName" name="driver_name" class="input" placeholder="Enter full name (as per IC)">
+        <small class="hint">Ensure it matches IC (Capital Letters).</small>
+    </div>
+    
+    <div style="margin-bottom: 15px;">
+        <div class="field-label">IC/Passport Number</div>
+        <input type="text" id="driverIC" name="driver_ic" class="input" placeholder="e.g. 990101-01-1234">
+        <small class="hint">With dash (-).</small>
+    </div>
+    
+    <div style="margin-bottom: 15px;">
+        <div class="field-label">Phone Number</div>
+        <input type="tel" id="driverPhone" name="driver_phone" class="input" placeholder="e.g. 0196507378">
+    </div>
+    
+    <div style="margin-bottom: 15px;">
+        <div class="field-label">Matric Number</div>
+        <input type="text" id="matricNumber" name="driver_matric" class="input" placeholder="e.g. A21CS0001">
+    </div>
+    
+    <div style="margin-bottom: 15px;">
+        <div class="field-label">License Number</div>
+        <input type="text" id="licenseNumber" name="driver_license" class="input" placeholder="Enter license number">
+    </div>
+    
+    <div style="margin-bottom: 15px;">
+        <div class="field-label">College</div>
+        <input type="text" id="college" name="driver_college" class="input" placeholder="Enter college">
+    </div>
+    
+    <div style="margin-bottom: 15px;">
+        <div class="field-label">Faculty</div>
+        <input type="text" id="faculty" name="driver_faculty" class="input" placeholder="Enter faculty">
+    </div>
+    
+    <div style="margin-bottom: 15px;">
+        <div class="field-label">Deposit Balance (RM)</div>
+        <input type="number" step="0.01" id="depoBalance" name="driver_deposit" class="input" placeholder="0.00">
+    </div>
+    
+    <button type="button" id="registerDriverBtn" class="book-btn" style="width: 100%;">
+        Register Driver
+    </button>
+</div>
         </div>
 
         <!-- Charges Card -->
@@ -248,7 +277,7 @@ textarea.input {resize:vertical; min-height:100px;}
             </div>
             <div class="charge-row" style="color: #28a745;">
                 <span>Promotion Discount</span>
-                <span id="promotionDiscount">MYR 0.00</span>
+                <span id="promotionDiscount">MYR -0.00</span>
             </div>
             <div class="charge-row grand">
                 <span>Grand Total</span>
@@ -302,12 +331,14 @@ function openMap(type) {
 function toggleDriverInfo() {
     const checkbox = document.getElementById('forSomeoneElse');
     const section = document.getElementById('driverInfoSection');
-    const inputs = section.querySelectorAll('input');
+    const inputs = section.querySelectorAll('input:not([type="button"])');
     
     if (checkbox.checked) {
         section.style.display = 'block';
         inputs.forEach(input => {
-            input.setAttribute('required', 'required');
+            if (input.id !== 'depoBalance' && input.id !== 'licenseNumber') {
+                input.setAttribute('required', 'required');
+            }
         });
     } else {
         section.style.display = 'none';
@@ -315,7 +346,78 @@ function toggleDriverInfo() {
             input.removeAttribute('required');
             input.value = '';
         });
+        document.getElementById('driverMessage').style.display = 'none';
     }
+}
+
+// Register driver via AJAX
+document.getElementById('registerDriverBtn')?.addEventListener('click', function() {
+    const button = this;
+    const message = document.getElementById('driverMessage');
+    
+    // Get form data
+    const driverData = {
+        email: document.getElementById('driverEmail').value,
+        name: document.getElementById('driverName').value,
+        icNumber: document.getElementById('driverIC').value,
+        phone: document.getElementById('driverPhone').value,
+        matricNumber: document.getElementById('matricNumber').value,
+        licenseNumber: document.getElementById('licenseNumber').value,
+        college: document.getElementById('college').value,
+        faculty: document.getElementById('faculty').value,
+        depoBalance: document.getElementById('depoBalance').value,
+        _token: '{{ csrf_token() }}'
+    };
+    
+    // Validate required fields
+    if (!driverData.email || !driverData.name || !driverData.icNumber || !driverData.phone || !driverData.matricNumber) {
+        showMessage('Please fill in all required fields.', 'error');
+        return;
+    }
+    
+    // Disable button and show loading
+    button.disabled = true;
+    button.textContent = 'Registering...';
+    
+    // Send AJAX request
+    fetch('/register-customer', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify(driverData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage('Driver registered successfully!', 'success');
+            // Optionally disable inputs after successful registration
+            document.querySelectorAll('#driverInfoSection input').forEach(input => {
+                input.setAttribute('readonly', 'readonly');
+            });
+            button.textContent = 'Registered ✓';
+        } else {
+            showMessage(data.message || 'Registration failed. Please try again.', 'error');
+            button.disabled = false;
+            button.textContent = 'Register Driver';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showMessage('An error occurred. Please try again.', 'error');
+        button.disabled = false;
+        button.textContent = 'Register Driver';
+    });
+});
+
+function showMessage(text, type) {
+    const message = document.getElementById('driverMessage');
+    message.textContent = text;
+    message.style.display = 'block';
+    message.style.backgroundColor = type === 'success' ? '#d4edda' : '#f8d7da';
+    message.style.color = type === 'success' ? '#155724' : '#721c24';
+    message.style.border = type === 'success' ? '1px solid #c3e6cb' : '1px solid #f5c6cb';
 }
 
    let baseGrandTotal = 0;

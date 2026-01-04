@@ -550,9 +550,6 @@
                     <option value="Bank Islam">Bank Islam</option>
                     <option value="Bank Muamalat">Bank Muamalat</option>
                     <option value="Bank Rakyat">Bank Rakyat</option>
-                    <option value="OCBC">OCBC</option>
-                    <option value="Standard Chartered">Standard Chartered</option>
-                    <option value="UOB">UOB</option>
                     <option value="Touch 'n Go eWallet">Touch 'n Go eWallet</option>
                 </select>
             </div>
@@ -591,7 +588,7 @@
                 <p style="color: #999; font-size: 13px; margin-bottom: 10px;">Kindly upload a screenshot of receipt payment</p>
                 <div class="upload-area" id="uploadArea">
                     <div class="upload-icon">📄</div>
-                    <p class="upload-text">Drag files here or click "Browse" to upload</p>
+                    <p class="upload-text" id="uploadText">Drag files here or click "Browse" to upload</p>
                     <button type="button" class="browse-btn" id="browseBtn">Browse</button>
                     <input type="file" id="fileInput" name="payment_receipt" accept="image/*" style="display: none;" required>
                     <!-- Preview container -->
@@ -599,9 +596,9 @@
                         <img id="previewImage" src="" alt="Receipt Preview" style="max-width: 100%; max-height: 200px; border: 1px solid #ddd; border-radius: 5px;">
                         <button type="button" id="removeImage" style="margin-top: 10px; background: #d94444; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Remove</button>
                     </div>
+                    <!-- Error message container -->
+                    <div id="fileError" style="color: red; font-size: 12px; margin-top: 5px; display: none;"></div>
                 </div>
-                <!-- Error message container -->
-                <div id="fileError" style="color: red; font-size: 12px; margin-top: 5px; display: none;"></div>
             </div>
         </div>
     </div>
@@ -701,81 +698,185 @@
         });
     });
 
-    // File upload
-    const fileInput = document.getElementById('fileInput');
-    const uploadArea = document.querySelector('.upload-area');
-    const browseBtn = document.getElementById('browseBtn');
-    const uploadText = uploadArea.querySelector('.upload-text');
-    const imagePreview = document.getElementById('imagePreview');
-    const previewImage = document.getElementById('previewImage');
-    const removeImageBtn = document.getElementById('removeImage');
-    const fileError = document.getElementById('fileError');
+    
+        const fileInput = document.getElementById('fileInput');
+        const browseBtn = document.getElementById('browseBtn');
+        const uploadText = document.getElementById('uploadText');
+        const imagePreview = document.getElementById('imagePreview');
+        const previewImage = document.getElementById('previewImage');
+        const removeImageBtn = document.getElementById('removeImage');
+        const fileError = document.getElementById('fileError');
+        const uploadArea = document.getElementById('uploadArea');
 
-    browseBtn.addEventListener('click', () => {
-        fileInput.click();
-    });
-
-    fileInput.addEventListener('change', function(e) {
-        if (e.target.files.length > 0) {
-            uploadArea.querySelector('.upload-text').textContent = 'Selected: ' + e.target.files[0].name;
+        // Make the Browse button work
+        if (browseBtn) {
+            browseBtn.addEventListener('click', function() {
+                // Trigger the hidden file input when Browse is clicked
+                fileInput.click();
+            });
         }
-    });
 
-    uploadArea.addEventListener('dragover', e => {
-        e.preventDefault();
-        uploadArea.style.borderColor = '#d94444';
-    });
-
-    uploadArea.addEventListener('dragleave', () => {
-        uploadArea.style.borderColor = '#ddd';
-    });
-
-    uploadArea.addEventListener('drop', e => {
-        e.preventDefault();
-        uploadArea.style.borderColor = '#ddd';
-        if (e.dataTransfer.files.length > 0) {
-            fileInput.files = e.dataTransfer.files;
-            uploadArea.querySelector('.upload-text').textContent = 'Selected: ' + e.dataTransfer.files[0].name;
+        // Handle file selection
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    const file = e.target.files[0];
+                    
+                    // Validate file type
+                    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                    if (!validTypes.includes(file.type)) {
+                        showError('Please select a valid image file (JPEG, JPG, PNG, or GIF).');
+                        fileInput.value = '';
+                        return;
+                    }
+                    
+                    // Validate file size (max 5MB)
+                    const maxSize = 5 * 1024 * 1024;
+                    if (file.size > maxSize) {
+                        showError('File size exceeds 5MB. Please select a smaller file.');
+                        fileInput.value = '';
+                        return;
+                    }
+                    
+                    // Update text and show preview
+                    uploadText.textContent = file.name;
+                    showImagePreview(file);
+                    hideError();
+                }
+            });
         }
-    });
 
-    // Show terms
-    function showTermsModal() {
-        document.getElementById('termsModal').style.display = 'block';
+        // Handle drag and drop
+        if (uploadArea) {
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadArea.style.borderColor = '#d94444';
+                uploadArea.style.backgroundColor = '#fff';
+            });
+
+            uploadArea.addEventListener('dragleave', function() {
+                uploadArea.style.borderColor = '#ddd';
+                uploadArea.style.backgroundColor = '#fafafa';
+            });
+
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadArea.style.borderColor = '#ddd';
+                uploadArea.style.backgroundColor = '#fafafa';
+                
+                if (e.dataTransfer.files.length > 0) {
+                    const file = e.dataTransfer.files[0];
+                    fileInput.files = e.dataTransfer.files;
+                    
+                    // Validate file
+                    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                    if (!validTypes.includes(file.type)) {
+                        showError('Please select a valid image file (JPEG, JPG, PNG, or GIF).');
+                        fileInput.value = '';
+                        return;
+                    }
+                    
+                    const maxSize = 5 * 1024 * 1024;
+                    if (file.size > maxSize) {
+                        showError('File size exceeds 5MB. Please select a smaller file.');
+                        fileInput.value = '';
+                        return;
+                    }
+                    
+                    uploadText.textContent = file.name;
+                    showImagePreview(file);
+                    hideError();
+                }
+            });
+        }
+
+        // Show image preview
+        function showImagePreview(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImage.src = e.target.result;
+                imagePreview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Remove image
+        if (removeImageBtn) {
+            removeImageBtn.addEventListener('click', function() {
+                fileInput.value = '';
+                uploadText.textContent = 'Drag files here or click "Browse" to upload';
+                imagePreview.style.display = 'none';
+                previewImage.src = '';
+                hideError();
+            });
+        }
+
+        // Error handling functions
+        function showError(message) {
+            if (fileError) {
+                fileError.textContent = message;
+                fileError.style.display = 'block';
+            }
+        }
+
+        function hideError() {
+            if (fileError) {
+                fileError.style.display = 'none';
+            }
+        }
+
+// Show terms modal
+function showTermsModal() {
+    const termsModal = document.getElementById('termsModal');
+    if (termsModal) {
+        termsModal.style.display = 'block';
+    }
+}
+
+// Form submission
+document.getElementById('paymentForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const termsCheckbox = document.getElementById('termsCheckbox');
+    const terms = termsCheckbox ? termsCheckbox.checked : false;
+    
+    if (!terms) {
+        alert('Please accept Terms and Conditions');
+        return;
     }
 
-    // Form submission
-    document.getElementById('paymentForm').addEventListener('submit', function(e) {
-        e.preventDefault();
+    // Validate file is selected
+    if (!fileInput.files.length) {
+        showError('Please upload a payment receipt.');
+        return;
+    }
 
-        const terms = document.getElementById('termsCheckbox').checked;
-        if (!terms) {
-            alert('Please accept Terms and Conditions');
-            return;
+    const formData = new FormData(this);
+
+    fetch("{{ route('booking.confirm') }}", {
+        method: 'POST',
+        body: formData,
+        // ⚠️ IMPORTANT: Do NOT set Content-Type header for FormData with files
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
         }
-
-        const formData = new FormData(this);
-
-        fetch("{{ route('booking.confirm') }}", {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const successModal = document.getElementById('successModal');
+            if (successModal) {
+                successModal.style.display = 'block';
             }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById('successModal').style.display = 'block';
-            } else {
-                alert(data.message || 'Submission failed. Please try again.');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred. Please try again.');
-        });
+        } else {
+            alert(data.message || 'Submission failed. Please try again.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
     });
+});
 </script>
 
 </body>

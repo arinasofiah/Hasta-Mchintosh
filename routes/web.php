@@ -13,6 +13,7 @@ use App\Http\Controllers\StaffController;
 use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\PromotionController;
 use App\Http\Controllers\LoyaltyController;
+use App\Http\Controllers\CustomerController;
 
 // Public routes
 Route::view('/signup', 'signup');
@@ -70,6 +71,8 @@ Route::middleware(['auth'])->prefix('booking')->name('booking.')->group(function
     Route::get('/history', [BookingController::class, 'bookingHistory'])->name('history'); // ✅
     Route::post('/payment-form', [BookingController::class, 'showPaymentForm'])->name('payment.form');
 });
+
+Route::post('/register-customer', [CustomerController::class, 'registerCustomer'])->name('customer.register');
 
 // Payment-related routes (used during booking flow)
 Route::middleware(['auth'])->group(function () {
