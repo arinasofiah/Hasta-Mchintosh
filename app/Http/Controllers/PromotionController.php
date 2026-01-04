@@ -5,16 +5,25 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Promotion;
 use App\Models\Vehicles;
+use App\Models\Voucher;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class PromotionController extends Controller
 {
     public function index()
     {
         $promotions = Promotion::all();
-
         $vehicleModels = Vehicles::select('model')->distinct()->get();
 
-        return view('admin.promotions', compact('promotions', 'vehicleModels'));
+        $vouchers = Voucher::where('isUsed', 0)->orderBy('created_at', 'desc')->get();
+
+        $staffMembers = User::where('userType', 'staff')
+                            ->join('staff', 'users.userID', '=', 'staff.userID')
+                            ->select('users.name', 'users.email', 'staff.*') 
+                            ->get();
+
+        return view('admin.promotions', compact('promotions', 'vehicleModels', 'vouchers', 'staffMembers'));
     }
 
     public function store(Request $request)
@@ -34,7 +43,6 @@ class PromotionController extends Controller
         $promo->discountValue = $request->discountValue;
         $promo->applicableDays = $request->applicableDays; 
         $promo->applicableModel = $request->applicableModel ?? 'All';
-
         $promo->save();
 
         return back()->with('success', 'Promotion created successfully!');
@@ -45,5 +53,41 @@ class PromotionController extends Controller
         $promo = Promotion::findOrFail($id);
         $promo->delete();
         return back()->with('success', 'Promotion removed!');
+    }
+
+    public function storeVoucher(Request $request)
+    {
+        $request->validate([
+            'value' => 'required|numeric',
+            'expiryDate' => 'required|date',
+        ]);
+
+        $voucher = new Voucher();
+        
+        $voucher->voucherType = 'cash_reward'; 
+        $voucher->value = $request->value;
+        
+        $voucher->expiryTime = strtotime($request->expiryDate); 
+        
+        $voucher->isUsed = 0; // 0 = false
+        $voucher->save();
+
+        return back()->with('success', 'Voucher created! System ID: ' . $voucher->voucherCode);
+    }
+
+    public function destroyVoucher($id)
+    {
+        $voucher = Voucher::where('voucherCode', $id)->firstOrFail();
+        $voucher->delete();
+        return back()->with('success', 'Voucher deleted!');
+    }
+
+    public function resetCommission($staffUserID)
+    {
+        DB::table('staff')
+            ->where('userID', $staffUserID)
+            ->update(['commissionCount' => 0]);
+
+        return back()->with('success', 'Commission marked as paid! Count reset to 0.');
     }
 }
