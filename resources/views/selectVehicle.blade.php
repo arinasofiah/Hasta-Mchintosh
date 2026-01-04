@@ -504,10 +504,17 @@
     </div>
 
     <!-- Featured Vehicle -->
-    <div class="featured-vehicle">
-        <div class="vehicle-image">
-            <img src="{{ asset($featuredVehicle->image ?? 'img/vehicles/default.jpg') }}" alt="{{ $featuredVehicle->model }}">
-        </div>
+   <!-- Featured Vehicle -->
+<div class="featured-vehicle">
+    <div class="vehicle-image">
+        @if($featuredVehicle->vehiclePhoto)
+            <img src="{{ Storage::url($featuredVehicle->vehiclePhoto) }}" 
+                 alt="{{ $featuredVehicle->model }}"
+                 onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.jpg') }}'">
+        @else
+            <img src="{{ asset('img/vehicles/default.jpg') }}" alt="{{ $featuredVehicle->model }}">
+        @endif
+    </div>
 
     <div class="vehicle-details">
         <h2 class="vehicle-name">{{ $featuredVehicle->model }}</h2>
@@ -517,48 +524,54 @@
             <span class="price-amount">RM {{ $featuredVehicle->pricePerDay }}</span> / day
         </div>
 
-            <div class="vehicle-specs">
-                <span>Seats: {{ $featuredVehicle->seat }}</span>
-                <span>AC: {{ $featuredVehicle->ac }}</span>
-                <span>Transmission: {{ $featuredVehicle->transmission }}</span>
-                <span>Fuel: {{ $featuredVehicle->fuelType }}</span>
-            </div>
+        <div class="vehicle-specs">
+            <span>Seats: {{ $featuredVehicle->seat }}</span>
+            <span>AC: {{ $featuredVehicle->ac == 1 ? 'Yes' : 'No' }}</span>
+            <span>Transmission: {{ $featuredVehicle->transmission }}</span>
+            <span>Fuel: {{ $featuredVehicle->fuelType }}</span>
+        </div>
 
-            <div class="availability-section">
-                @if($featuredVehicle->status == 'available')
-                    <button class="availability-badge">Available!</button>
-                    <button class="book-btn" onclick="handleBooking()">Book</button>
-                    
-                    <script>
-                        function handleBooking(){
-                            @auth
-                                window.location.href = "{{ route('booking.form', ['vehicleID' => $featuredVehicle->vehicleID]) }}";
-                            @else
-                                window.location.href = "{{ route('login') }}";
-                            @endauth
-                        }
-                    </script>
-                @else
-                    <span class="availability-badge" style="border-color: #999; color: #999;">Not Available</span>
-                @endif
-            </div>
+        <div class="availability-section">
+            @if($featuredVehicle->status == 'available')
+                <button class="availability-badge">Available!</button>
+                <button class="book-btn" onclick="handleBooking()">Book</button>
+                
+                <script>
+                    function handleBooking(){
+                        @auth
+                            window.location.href = "{{ route('booking.form', ['vehicleID' => $featuredVehicle->vehicleID]) }}";
+                        @else
+                            window.location.href = "{{ route('login') }}";
+                        @endauth
+                    }
+                </script>
+            @else
+                <span class="availability-badge" style="border-color: #999; color: #999;">Not Available</span>
+            @endif
         </div>
     </div>
+</div>
 
     <!-- Other Vehicles -->
     <div class="vehicle-grid">
-        @foreach($otherVehicles as $vehicle)
-        <div class="vehicle-card">
-            <div class="card-image">
-                <img src="{{ asset($vehicle->image ?? 'img/vehicles/default.jpg') }}" alt="{{ $vehicle->model }}">
-            </div>
+    @foreach($otherVehicles as $vehicle)
+    <div class="vehicle-card">
+        <div class="card-image">
+            @if($vehicle->vehiclePhoto)
+                <img src="{{ Storage::url($vehicle->vehiclePhoto) }}" 
+                     alt="{{ $vehicle->model }}"
+                     onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.jpg') }}'">
+            @else
+                <img src="{{ asset('img/vehicles/default.jpg') }}" alt="{{ $vehicle->model }}">
+            @endif
+        </div>
 
-            <div class="card-header">
-                <h3 class="card-name">{{ $vehicle->model }}</h3>
-                <div class="card-price">RM{{ $vehicle->pricePerDay }}</div>
-            </div>
-            
-            <p class="card-type">{{ $vehicle->vehicleType }}</p>
+        <div class="card-header">
+            <h3 class="card-name">{{ $vehicle->model }}</h3>
+            <div class="card-price">RM{{ $vehicle->pricePerDay }}</div>
+        </div>
+        
+        <p class="card-type">{{ $vehicle->vehicleType }}</p>
 
             <div class="card-specs">
     
