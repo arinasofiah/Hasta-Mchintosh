@@ -74,7 +74,7 @@ Route::middleware(['auth'])->prefix('booking')->name('booking.')->group(function
     Route::get('/{vehicleID}', [BookingController::class, 'showForm'])->name('form');
     Route::post('/{vehicleID}', [BookingController::class, 'store'])->name('store');
     Route::post('/start/{vehicleID}', [BookingController::class, 'start'])->name('start');
-    Route::post('/confirm', [BookingController::class, 'confirmBooking'])->name('confirm');
+    Route::post('/booking/confirm', [BookingController::class, 'confirmBooking'])->name('confirm');
     Route::get('/history', [BookingController::class, 'bookingHistory'])->name('history'); // ✅
     Route::post('/payment-form', [BookingController::class, 'showPaymentForm'])->name('payment.form');
 });

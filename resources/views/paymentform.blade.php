@@ -957,9 +957,77 @@ if (closeSuccess) {
 }
 
 // Form Submission
-if (document.getElementById('paymentForm')) {
-    document.getElementById('paymentForm').addEventListener('submit', handleFormSubmit);
-}
+document.getElementById('paymentForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const termsCheckbox = document.getElementById('termsCheckbox');
+    if (termsCheckbox && !termsCheckbox.checked) {
+        alert('Please accept Terms and Conditions');
+        return;
+    }
+
+    if (!fileInput.files.length) {
+        showError('Please upload a payment receipt.');
+        return;
+    }
+    
+    const submitBtn = this.querySelector('.submit-btn');
+    if(submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Processing...';
+    }
+
+    const formData = new FormData(this);
+
+    // Debug: Log what's being sent
+    console.log('Sending form data:');
+    for (let pair of formData.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+    }
+
+    fetch("{{ route('booking.confirm') }}", {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        }
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Response data:', data);
+        if (data.success) {
+            const successModal = document.getElementById('successModal');
+            if (successModal) successModal.style.display = 'block';
+        } else {
+            alert(data.message || 'Submission failed. Please try again.');
+            if(submitBtn) { 
+                submitBtn.disabled = false; 
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Confirm Payment'; 
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Fetch error:', error);
+        alert('An error occurred. Please check console for details.');
+        if(submitBtn) { 
+            submitBtn.disabled = false; 
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Confirm Payment'; 
+        }
+    });
+});
+
+// Success modal button handlers
+document.getElementById('viewBookings').addEventListener('click', () => {
+    window.location.href = "{{ route('booking.history') }}";
+});
+
+document.getElementById('closeSuccess').addEventListener('click', () => {
+    successModal.style.display = 'none';
+});
 
 // Voucher Handling
 document.querySelectorAll('.tab-btn').forEach(btn => {

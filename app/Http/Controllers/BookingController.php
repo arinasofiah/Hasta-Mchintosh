@@ -306,8 +306,9 @@ class BookingController extends Controller
 
     public function confirmBooking(Request $request)
 {
-        \Log::info('Booking request received', $request->all()); // ✅ ADD THIS LINE
-
+        \Log::info('Booking request received', $request->all());
+        \Log::info('confirmBooking called');
+        \Log::info('Request data:', $request->all());
     try {
         $request->validate([
             'vehicleID' => 'required|exists:vehicles,vehicleID',
