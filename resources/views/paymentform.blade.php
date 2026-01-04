@@ -608,6 +608,7 @@
                 <p class="company-name">HASTA TRAVEL SDN BHD</p>
             </div>
 
+
             <div class="form-group">
                 <label>Upload Receipt</label>
                 <p style="color: #999; font-size: 13px; margin-bottom: 10px;">Kindly upload a screenshot of receipt payment</p>
@@ -625,6 +626,7 @@
                     <div id="fileError" style="color: red; font-size: 12px; margin-top: 5px; display: none;"></div>
                 </div>
             </div>
+
         </div>
     </div>
 
@@ -645,8 +647,6 @@
         <h3>Terms and Conditions</h3>
         <p style="text-align:left;margin:20px 0;line-height:1.5;">
             By proceeding with this booking, you agree to the following terms:<br>
-            - Payments must be made within 10 minutes of booking confirmation.<br>
-            - Failure to upload valid proof of payment will result in automatic cancellation.<br>
             - Vehicle must be returned in the same condition as received.<br>
             - Full liability applies for damages or late return.<br>
             - HASTA Travel reserves the right to cancel bookings for suspicious activity.
@@ -733,122 +733,125 @@
         const fileError = document.getElementById('fileError');
         const uploadArea = document.getElementById('uploadArea');
 
-        // Make the Browse button work
-        if (browseBtn) {
-            browseBtn.addEventListener('click', function() {
-                // Trigger the hidden file input when Browse is clicked
-                fileInput.click();
-            });
-        }
+// Make the Browse button work
+if (browseBtn) {
+    browseBtn.addEventListener('click', function(e) {
+        e.preventDefault(); // Prevent form submission
+        e.stopPropagation(); // Stop event bubbling
+        fileInput.click();
+    });
+}
 
-        // Handle file selection
-        if (fileInput) {
-            fileInput.addEventListener('change', function(e) {
-                if (e.target.files.length > 0) {
-                    const file = e.target.files[0];
-                    
-                    // Validate file type
-                    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-                    if (!validTypes.includes(file.type)) {
-                        showError('Please select a valid image file (JPEG, JPG, PNG, or GIF).');
-                        fileInput.value = '';
-                        return;
-                    }
-                    
-                    // Validate file size (max 5MB)
-                    const maxSize = 5 * 1024 * 1024;
-                    if (file.size > maxSize) {
-                        showError('File size exceeds 5MB. Please select a smaller file.');
-                        fileInput.value = '';
-                        return;
-                    }
-                    
-                    // Update text and show preview
-                    uploadText.textContent = file.name;
-                    showImagePreview(file);
-                    hideError();
-                }
-            });
-        }
-
-        // Handle drag and drop
-        if (uploadArea) {
-            uploadArea.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                uploadArea.style.borderColor = '#d94444';
-                uploadArea.style.backgroundColor = '#fff';
-            });
-
-            uploadArea.addEventListener('dragleave', function() {
-                uploadArea.style.borderColor = '#ddd';
-                uploadArea.style.backgroundColor = '#fafafa';
-            });
-
-            uploadArea.addEventListener('drop', function(e) {
-                e.preventDefault();
-                uploadArea.style.borderColor = '#ddd';
-                uploadArea.style.backgroundColor = '#fafafa';
-                
-                if (e.dataTransfer.files.length > 0) {
-                    const file = e.dataTransfer.files[0];
-                    fileInput.files = e.dataTransfer.files;
-                    
-                    // Validate file
-                    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-                    if (!validTypes.includes(file.type)) {
-                        showError('Please select a valid image file (JPEG, JPG, PNG, or GIF).');
-                        fileInput.value = '';
-                        return;
-                    }
-                    
-                    const maxSize = 5 * 1024 * 1024;
-                    if (file.size > maxSize) {
-                        showError('File size exceeds 5MB. Please select a smaller file.');
-                        fileInput.value = '';
-                        return;
-                    }
-                    
-                    uploadText.textContent = file.name;
-                    showImagePreview(file);
-                    hideError();
-                }
-            });
-        }
-
-        // Show image preview
-        function showImagePreview(file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                previewImage.src = e.target.result;
-                imagePreview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        }
-
-        // Remove image
-        if (removeImageBtn) {
-            removeImageBtn.addEventListener('click', function() {
+// Handle file selection
+if (fileInput) {
+    fileInput.addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+            const file = e.target.files[0];
+            
+            // Validate file type
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            if (!validTypes.includes(file.type)) {
+                showError('Please select a valid image file (JPEG, JPG, PNG, or GIF).');
                 fileInput.value = '';
-                uploadText.textContent = 'Drag files here or click "Browse" to upload';
-                imagePreview.style.display = 'none';
-                previewImage.src = '';
-                hideError();
-            });
-        }
-
-        // Error handling functions
-        function showError(message) {
-            if (fileError) {
-                fileError.textContent = message;
-                fileError.style.display = 'block';
+                return;
             }
-        }
-
-        function hideError() {
-            if (fileError) {
-                fileError.style.display = 'none';
+            
+            // Validate file size (max 5MB)
+            const maxSize = 5 * 1024 * 1024;
+            if (file.size > maxSize) {
+                showError('File size exceeds 5MB. Please select a smaller file.');
+                fileInput.value = '';
+                return;
             }
+            
+            // Update text and show preview
+            uploadText.textContent = file.name;
+            showImagePreview(file);
+            hideError();
         }
+    });
+}
+
+// Handle drag and drop
+if (uploadArea) {
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#d94444';
+        uploadArea.style.backgroundColor = '#fff';
+    });
+
+    uploadArea.addEventListener('dragleave', function(e) {
+        uploadArea.style.borderColor = '#ddd';
+        uploadArea.style.backgroundColor = '#fafafa';
+    });
+
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#ddd';
+        uploadArea.style.backgroundColor = '#fafafa';
+        
+        if (e.dataTransfer.files.length > 0) {
+            const file = e.dataTransfer.files[0];
+            
+            // Validate file
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            if (!validTypes.includes(file.type)) {
+                showError('Please select a valid image file (JPEG, JPG, PNG, or GIF).');
+                return;
+            }
+            
+            const maxSize = 5 * 1024 * 1024;
+            if (file.size > maxSize) {
+                showError('File size exceeds 5MB. Please select a smaller file.');
+                return;
+            }
+            
+            // Assign file to input
+            fileInput.files = e.dataTransfer.files;
+            uploadText.textContent = file.name;
+            showImagePreview(file);
+            hideError();
+        }
+    });
+}
+
+// Show image preview
+function showImagePreview(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        previewImage.src = e.target.result;
+        imagePreview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+}
+
+// Remove image
+if (removeImageBtn) {
+    removeImageBtn.addEventListener('click', function(e) {
+        e.preventDefault(); // Prevent form submission
+        e.stopPropagation(); // Stop event bubbling
+        fileInput.value = '';
+        uploadText.textContent = 'Drag files here or click "Browse" to upload';
+        imagePreview.style.display = 'none';
+        previewImage.src = '';
+        hideError();
+    });
+}
+
+// Error handling functions
+function showError(message) {
+    if (fileError) {
+        fileError.textContent = message;
+        fileError.style.display = 'block';
+    }
+}
+
+function hideError() {
+    if (fileError) {
+        fileError.style.display = 'none';
+        fileError.textContent = '';
+    }
+}
 
 // Show terms modal
 function showTermsModal() {
@@ -856,6 +859,31 @@ function showTermsModal() {
     if (termsModal) {
         termsModal.style.display = 'block';
     }
+}
+
+// Form submission
+const paymentForm = document.getElementById('paymentForm');
+if (paymentForm) {
+    paymentForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const termsCheckbox = document.getElementById('termsCheckbox');
+        const terms = termsCheckbox ? termsCheckbox.checked : false;
+        
+        if (!terms) {
+            alert('Please accept Terms and Conditions');
+            return;
+        }
+
+        // Validate file is selected
+        if (!fileInput.files.length) {
+            showError('Please upload a payment receipt.');
+            return;
+        }
+
+        // If all validations pass, submit the form
+        this.submit();
+    });
 }
 
 // Form submission
