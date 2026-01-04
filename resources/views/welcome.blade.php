@@ -9,7 +9,7 @@
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
       <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     {{-- Custom CSS --}}
     <link href="{{ asset('css/header.css') }}" rel="stylesheet">
     <link href="{{ asset('css/footer.css') }}" rel="stylesheet">
@@ -138,42 +138,71 @@
 
 </div>
 
-<div class="footer">
-    <div class="footer-content">
-        <div class="logo">
-            <img src="{{ asset('img/hasta_logo.jpg') }}" alt="Hasta Travel Logo">
-        </div>
-
-        <div class="footer-item">
-            <div class="footer-icon">📍</div>
-            <div>
-                <span class="title">Address</span><br>
-                Student Mall UTM<br>
-                Skudai, 81300, Johor Bahru
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-section">
+            <div class="footer-logo">
+                <img src="{{ asset('img/hasta_logo.jpg') }}" alt="Hasta Logo">
+            </div>
+            <div class="social-icons">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-x-twitter"></i></a>
+                <a href="#"><i class="fab fa-youtube"></i></a>
             </div>
         </div>
 
-        <div class="footer-item">
-            <div class="footer-icon">✉️</div>
-            <div>
-                <span class="title">Email</span><br>
-                <a href="mailto:hastatravel@gmail.com">hastatravel@gmail.com</a>
+        <div class="footer-section contact-info">
+            <div class="contact-item">
+                <span class="contact-icon">📍</span>
+                <div class="contact-text">
+                    <span class="label">Address</span>
+                    <p>Student Mall UTM<br>Skudai, 81300, Johor Bahru</p>
+                </div>
+            </div>
+            <div class="contact-item">
+                <span class="contact-icon">✉️</span>
+                <div class="contact-text">
+                    <span class="label">Email</span>
+                    <p><a href="mailto:hastatravel@gmail.com">hastatravel@gmail.com</a></p>
+                </div>
+            </div>
+            <div class="contact-item">
+                <span class="contact-icon">📞</span>
+                <div class="contact-text">
+                    <span class="label">Phone</span>
+                    <p><a href="tel:01110900700">011-1090 0700</a></p>
+                </div>
             </div>
         </div>
 
-        <div class="footer-item">
-            <div class="footer-icon">📞</div>
-            <div>
-                <span class="title">Phone</span><br>
-                <a href="tel:01110900700">011-1090 0700</a>
-            </div>
+        <div class="footer-section links-column">
+            <h5>Useful links</h5>
+            <ul>
+                <li><a href="#">About us</a></li>
+                <li><a href="#">Contact us</a></li>
+                <li><a href="#">Gallery</a></li>
+                <li><a href="#">Blog</a></li>
+                <li><a href="#">F.A.Q</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section links-column">
+            <h5>Vehicles</h5>
+            <ul>
+                <li><a href="#">Sedan</a></li>
+                <li><a href="#">Hatchback</a></li>
+                <li><a href="#">MPV</a></li>
+                <li><a href="#">Minivan</a></li>
+                <li><a href="#">SUV</a></li>
+            </ul>
         </div>
     </div>
-    
-    <div class="copyright">
+     <div class="copyright">
+
         © {{ date('Y') }} Hasta Travel & Tour. All rights reserved.
-    </div>
-</div>
 
+    </div>
+</footer>
 </body>
 </html>
