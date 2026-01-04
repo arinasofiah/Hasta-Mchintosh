@@ -11,15 +11,35 @@ use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
-    public function index()
-    {
-        // Check if user is admin
-        if (auth()->user()->userType !== 'admin') {
-            abort(403, 'Unauthorized. Admin access only.');
-        }
-        
-        return view('admin.dashboard');
+   public function index()
+{
+    if (auth()->user()->userType !== 'admin') {
+        abort(403, 'Unauthorized. Admin access only.');
     }
+
+    // Existing Stats
+    $totalVehicles = DB::table('vehicles')->count();
+    $availableCount = DB::table('vehicles')->where('status', 'available')->count();
+    $onRentCount = DB::table('vehicles')->where('status', 'rented')->count();
+    $maintenanceCount = DB::table('vehicles')->where('status', 'maintenance')->count();
+
+    // NEW: Get usage data for the Pie Chart (Top 5 most used models currently on rent)
+    $usageData = DB::table('vehicles')
+        ->select('model', DB::raw('count(*) as count'))
+        ->where('status', 'rented')
+        ->groupBy('model')
+        ->orderBy('count', 'desc')
+        ->take(5)
+        ->get();
+
+    return view('admin.dashboard', compact(
+        'totalVehicles', 
+        'availableCount', 
+        'onRentCount', 
+        'maintenanceCount',
+        'usageData'
+    ));
+}
 
 public function customers(Request $request)
 {

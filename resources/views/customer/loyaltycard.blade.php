@@ -118,7 +118,7 @@
         <div class="sidebar">
             <ul class="sidebar-menu">
                 <li><a href="{{ route('customer.profile') }}">My Profile</a></li>
-                <li><a href="{{ route('customer.bookings') }}">My Bookings</a></li>
+                <li><a href="{{ route('bookingHistory') }}">My Bookings</a></li>
                 
                 <li><a href="{{ route('customer.loyaltycard') }}" class="active">Loyalty Card</a></li>
                 

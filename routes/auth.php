@@ -72,7 +72,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/profile/update', [CustomerController::class, 'update'])->name('customer.profile.update');
             
         Route::get('/bookings', [CustomerController::class, 'bookings'])
-            ->name('customer.bookings');
+            ->name('bookingHistory');
 
         Route::get('/customers', [CustomerController::class, 'adminIndex'])->name('customers.index');
    
