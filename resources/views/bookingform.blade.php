@@ -85,13 +85,9 @@ textarea.input {resize:vertical; min-height:100px;}
     <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}">
 
     <div id="menu">
-        <a href="{{ route('welcome') }}">
         <button class="head_button">Home</button>
-    </a>
 
-    <a href="{{ route('fleet') }}">
         <button class="head_button">Vehicles</button>
-    </a>
     
         <button class="head_button">Details</button>
         <button class="head_button">About Us</button>
