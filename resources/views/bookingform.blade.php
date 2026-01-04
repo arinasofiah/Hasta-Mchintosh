@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <title>HASTA – Booking Details</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -39,16 +40,27 @@ body {font-family:'Inter',sans-serif;background:#f5f5f5;color:#333;padding-botto
 .input:focus {outline:none; border-color:#d94242;}
 textarea.input {resize:vertical; min-height:100px;}
 .duration-box .input {background:#f7f7f7; font-weight:600; cursor:not-allowed;}
-.location-input-wrapper {position:relative;}
-.location-input-wrapper .input {padding-right:40px;}
-.map-icon {position:absolute; right:12px; top:50%; transform:translateY(-50%); color:#d94242; cursor:pointer; font-size:18px; transition:transform 0.2s;}
-.map-icon:hover {transform:translateY(-50%) scale(1.2);}
+
+/* Map Button */
+.map-btn {
+    background: white;
+    border: 1px solid #d94242;
+    color: #d94242;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.map-btn:hover {
+    background: #d94242;
+    color: white;
+}
 
 /* ====== Summary ====== */
 .summary-box {background:white; border-radius:10px; padding:25px; border:2px solid #eee;}
 .summary-title {color:#d94242; font-weight:700; margin-bottom:15px;}
 .charge-row {display:flex; justify-content:space-between; margin-bottom:8px; font-size:14px;}
-.charge-row.grand {font-weight:800; font-size:15px; border-top:2px solid #333; padding-top:10px;}
+.charge-row.grand {font-weight:800; font-size:15px; border-top:2px solid #333; padding-top:10px; margin-top:10px;}
 
 /* ====== Bottom Bar ====== */
 .bottom-bar {position:fixed; bottom:0; left:0; right:0; background:white; border-top:1px solid #eee; display:flex; justify-content:space-between; align-items:center; padding:15px 60px; box-shadow:0 -2px 10px rgba(0,0,0,0.05);}
@@ -59,17 +71,21 @@ textarea.input {resize:vertical; min-height:100px;}
 .grand-amount {font-size:20px; font-weight:900;}
 .next-btn {background:#d94242; color:white; border:none; padding:12px 30px; border-radius:5px; font-size:16px; font-weight:600; cursor:pointer;}
 .next-btn:hover {background:#c23535;}
-@media(max-width:768px){.container{grid-template-columns:1fr;}.bottom-bar{flex-wrap:wrap; gap:15px; padding:15px 20px;}}
+
+@media(max-width:768px){
+    .container{grid-template-columns:1fr;}
+    .bottom-bar{flex-wrap:wrap; gap:15px; padding:15px 20px;}
+}
 </style>
 </head>
 <body>
 
 <!-- HEADER -->
 <div id="header">
-    <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}">
+    <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}" alt="HASTA Logo">
     <div id="profile">
         <div id="profile-container">
-            <img id="pfp" src="{{ asset('img/racc_icon.png') }}">
+            <img id="pfp" src="{{ asset('img/racc_icon.png') }}" alt="Profile">
         </div>
     </div>
 </div>
@@ -86,131 +102,225 @@ textarea.input {resize:vertical; min-height:100px;}
 </div>
 
 <!-- FORM START -->
-<form action="{{ route('booking.store', $vehicle->vehicleID) }}" method="POST">
+<form action="{{ route('payment.form')}}" method="POST">
     @csrf
-<div class="container">
-
-    <!-- Pickup & Return Card -->
-    <div class="card">
-
-        <div class="section-title">Pickup</div>
-        <div class="row2">
-            <div>
-                <p><b>Date:</b> {{ $pickupDate }}</p>
-                <input type="hidden" name="pickup_date" value="{{ $pickupDate }}">
+    <input type="hidden" name="vehicleID" value="{{ $vehicle->vehicleID }}">
+    <div class="container">
+        <!-- Booking Details Card -->
+        <div class="card">
+            <div class="section-title">Pickup</div>
+            <div class="row2">
+                <div>
+                    <p><b>Date:</b> {{ $pickupDate }}</p>
+                    <input type="hidden" name="pickup_date" value="{{ $pickupDate }}">
+                </div>
+                <div>
+                    <p><b>Time:</b> {{ $pickupTime }}</p>
+                    <input type="hidden" name="pickup_time" value="{{ $pickupTime }}">
+                </div>
             </div>
-            <div>
-                <p><b>Time:</b> {{ $pickupTime }}</p>
-                <input type="hidden" name="pickup_time" value="{{ $pickupTime }}">
+
+            <div class="section-title">Return</div>
+            <div class="row2">
+                <div>
+                    <p><b>Date:</b> {{ $returnDate }}</p>
+                    <input type="hidden" name="return_date" value="{{ $returnDate }}">
+                </div>
+                <div>
+                    <p><b>Time:</b> {{ $returnTime }}</p>
+                    <input type="hidden" name="return_time" value="{{ $returnTime }}">
+                </div>
+            </div>
+
+            <div class="row2">
+                <div>
+                    <div class="field-label">Pickup Location</div>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="pickupLocation" name="pickupLocation" class="input" placeholder="Enter pickup location" required>
+                        <input type="hidden" id="pickupMapLink" name="pickupMapLink">
+                        <button type="button" onclick="openMap('pickup')" class="map-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="field-label">Return Location</div>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="returnLocation" name="returnLocation" class="input" placeholder="Enter return location" required>
+                        <input type="hidden" id="returnMapLink" name="returnMapLink">
+                        <button type="button" onclick="openMap('return')" class="map-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row2">
+                <div>
+                    <div class="field-label">Destination</div>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="destination" name="destination" class="input" placeholder="Enter destination">
+                        <input type="hidden" id="destinationMapLink" name="destinationMapLink">
+                        <button type="button" onclick="openMap('destination')" class="map-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="duration-box">
+                    <div class="field-label">Duration</div>
+                    <input type="text" class="input" readonly>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <div class="field-label">Remark</div>
+                <textarea name="remark" class="input" rows="4" placeholder="Any special notes or requirements"></textarea>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <label style="font-size:13px; display:flex; align-items:center; gap:8px; cursor:pointer;">
+                    <input type="checkbox" id="forSomeoneElse" name="for_someone_else" value="1" onchange="toggleDriverInfo()">
+                    <span>I am not a driver for this vehicle. I am making this reservation for someone else.</span>
+                </label>
+            </div>
+
+            <!-- Driver Info Section (Hidden by default) -->
+            <div id="driverInfoSection" style="display: none; border: 1px solid #ddd; padding: 15px; margin-top: 15px; border-radius: 5px; background: #f9f9f9;">
+                <h5 style="margin-bottom: 15px;">Driver Information</h5>
+                
+                <div style="margin-bottom: 15px;">
+                    <div class="field-label">Matric Number</div>
+                    <input type="text" id="matricNumber" name="matricNumber" class="input" placeholder="Enter matric number">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <div class="field-label">License Number</div>
+                    <input type="text" id="licenseNumber" name="licenseNumber" class="input" placeholder="Enter license number">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <div class="field-label">College</div>
+                    <input type="text" id="college" name="college" class="input" placeholder="Enter college">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <div class="field-label">Faculty</div>
+                    <input type="text" id="faculty" name="faculty" class="input" placeholder="Enter faculty">
+                </div>
+                
+                <div>
+                    <div class="field-label">Deposit Balance (RM)</div>
+                    <input type="number" step="0.01" id="depoBalance" name="depoBalance" class="input" placeholder="0.00">
+                </div>
             </div>
         </div>
 
-        <div class="section-title">Return</div>
-        <div class="row2">
-            <div>
-                <p><b>Date:</b> {{ $returnDate }}</p>
-                <input type="hidden" name="return_date" value="{{ $returnDate }}">
+        <!-- Charges Card -->
+        <div class="card summary-box">
+            <div class="summary-title">Summary of Charges</div>
+
+            <div class="charge-row">
+                <span>Price Per Day</span>
+                <span>MYR {{ number_format($vehicle->pricePerDay, 2) }}</span>
             </div>
-            <div>
-                <p><b>Time:</b> {{ $returnTime }}</p>
-                <input type="hidden" name="return_time" value="{{ $returnTime }}">
+            <div class="charge-row">
+                <span>Price Per Hour</span>
+                <span>MYR {{ number_format($vehicle->pricePerHour, 2) }}</span>
+            </div>
+            <div class="charge-row">
+                <span>Rental Duration</span>
+                <span id="durationDisplay">-</span>
+            </div>
+            <div class="charge-row">
+                <span>Total Price (by hour)</span>
+                <span id="totalByHour">MYR 0.00</span>
+            </div>
+            <div class="charge-row" style="color: #28a745;">
+                <span>Promotion Discount</span>
+                <span id="promotionDiscount">MYR 0.00</span>
+            </div>
+            <div class="charge-row grand">
+                <span>Grand Total</span>
+                <span id="grandTotal">MYR 0.00</span>
             </div>
         </div>
+    </div>
 
-        <div class="row2">
+    <!-- Bottom Bar -->
+    <div class="bottom-bar">
+        <div class="selected-car">
+            <img src="{{ asset('img/car-axia.png') }}" width="60" style="object-fit:contain;" alt="Car">
             <div>
-                <div class="field-label">Destination</div>
-                <input type="text" name="destination" class="input" placeholder="Full Address">
-            </div>
-
-            <div class="duration-box">
-                <div class="field-label">Duration</div>
-                <input type="text" class="input" readonly>
+                <div class="car-badge">Selected Car</div>
+                <b>{{ $vehicle->model }}</b>
             </div>
         </div>
-
-        <div class="row2">
-            <div class="location-input-wrapper">
-                <div class="field-label">Pickup Location</div>
-                <input type="text" name="pickup_location" class="input" id="pickupLocation" value="H20, Kolej Tun Fatimah, UTM Skudai" required>
-                <span class="map-icon" onclick="openMap('pickup')">📍</span>
-            </div>
-
-            <div class="location-input-wrapper">
-                <div class="field-label">Return Location</div>
-                <input type="text" name="return_location" class="input" id="returnLocation" value="H20, Kolej Tun Fatimah, UTM Skudai" required>
-                <span class="map-icon" onclick="openMap('return')">📍</span>
-            </div>
+        <div class="grand-total-bottom">
+            <div class="grand-label">Grand Total</div>
+            <div class="grand-amount" id="bottomBarTotal">MYR 0.00</div>
         </div>
-
         <div>
-            <div class="field-label">Remark</div>
-            <textarea name="remark" class="input" rows="4" placeholder="Any notes"></textarea>
-        </div>
-
-        <label style="font-size:13px; display:flex; align-items:center; gap:8px; cursor:pointer;">
-            <input type="checkbox" name="for_someone_else" value="1">
-            <span>I am not a driver for this vehicle. I am making this reservation for someone else.</span>
-        </label>
+        <button type="button" class="next-btn" onclick="goToPayment()">Next →</button>
     </div>
-
-    <!-- Charges Card -->
-<div class="card summary-box">
-    <div class="summary-title">Summary of Charges</div>
-
-    <div class="charge-row">
-        <span>Price Per Day</span>
-        <span>MYR {{ number_format($vehicle->pricePerDay, 2) }}</span>
-    </div>
-    <div class="charge-row">
-        <span>Price Per Hour</span>
-        <span id="pricePerHour">MYR {{ number_format($vehicle->pricePerHour, 2) }}</span>
-    </div>
-    <div class="charge-row">
-        <span>Rental Duration</span>
-        <span id="durationDisplay">-</span>
-    </div>
-    <div class="charge-row">
-        <span>Total Price (by hour)</span>
-        <span id="totalByHour">MYR 0.00</span>
-    </div>
-    <div class="charge-row grand">
-        <span>Grand Total</span>
-        <span id="grandTotal">MYR 0.00</span>
-    </div>
-</div>
-
-
-</div>
-
-<!-- Bottom Bar -->
-<div class="bottom-bar">
-    <div class="selected-car">
-        <img src="car-axia.png" width="60" style="object-fit:contain;">
-        <div>
-            <div class="car-badge">Selected Car</div>
-            <b>{{ $vehicle->model }}</b>
-        </div>
-    </div>
-    <div class="grand-total-bottom">
-        <div class="grand-label">Grand Total</div>
-        <div class="grand-amount" id="grandTotal">MYR</div>
-
-    </div>
-    <button type="submit" class="next-btn">Next →</button>
-</div>
 </form>
 
 <script>
-function openMap(type){
-    const loc = type==='pickup'?document.getElementById('pickupLocation'):document.getElementById('returnLocation');
+// Open Google Maps in new tab
+function openMap(type) {
+    const loc = type === 'pickup' ? document.getElementById('pickupLocation') : 
+                type === 'return' ? document.getElementById('returnLocation') : 
+                document.getElementById('destination');
     const addr = loc.value;
-    if(addr){window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`,'_blank');}
-    else{alert('Please enter a location first');}
+    
+    if (addr) {
+        // Open Google Maps in new tab with the address
+        const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
+        window.open(mapUrl, '_blank');
+        
+        // Store the map link
+        const mapLinkField = type === 'pickup' ? document.getElementById('pickupMapLink') : 
+                             type === 'return' ? document.getElementById('returnMapLink') : 
+                             document.getElementById('destinationMapLink');
+        mapLinkField.value = mapUrl;
+    } else {
+        alert('Please enter a location first');
+    }
 }
-</script>
 
-<script>
+// Toggle driver info section
+function toggleDriverInfo() {
+    const checkbox = document.getElementById('forSomeoneElse');
+    const section = document.getElementById('driverInfoSection');
+    const inputs = section.querySelectorAll('input');
+    
+    if (checkbox.checked) {
+        section.style.display = 'block';
+        inputs.forEach(input => {
+            input.setAttribute('required', 'required');
+        });
+    } else {
+        section.style.display = 'none';
+        inputs.forEach(input => {
+            input.removeAttribute('required');
+            input.value = '';
+        });
+    }
+}
+
+   let baseGrandTotal = 0;
+    let promotionDiscount = 0;
+// Calculate duration and prices
 document.addEventListener('DOMContentLoaded', function() {
     const pickupDateInput = document.querySelector('input[name="pickup_date"]');
     const pickupTimeInput = document.querySelector('input[name="pickup_time"]');
@@ -221,6 +331,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const durationDisplayEl = document.getElementById('durationDisplay');
     const totalByHourEl = document.getElementById('totalByHour');
     const grandTotalEl = document.getElementById('grandTotal');
+    const bottomBarTotalEl = document.getElementById('bottomBarTotal');
+    const promotionDiscountEl = document.getElementById('promotionDiscount');
 
     const pricePerHour = {{ $vehicle->pricePerHour }};
     const pricePerDay = {{ $vehicle->pricePerDay }};
@@ -233,19 +345,19 @@ document.addEventListener('DOMContentLoaded', function() {
             durationInput.value = '';
             durationDisplayEl.textContent = '-';
             totalByHourEl.textContent = 'MYR 0.00';
+            promotionDiscountEl.textContent = 'MYR 0.00';
             grandTotalEl.textContent = 'MYR 0.00';
-            const bottomBarGrand = document.querySelector('.bottom-bar .grand-amount');
-            if (bottomBarGrand) bottomBarGrand.textContent = 'MYR 0.00';
+            bottomBarTotalEl.textContent = 'MYR 0.00';
+            baseGrandTotal = 0;
             return;
         }
 
         const diffMs = returnDT - pickup;
-        const diffHours = Math.ceil(diffMs / (1000 * 60 * 60)); // round up to next hour
+        const diffHours = Math.ceil(diffMs / (1000 * 60 * 60));
 
         const days = Math.floor(diffHours / 24);
         const remainingHours = diffHours % 24;
 
-        // Duration text
         const durationText = days > 0
             ? `${days} day${days > 1 ? 's' : ''} ${remainingHours} hour${remainingHours !== 1 ? 's' : ''}`
             : `${diffHours} hour${diffHours !== 1 ? 's' : ''}`;
@@ -253,31 +365,101 @@ document.addEventListener('DOMContentLoaded', function() {
         durationInput.value = durationText;
         durationDisplayEl.textContent = durationText;
 
-        // Total price by hour
         const totalByHour = diffHours * pricePerHour;
+        baseGrandTotal = (days * pricePerDay) + (remainingHours * pricePerHour);
 
-        // Grand total: full days + remaining hours
-        const grandTotal = (days * pricePerDay) + (remainingHours * pricePerHour);
-
-        // Update Summary Card
         totalByHourEl.textContent = `MYR ${totalByHour.toFixed(2)}`;
-        grandTotalEl.textContent = `MYR ${grandTotal.toFixed(2)}`;
 
-        // Update Bottom Bar
-        const bottomBarGrand = document.querySelector('.bottom-bar .grand-amount');
-        if (bottomBarGrand) bottomBarGrand.textContent = `MYR ${grandTotal.toFixed(2)}`;
+        checkPromotion();
     }
 
-    // Initial calculation
+    function checkPromotion() {
+        const today = new Date();
+        const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
+
+        fetch('/check-promotion', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({
+                day: dayName,
+                amount: baseGrandTotal
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.hasPromotion) {
+                promotionDiscount = data.discount;
+                promotionDiscountEl.textContent = `- MYR ${promotionDiscount.toFixed(2)}`;
+                promotionDiscountEl.style.color = '#28a745';
+                
+                let promoInput = document.getElementById('appliedPromoId');
+                if (!promoInput) {
+                    promoInput = document.createElement('input');
+                    promoInput.type = 'hidden';
+                    promoInput.id = 'appliedPromoId';
+                    promoInput.name = 'promo_id';
+                    document.querySelector('form').appendChild(promoInput);
+                }
+                promoInput.value = data.promoID;
+            } else {
+                promotionDiscount = 0;
+                promotionDiscountEl.textContent = 'MYR 0.00';
+                promotionDiscountEl.style.color = '#333';
+            }
+
+            const finalTotal = baseGrandTotal - promotionDiscount;
+            grandTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
+            bottomBarTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
+        })
+        .catch(error => {
+            console.error('Error checking promotion:', error);
+            promotionDiscount = 0;
+            promotionDiscountEl.textContent = 'MYR 0.00';
+            const finalTotal = baseGrandTotal;
+            grandTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
+            bottomBarTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
+        });
+    }
+
     calculateDurationAndPrice();
 
-    // Recalculate when any input changes
     [pickupDateInput, pickupTimeInput, returnDateInput, returnTimeInput].forEach(el =>
         el.addEventListener('change', calculateDurationAndPrice)
     );
 });
-</script>
 
+function goToPayment() {
+        const form = document.querySelector('form');
+        
+        // Validate form
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+    document.querySelectorAll('input[name="subtotal"], input[name="promotionDiscount"], input[name="total"], input[name="duration"]').forEach(el => el.remove());
+
+       
+        const hiddenFields = [
+            { name: 'subtotal', value: baseGrandTotal },
+            { name: 'promotionDiscount', value: promotionDiscount },
+            { name: 'total', value: (baseGrandTotal - promotionDiscount) },
+            { name: 'duration', value: document.querySelector('.duration-box input').value }
+    ];
+    
+    hiddenFields.forEach(field => {
+        let input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = field.name;
+        input.value = field.value;
+        form.appendChild(input);
+    });
+        // Submit form
+        form.submit();
+    }
+</script>
 
 </body>
 </html>
