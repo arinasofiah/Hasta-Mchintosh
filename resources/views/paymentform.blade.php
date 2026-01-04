@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>HASTA - Payment</title>
     <style>
         * {
@@ -12,7 +13,7 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: #f5f5f5;
         }
 
@@ -25,64 +26,75 @@
             color: white;
         }
 
-        .logo {
-            font-size: 32px;
-            font-weight: bold;
-            border: 3px solid white;
-            padding: 5px 20px;
+        #logo {
+            height: 45px;
         }
 
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .user-icon {
-            width: 35px;
-            height: 35px;
-            background-color: white;
+        #profile-container {
+            width: 45px;
+            height: 45px;
+            background: white;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            overflow: hidden;
         }
 
-        .progress-bar {
+        #pfp {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .progress-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .steps {
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 40px;
-            gap: 20px;
+            margin-bottom: 40px;
         }
 
         .step {
-            background-color: #d94444;
-            color: white;
-            padding: 12px 30px;
-            border-radius: 25px;
             display: flex;
             align-items: center;
             gap: 8px;
+            padding: 12px 25px;
+            border-radius: 25px;
             font-size: 14px;
+            font-weight: 600;
+        }
+
+        .step.filled {
+            background-color: #d94444;
+            color: white;
+            border: none;
+        }
+
+        .step.active {
+            border: 2px solid #d94444;
+            color: #d94444;
+            background: white;
         }
 
         .step.inactive {
-            background-color: white;
-            color: #666;
+            background: white;
+            color: #999;
             border: 2px solid #ddd;
         }
 
         .step-connector {
-            width: 50px;
+            width: 80px;
             height: 2px;
             background-color: #ddd;
         }
 
         .container {
             max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 40px 40px;
+            margin: 0 auto 60px;
+            padding: 0 40px;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 40px;
@@ -111,6 +123,7 @@
 
         .car-image {
             width: 150px;
+            border-radius: 8px;
         }
 
         .car-details h3 {
@@ -154,6 +167,10 @@
             font-weight: 600;
         }
 
+        .discount-row {
+            color: #28a745;
+        }
+
         .total-row {
             display: flex;
             justify-content: space-between;
@@ -193,6 +210,7 @@
             align-items: center;
             gap: 8px;
             margin-bottom: 0;
+            cursor: pointer;
         }
 
         .qr-section {
@@ -203,20 +221,19 @@
         .qr-code {
             width: 200px;
             height: 200px;
-            background-color: #fff;
-            border: 3px solid #d94444;
-            border-radius: 10px;
             margin: 15px auto;
             padding: 10px;
+            border: 3px solid #d94444;
+            border-radius: 10px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .qr-placeholder {
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg, #ff69b4 25%, transparent 25%, transparent 75%, #ff69b4 75%, #ff69b4),
-                        linear-gradient(45deg, #ff69b4 25%, transparent 25%, transparent 75%, #ff69b4 75%, #ff69b4);
-            background-size: 10px 10px;
-            background-position: 0 0, 5px 5px;
+        .qr-code img {
+            max-width: 100%;
+            max-height: 100%;
         }
 
         .company-name {
@@ -263,9 +280,12 @@
             margin: 30px 0;
         }
 
-        .terms input {
-            width: auto;
-            margin-right: 8px;
+        .terms label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
         }
 
         .terms a {
@@ -290,121 +310,266 @@
             background-color: #c23939;
         }
 
-        .checkmark {
+        /* Voucher Tabs */
+        .voucher-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .tab-btn {
+            padding: 8px 16px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .tab-btn.active {
+            background: #d94444;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .voucher-list {
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        .voucher-item {
+            padding: 8px;
+            background: #f9f9f9;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .voucher-item:hover {
+            background: #e9e9e9;
+        }
+
+        .voucher-item.selected {
+            background: #d94444;
+            color: white;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .modal-btns {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #d94444;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #666;
             color: white;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="logo">HASTA</div>
-        <div class="user-profile">
-            <div class="user-icon">👤</div>
-            <span>AMINAH TALIB</span>
-        </div>
-    </div>
 
-    <div class="progress-bar">
-        <div class="step">
-            <span class="checkmark">✓</span>
-            <span>Vehicle</span>
-        </div>
-        <div class="step-connector"></div>
-        <div class="step">
-            <span class="checkmark">✓</span>
-            <span>Register</span>
-        </div>
-        <div class="step-connector"></div>
-        <div class="step">
-            <span class="checkmark">✓</span>
-            <span>Booking Details</span>
-        </div>
-        <div class="step-connector"></div>
-        <div class="step inactive">
-            <span class="checkmark">✓</span>
-            <span>Payment</span>
+<!-- HEADER -->
+<div class="header">
+    <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}" alt="HASTA Logo">
+    <div id="profile">
+        <div id="profile-container">
+            <img id="pfp" src="{{ asset('img/racc_icon.png') }}" alt="Profile">
         </div>
     </div>
+</div>
+
+<!-- Progress Steps -->
+<div class="progress-container">
+    <div class="steps">
+        <div class="step filled"><span>✓</span><span>Vehicle</span></div>
+        <div class="step-connector"></div>
+        <div class="step filled"><span>✓</span><span>Booking Details</span></div>
+        <div class="step-connector"></div>
+        <div class="step active"><span>✓</span><span>Payment</span></div>
+    </div>
+</div>
+
+<!-- Form -->
+<form id="paymentForm" enctype="multipart/form-data">
+    @csrf
+    <input type="hidden" name="vehicleID" value="{{ $vehicle->vehicleID }}">
+    <input type="hidden" name="pickup_date" value="{{ $pickupDate }}">
+    <input type="hidden" name="pickup_time" value="{{ $pickupTime }}">
+    <input type="hidden" name="return_date" value="{{ $returnDate }}">
+    <input type="hidden" name="return_time" value="{{ $returnTime }}">
+    <input type="hidden" name="pickupLocation" value="{{ $pickupLocation }}">
+    <input type="hidden" name="returnLocation" value="{{ $returnLocation }}">
+    <input type="hidden" name="destination" value="{{ $destination ?? '' }}">
+    <input type="hidden" name="remark" value="{{ $remark ?? '' }}">
+    <input type="hidden" name="for_someone_else" value="{{ $forSomeoneElse ?? 0 }}">
+    <input type="hidden" name="matricNumber" value="{{ $matricNumber ?? '' }}">
+    <input type="hidden" name="licenseNumber" value="{{ $licenseNumber ?? '' }}">
+    <input type="hidden" name="college" value="{{ $college ?? '' }}">
+    <input type="hidden" name="faculty" value="{{ $faculty ?? '' }}">
+    <input type="hidden" name="depoBalance" value="{{ $depoBalance ?? 0 }}">
+    <input type="hidden" name="promo_id" value="{{ $promoDetails?->promoID ?? '' }}">
+    <input type="hidden" name="voucher_id" id="selected_voucher_id" value="">
 
     <div class="container">
+        <!-- Order Summary -->
         <div class="section">
             <h2>Order Summary</h2>
             
             <div class="car-info">
-                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 120'%3E%3Crect fill='%23d94444' width='200' height='120' rx='10'/%3E%3Cpath fill='%23fff' d='M40 50 L80 40 L120 40 L140 50 L140 80 L40 80 Z'/%3E%3Ccircle cx='60' cy='85' r='12' fill='%23333'/%3E%3Ccircle cx='120' cy='85' r='12' fill='%23333'/%3E%3Cpath fill='%23b8d4ff' d='M50 45 L75 40 L85 50 L65 50 Z M90 40 L115 40 L125 50 L95 50 Z'/%3E%3C/svg%3E" alt="Perodua Axia" class="car-image">
+                @if($vehicle->image)
+                    <img src="{{ asset('storage/' . $vehicle->image) }}" alt="{{ $vehicle->model }}" class="car-image">
+                @else
+                    <div class="car-image" style="background:#f0f0f0;display:flex;align-items:center;justify-content:center;color:#999;">No Image</div>
+                @endif
                 <div class="car-details">
-                    <h3>Perodua Axia 2018 <span class="car-model">RM120</span></h3>
-                    <p class="car-type">Hatchback</p>
+                    <h3>{{ $vehicle->model }} {{ $vehicle->year }}
+                        <span class="car-model">RM{{ number_format($vehicle->pricePerDay, 2) }}/day</span>
+                    </h3>
+                    <p class="car-type">{{ $vehicle->type ?? 'Vehicle' }}</p>
                     <div class="car-features">
-                        <span>🚗 Auto</span>
+                        <span>🚗 {{ $vehicle->transmission ?? 'Auto' }}</span>
                         <span>❄️ AC</span>
-                        <span>👤 5 seats</span>
-                        <span>🎒 2 bags</span>
+                        <span>👤 {{ $vehicle->seats ?? 5 }} seats</span>
                     </div>
                 </div>
             </div>
 
             <div class="info-row">
                 <span class="info-label">Pickup :</span>
-                <span class="info-value">H20, KTF</span>
+                <span class="info-value">{{ $pickupLocation }}</span>
             </div>
             <div class="info-row">
                 <span class="info-label">Return :</span>
-                <span class="info-value">H20, KTF</span>
+                <span class="info-value">{{ $returnLocation }}</span>
             </div>
             <div class="info-row">
                 <span class="info-label">Date :</span>
-                <span class="info-value">17-18 Dec 2025</span>
+                <span class="info-value">{{ $dateRange }}</span>
             </div>
             <div class="info-row">
                 <span class="info-label">Duration :</span>
-                <span class="info-value">1 day 0 hour 0 minute</span>
+                <span class="info-value">{{ $durationText }}</span>
             </div>
             <div class="info-row">
                 <span class="info-label">Rental :</span>
-                <span class="info-value">MYR 120.00</span>
+                <span class="info-value">MYR {{ number_format($finalSubtotal, 2) }}</span>
             </div>
+
+            @if($promotionDiscount > 0)
+            <div class="info-row discount-row">
+                <span class="info-label">Promotion Discount :</span>
+                <span class="info-value">- MYR {{ number_format($promotionDiscount, 2) }}</span>
+            </div>
+            @endif
 
             <div class="total-row" style="border-top: 2px solid #eee; padding-top: 15px;">
                 <span>Deposit Payable :</span>
-                <span>MYR 60.00</span>
+                <span>MYR {{ number_format($deposit, 2) }}</span>
             </div>
             <div class="total-row" style="border-top: 2px solid #333;">
                 <span>Total Payable :</span>
-                <span>MYR 120.00</span>
+                <span>MYR {{ number_format($finalTotal, 2) }}</span>
             </div>
         </div>
 
+        <!-- Payment Details -->
         <div class="section">
             <h2>Payment Details</h2>
             
+            <!-- Voucher Section -->
+            <div class="form-group">
+                <label>Apply Voucher (Optional)</label>
+                <div class="voucher-tabs">
+                    <button type="button" class="tab-btn active" data-tab="eligible">Eligible</button>
+                    <button type="button" class="tab-btn" data-tab="enter">Enter Code</button>
+                </div>
+
+                
+
+
+                
+            </div>
+
             <div class="form-group">
                 <label>Bank Name</label>
-                <select>
+                <select name="bank_name" required>
                     <option value="">Select Bank</option>
-                    <option value="maybank">Maybank</option>
-                    <option value="cimb">CIMB Bank</option>
-                    <option value="public">Public Bank</option>
-                    <option value="rhb">RHB Bank</option>
-                    <option value="hong-leong">Hong Leong Bank</option>
+                    <option value="Maybank">Maybank</option>
+                    <option value="CIMB Bank">CIMB Bank</option>
+                    <option value="Public Bank">Public Bank</option>
+                    <option value="RHB Bank">RHB Bank</option>
+                    <option value="Hong Leong Bank">Hong Leong Bank</option>
+                    <option value="Affin Bank">Affin Bank</option>
+                    <option value="Alliance Bank">Alliance Bank</option>
+                    <option value="AmBank">AmBank</option>
+                    <option value="BSN">BSN</option>
+                    <option value="Bank Islam">Bank Islam</option>
+                    <option value="Bank Muamalat">Bank Muamalat</option>
+                    <option value="Bank Rakyat">Bank Rakyat</option>
+                    <option value="OCBC">OCBC</option>
+                    <option value="Standard Chartered">Standard Chartered</option>
+                    <option value="UOB">UOB</option>
+                    <option value="Touch 'n Go eWallet">Touch 'n Go eWallet</option>
                 </select>
             </div>
 
             <div class="form-group">
                 <label>Bank Owner Name</label>
-                <input type="text" placeholder="Enter account holder name">
+                <input type="text" name="bank_owner_name" placeholder="Enter account holder name" required>
             </div>
 
             <div class="form-group">
                 <label>Pay Amount</label>
                 <div class="radio-group">
                     <label>
-                        <input type="radio" name="payAmount" value="full" checked>
-                        Full
+                        <input type="radio" name="payAmount" value="full" checked> Full
                     </label>
                     <label>
-                        <input type="radio" name="payAmount" value="deposit">
-                        Deposit
+                        <input type="radio" name="payAmount" value="deposit"> Deposit
                     </label>
                 </div>
             </div>
@@ -412,7 +577,11 @@
             <div class="qr-section">
                 <label>Scan QR here to make the payment</label>
                 <div class="qr-code">
-                    <div class="qr-placeholder"></div>
+                    @if(file_exists(public_path('storage/qrImage.jpeg')))
+                        <img src="{{ asset('storage/qrImage.jpeg') }}" alt="HASTA Payment QR Code">
+                    @else
+                        <div style="color:#999;">QR Code Not Available</div>
+                    @endif
                 </div>
                 <p class="company-name">HASTA TRAVEL SDN BHD</p>
             </div>
@@ -424,7 +593,7 @@
                     <div class="upload-icon">📄</div>
                     <p class="upload-text">Drag files to upload</p>
                     <button class="browse-btn">Browse</button>
-                    <input type="file" id="fileInput" style="display: none;" accept="image/*">
+                    <input type="file" id="fileInput" name="payment_receipt" accept="image/*" style="display: none;" required>
                 </div>
             </div>
         </div>
@@ -432,72 +601,164 @@
 
     <div class="terms">
         <label>
-            <input type="checkbox" id="termsCheckbox">
-            I have read and accepted the <a href="#">Terms and Conditions</a>
+            <input type="checkbox" id="termsCheckbox" required>
+            I have read and accepted the 
+            <a href="#" onclick="showTermsModal(); return false;">Terms and Conditions</a>
         </label>
     </div>
 
-    <button class="submit-btn" onclick="handleSubmit()">Submit</button>
+    <button type="submit" class="submit-btn">Submit Payment</button>
+</form>
 
-    <script>
-        const fileInput = document.getElementById('fileInput');
-        const uploadArea = document.querySelector('.upload-area');
+<!-- Terms Modal -->
+<div id="termsModal" class="modal">
+    <div class="modal-content">
+        <h3>Terms and Conditions</h3>
+        <p style="text-align:left;margin:20px 0;line-height:1.5;">
+            By proceeding with this booking, you agree to the following terms:<br>
+            - Payments must be made within 10 minutes of booking confirmation.<br>
+            - Failure to upload valid proof of payment will result in automatic cancellation.<br>
+            - Vehicle must be returned in the same condition as received.<br>
+            - Full liability applies for damages or late return.<br>
+            - HASTA Travel reserves the right to cancel bookings for suspicious activity.
+        </p>
+        <button class="modal-btn btn-primary" onclick="document.getElementById('termsModal').style.display='none'">Close</button>
+    </div>
+</div>
 
-        fileInput.addEventListener('change', function(e) {
-            if (e.target.files.length > 0) {
-                const fileName = e.target.files[0].name;
-                uploadArea.querySelector('.upload-text').textContent = `Selected: ${fileName}`;
-            }
+<!-- Success Modal -->
+<div id="successModal" class="modal">
+    <div class="modal-content">
+        <h3>Booking Submitted!</h3>
+        <p style="margin:20px 0;">
+            Your booking form has been submitted.<br>
+            We have notified our staff and will confirm your booking shortly.<br>
+            Kindly trace your booking below.
+        </p>
+        <div class="modal-btns">
+            <button class="modal-btn btn-primary" onclick="window.location='{{ route('booking.history') }}'">View My Bookings</button>
+            <button class="modal-btn btn-secondary" onclick="window.location='{{ route('booking.history') }}'">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Toggle voucher tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
         });
+    });
 
-        uploadArea.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            uploadArea.style.borderColor = '#d94444';
+    // Select eligible voucher
+    document.querySelectorAll('.voucher-item').forEach(item => {
+        item.addEventListener('click', () => {
+            document.querySelectorAll('.voucher-item').forEach(i => i.classList.remove('selected'));
+            item.classList.add('selected');
+            document.getElementById('selected_voucher_id').value = item.dataset.id;
         });
+    });
 
-        uploadArea.addEventListener('dragleave', function(e) {
-            uploadArea.style.borderColor = '#ddd';
-        });
-
-        uploadArea.addEventListener('drop', function(e) {
-            e.preventDefault();
-            uploadArea.style.borderColor = '#ddd';
-            
-            if (e.dataTransfer.files.length > 0) {
-                fileInput.files = e.dataTransfer.files;
-                const fileName = e.dataTransfer.files[0].name;
-                uploadArea.querySelector('.upload-text').textContent = `Selected: ${fileName}`;
-            }
-        });
-
-        function handleSubmit() {
-            const termsCheckbox = document.getElementById('termsCheckbox');
-            const bankName = document.querySelector('select').value;
-            const bankOwner = document.querySelector('input[type="text"]').value;
-            const fileUploaded = fileInput.files.length > 0;
-
-            if (!termsCheckbox.checked) {
-                alert('Please accept the Terms and Conditions');
-                return;
-            }
-
-            if (!bankName) {
-                alert('Please select a bank');
-                return;
-            }
-
-            if (!bankOwner.trim()) {
-                alert('Please enter the bank owner name');
-                return;
-            }
-
-            if (!fileUploaded) {
-                alert('Please upload your payment receipt');
-                return;
-            }
-
-            alert('Payment submitted successfully!');
+    // Apply voucher code
+    document.getElementById('apply_voucher').addEventListener('click', function() {
+        const code = document.getElementById('voucher_code').value;
+        if (!code) {
+            document.getElementById('voucher_message').innerHTML = '<span style="color:red;">Please enter a code</span>';
+            return;
         }
-    </script>
+
+        fetch("{{ route('validate.voucher') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ code: code })
+        })
+        .then(res => res.json())
+        .then(data => {
+            const msgEl = document.getElementById('voucher_message');
+            if (data.valid) {
+                msgEl.innerHTML = '<span style="color:green;">Voucher applied!</span>';
+                document.getElementById('selected_voucher_id').value = data.voucher_id;
+            } else {
+                msgEl.innerHTML = '<span style="color:red;">' + (data.message || 'Invalid voucher') + '</span>';
+                document.getElementById('selected_voucher_id').value = '';
+            }
+        })
+        .catch(() => {
+            document.getElementById('voucher_message').innerHTML = '<span style="color:red;">Error validating voucher</span>';
+        });
+    });
+
+    // File upload
+    const fileInput = document.getElementById('fileInput');
+    const uploadArea = document.querySelector('.upload-area');
+    fileInput.addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+            uploadArea.querySelector('.upload-text').textContent = 'Selected: ' + e.target.files[0].name;
+        }
+    });
+
+    uploadArea.addEventListener('dragover', e => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#d94444';
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.style.borderColor = '#ddd';
+    });
+
+    uploadArea.addEventListener('drop', e => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#ddd';
+        if (e.dataTransfer.files.length > 0) {
+            fileInput.files = e.dataTransfer.files;
+            uploadArea.querySelector('.upload-text').textContent = 'Selected: ' + e.dataTransfer.files[0].name;
+        }
+    });
+
+    // Show terms
+    function showTermsModal() {
+        document.getElementById('termsModal').style.display = 'block';
+    }
+
+    // Form submission
+    document.getElementById('paymentForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const terms = document.getElementById('termsCheckbox').checked;
+        if (!terms) {
+            alert('Please accept Terms and Conditions');
+            return;
+        }
+
+        const formData = new FormData(this);
+
+        fetch("{{ route('booking.confirm') }}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('successModal').style.display = 'block';
+            } else {
+                alert(data.message || 'Submission failed. Please try again.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        });
+    });
+</script>
+
 </body>
 </html>
