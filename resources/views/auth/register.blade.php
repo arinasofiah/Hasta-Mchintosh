@@ -45,10 +45,10 @@
                    Ensure it match your IC (Capital Letter).
                 </small>
 
-                <label>National Identification Card</label>
+                <label>National Identification Card/Passport No.</label>
                 <input type="text" id="icNumber" name="icNumber" required>
                  <small class="hint" id="statusMsg">
-                   Ensure it match your IC (With Dash (-)).
+                   Ensure it match your IC/Passport (With Dash (-)).
                 </small>
 
                  <label>Phone Number</label>
@@ -64,6 +64,13 @@
                                   placeholder="e.g. A21CS0001" />
                     <x-input-error :messages="$errors->get('matricNumber')" class="mt-2" />
                 </div>
+
+                 <label>Driving License Number <span class="optional-tag">(Optional)</span></label>
+                    <input type="text" name="licenseNumber" placeholder="e.g. D12345678">
+                    <small class="hint" id="statusMsg">
+                   Required for vehicle booking. You can add this later in your profile.
+                </small>
+                    
 
                 <label>Password</label>
                 <input type="password" name="password" required>
