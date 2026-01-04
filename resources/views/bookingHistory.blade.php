@@ -299,6 +299,28 @@
             border-bottom: 1px solid #ddd;
         }
 
+        /* Date Links */
+        .date-link {
+            display: inline-block;
+        }
+
+        .date-link-text {
+            color: #bc3737;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 3px 6px;
+            border-radius: 3px;
+            transition: all 0.3s;
+            border-bottom: 1px dotted #bc3737;
+        }
+
+        .date-link-text:hover {
+            background-color: #bc3737;
+            color: white;
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+        }
+
         /* Modal Styles */
         .modal {
             display: none;
@@ -490,44 +512,21 @@
             font-size: 14px;
         }
 
-        .form-group textarea,
-        .form-group input,
-        .form-group select {
+        .form-group textarea {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 14px;
             font-family: inherit;
-        }
-
-        .form-group textarea {
             resize: vertical;
             min-height: 100px;
         }
 
-        .form-group input:focus,
-        .form-group select:focus,
         .form-group textarea:focus {
             border-color: #bc3737;
             outline: none;
             box-shadow: 0 0 0 2px rgba(188, 55, 55, 0.1);
-        }
-
-        .date-inputs {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .info-message {
-            background-color: #fef5e7;
-            border-left: 4px solid #f39c12;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-            color: #856404;
-            font-size: 14px;
         }
 
         .warning-message {
@@ -620,10 +619,6 @@
             .action-btn {
                 width: 100%;
                 text-align: center;
-            }
-            
-            .date-inputs {
-                grid-template-columns: 1fr;
             }
             
             .modal-content {
@@ -760,14 +755,32 @@
                             <div class="price">RM{{ number_format($booking->totalPrice ?? 0, 2) }}</div>
 
                             <div class="dates">
-                                {{ date('d M Y', strtotime($booking->pickupDate)) }} -
-                                {{ date('d M Y', strtotime($booking->returnDate)) }}
+                                @if($booking->bookingStatus === 'approved')
+                                    <div class="date-link">
+                                        <a href="{{ route('customer.pickup.form', ['bookingId' => $booking->bookingID]) }}" 
+                                           class="date-link-text"
+                                           title="Click to go to pickup form">
+                                            {{ date('d M Y', strtotime($booking->startDate)) }}
+                                        </a>
+                                    </div>
+                                    <span style="margin: 0 5px;">-</span>
+                                    <div class="date-link">
+                                        <a href="{{ route('customer.return.form', ['bookingId' => $booking->bookingID]) }}" 
+                                           class="date-link-text"
+                                           title="Click to go to return form">
+                                            {{ date('d M Y', strtotime($booking->endDate)) }}
+                                        </a>
+                                    </div>
+                                @else
+                                    {{ date('d M Y', strtotime($booking->startDate)) }} -
+                                    {{ date('d M Y', strtotime($booking->endDate)) }}
+                                @endif
                             </div>
 
                             <div class="status active">Active</div>
 
                             <button class="action-btn" 
-                                    onclick="showDetailsModal({{ $booking->id }})">
+                                    onclick="showDetailsModal({{ $booking->bookingID }})">
                                 View Details
                             </button>
                         </div>
@@ -798,15 +811,15 @@
                             <div class="price">RM{{ number_format($booking->totalPrice ?? 0, 2) }}</div>
 
                             <div class="dates">
-                                {{ date('d M Y', strtotime($booking->pickupDate)) }} -
-                                {{ date('d M Y', strtotime($booking->returnDate)) }}
+                                {{ date('d M Y', strtotime($booking->startDate)) }} -
+                                {{ date('d M Y', strtotime($booking->endDate)) }}
                             </div>
 
                             <div class="status pending">Pending</div>
 
                             <button class="action-btn" 
-                                    onclick="showModifyModal({{ $booking->id }})">
-                                Modify / Cancel
+                                    onclick="showCancelModal({{ $booking->bookingID }})">
+                                Cancel Booking
                             </button>
                         </div>
                     </div>
@@ -836,13 +849,13 @@
                                         <div style="font-weight: 600; font-size: 14px;">{{ $booking->model }}</div>
                                         <div style="font-size: 12px; color: #666;">{{ $booking->vehicleType }}</div>
                                         <div style="font-size: 12px; color: #666; margin-top: 5px;">
-                                            {{ date('d M Y', strtotime($booking->pickupDate)) }} - 
-                                            {{ date('d M Y', strtotime($booking->returnDate)) }}
+                                            {{ date('d M Y', strtotime($booking->startDate)) }} - 
+                                            {{ date('d M Y', strtotime($booking->endDate)) }}
                                         </div>
                                     </div>
                                     
                                     <button class="action-btn" 
-                                            onclick="showDetailsModal({{ $booking->id }})"
+                                            onclick="showDetailsModal({{ $booking->bookingID }})"
                                             style="padding: 5px 10px; font-size: 12px;">
                                         View
                                     </button>
@@ -869,8 +882,8 @@
                                         <div style="font-weight: 600; font-size: 14px;">{{ $booking->model }}</div>
                                         <div style="font-size: 12px; color: #666;">{{ $booking->vehicleType }}</div>
                                         <div style="font-size: 12px; color: #666; margin-top: 5px;">
-                                            {{ date('d M Y', strtotime($booking->pickupDate)) }} - 
-                                            {{ date('d M Y', strtotime($booking->returnDate)) }}
+                                            {{ date('d M Y', strtotime($booking->startDate)) }} - 
+                                            {{ date('d M Y', strtotime($booking->endDate)) }}
                                         </div>
                                     </div>
                                     
@@ -925,16 +938,20 @@
                         <span class="detail-value" id="detail-id">-</span>
                     </div>
                     <div class="detail-row">
-                        <span class="detail-label">Pickup Date</span>
-                        <span class="detail-value" id="detail-pickup">-</span>
+                        <span class="detail-label">Start Date</span>
+                        <span class="detail-value" id="detail-start">-</span>
                     </div>
                     <div class="detail-row">
-                        <span class="detail-label">Return Date</span>
-                        <span class="detail-value" id="detail-return">-</span>
+                        <span class="detail-label">End Date</span>
+                        <span class="detail-value" id="detail-end">-</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Status</span>
                         <span class="detail-value" id="detail-status">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Duration</span>
+                        <span class="detail-value" id="detail-duration">-</span>
                     </div>
                 </div>
 
@@ -945,8 +962,16 @@
                         <span class="detail-value" id="detail-total">-</span>
                     </div>
                     <div class="detail-row">
-                        <span class="detail-label">Payment Status</span>
-                        <span class="detail-value" id="detail-payment">-</span>
+                        <span class="detail-label">Deposit Amount</span>
+                        <span class="detail-value" id="detail-deposit">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Bank Number</span>
+                        <span class="detail-value" id="detail-bank">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Bank Name</span>
+                        <span class="detail-value" id="detail-bank-name">-</span>
                     </div>
                 </div>
             </div>
@@ -957,286 +982,142 @@
         </div>
     </div>
 
-    <!-- Modify/Cancel Modal -->
-    <div id="modifyModal" class="modal">
+    <!-- Cancel Modal -->
+    <div id="cancelModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Modify or Cancel Booking</h2>
-                <button class="close-btn" onclick="closeModal('modifyModal')">&times;</button>
+                <h2>Cancel Booking</h2>
+                <button class="close-btn" onclick="closeModal('cancelModal')">&times;</button>
             </div>
             <div class="modal-body">
-                <input type="hidden" id="modifyBookingId">
+                <input type="hidden" id="cancelBookingId">
                 
                 <div class="info-message">
                     <strong>Current Booking Details:</strong>
-                    <div id="current-booking-details">
+                    <div id="cancel-booking-details">
                         <!-- Will be populated by JavaScript -->
                     </div>
                 </div>
 
-                <div class="detail-section">
-                    <h3>Modify Booking</h3>
-                    
-                    <div class="date-inputs">
-                        <div class="form-group">
-                            <label for="pickupDate">Pickup Date</label>
-                            <input type="date" id="pickupDate">
-                        </div>
-                        <div class="form-group">
-                            <label for="returnDate">Return Date</label>
-                            <input type="date" id="returnDate">
-                        </div>
-                    </div>
-
-                    <div class="date-inputs">
-                        <div class="form-group">
-                            <label for="pickupTime">Pickup Time</label>
-                            <input type="time" id="pickupTime">
-                        </div>
-                        <div class="form-group">
-                            <label for="returnTime">Return Time</label>
-                            <input type="time" id="returnTime">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="pickupLocation">Pickup Location</label>
-                        <select id="pickupLocation">
-                            <option>HASTA Headquarters, Kuala Lumpur</option>
-                            <option>HASTA Petaling Jaya Branch</option>
-                            <option>HASTA KLIA Branch</option>
-                            <option>HASTA Johor Bahru Branch</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="returnLocation">Return Location</label>
-                        <select id="returnLocation">
-                            <option>HASTA Headquarters, Kuala Lumpur</option>
-                            <option>HASTA Petaling Jaya Branch</option>
-                            <option>HASTA KLIA Branch</option>
-                            <option>HASTA Johor Bahru Branch</option>
-                        </select>
-                    </div>
+                <div class="warning-message">
+                    <strong>Cancellation Policy:</strong><br>
+                    • Refund only for cancellation made in 24 hours before pickup<br>
+                    • No refund if cancelled less than 24 hours before pickup<br>
+                    • Refund will make in 2 weeks of working days
                 </div>
 
-                <div class="detail-section">
-                    <h3>Cancel Booking</h3>
-                    <div class="warning-message">
-                        <strong>Cancellation Policy:</strong><br>
-                        • Refund only for cancellation made in 24 hours before pickup<br>
-                        • No refund if cancelled less than 24 hours before pickup<br>
-                        • Refund will make in 2 weeks of working days
-                    </div>
-
-                    <div class="form-group">
-                        <label for="cancellationReason">Reason for Cancellation (Optional)</label>
-                        <textarea id="cancellationReason" placeholder="Please provide reason for cancellation..."></textarea>
-                    </div>
+                <div class="form-group">
+                    <label for="cancellationReason">Reason for Cancellation (Optional)</label>
+                    <textarea id="cancellationReason" placeholder="Please provide reason for cancellation..."></textarea>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('modifyModal')">Close</button>
-                <button class="btn btn-danger" onclick="confirmCancel()">Cancel Booking</button>
-                <button class="btn btn-primary" onclick="saveModification()">Save Changes</button>
+                <button class="btn btn-secondary" onclick="closeModal('cancelModal')">Close</button>
+                <button class="btn btn-danger" onclick="confirmCancel()">Confirm Cancellation</button>
             </div>
         </div>
     </div>
 
-    <script>
-        // Sample booking data (replace with real data from server)
-        const bookingsData = [
-            @foreach($bookings as $booking)
-            {
-                id: {{ $booking->id }},
-                model: "{{ $booking->model ?? 'Car Model' }}",
-                vehicleType: "{{ $booking->vehicleType ?? 'Vehicle Type' }}",
-                plateNumber: "{{ $booking->plateNumber ?? 'ABC1234' }}",
-                pickupDate: "{{ $booking->pickupDate }}",
-                returnDate: "{{ $booking->returnDate }}",
-                bookingStatus: "{{ $booking->bookingStatus ?? 'pending' }}",
-                totalPrice: {{ $booking->totalPrice ?? 0 }},
-                paymentStatus: "{{ $booking->paymentStatus ?? 'paid' }}"
+   <script>
+    // Merge all booking collections safely
+    const bookingsData = [
+        ...@json($active ?? []),
+        ...@json($pending ?? []),
+        ...@json($completed ?? []),
+        ...@json($cancelled ?? [])
+    ];
+
+    function findBookingById(id) {
+        return bookingsData.find(b => b.bookingID == id);
+    }
+
+    function showDetailsModal(bookingId) {
+        const booking = findBookingById(bookingId);
+        if (!booking) return;
+
+        document.getElementById('detail-model').textContent = booking.model ?? '-';
+        document.getElementById('detail-type').textContent = booking.vehicleType ?? '-';
+        document.getElementById('detail-plate').textContent = booking.plateNumber ?? '-';
+        document.getElementById('detail-id').textContent = booking.bookingID ?? '-';
+        document.getElementById('detail-start').textContent = formatDate(booking.startDate);
+        document.getElementById('detail-end').textContent = formatDate(booking.endDate);
+        document.getElementById('detail-status').textContent = booking.bookingStatus ?? '-';
+        document.getElementById('detail-duration').textContent =
+            booking.bookingDuration ? booking.bookingDuration + ' days' : 'N/A';
+
+        document.getElementById('detail-total').textContent =
+            'RM' + Number(booking.totalPrice ?? 0).toFixed(2);
+
+        document.getElementById('detail-deposit').textContent =
+            'RM' + Number(booking.depositAmount ?? 0).toFixed(2);
+
+        document.getElementById('detail-bank').textContent = booking.bankNum ?? '-';
+        document.getElementById('detail-bank-name').textContent = booking.penamaBank ?? '-';
+
+        document.getElementById('cancelBookingId').value = booking.bookingID;
+        document.getElementById('detailsModal').classList.add('active');
+    }
+
+    function showCancelModal(bookingId) {
+        const booking = findBookingById(bookingId);
+        if (!booking) return;
+
+        document.getElementById('cancelBookingId').value = booking.bookingID;
+        document.getElementById('cancel-booking-details').innerHTML = `
+            <strong>Vehicle:</strong> ${booking.model ?? '-'}<br>
+            <strong>Dates:</strong> ${formatDate(booking.startDate)} - ${formatDate(booking.endDate)}<br>
+            <strong>Total:</strong> RM${Number(booking.totalPrice ?? 0).toFixed(2)}
+        `;
+
+        document.getElementById('cancelModal').classList.add('active');
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('active');
+    }
+
+    function confirmCancel() {
+        const bookingId = document.getElementById('cancelBookingId').value;
+        const reason = document.getElementById('cancellationReason').value;
+
+        if (!confirm('Are you sure you want to cancel this booking?')) return;
+
+        fetch(`/customer/booking/${bookingId}/cancel`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
-            @endforeach
-        ];
-
-        // Modal functions
-        function showDetailsModal(bookingId) {
-            const booking = findBookingById(bookingId);
-            if (booking) {
-                document.getElementById('detail-model').textContent = booking.model;
-                document.getElementById('detail-type').textContent = booking.vehicleType;
-                document.getElementById('detail-plate').textContent = booking.plateNumber;
-                document.getElementById('detail-id').textContent = booking.id;
-                document.getElementById('detail-pickup').textContent = formatDate(booking.pickupDate);
-                document.getElementById('detail-return').textContent = formatDate(booking.returnDate);
-                document.getElementById('detail-status').textContent = formatBookingStatus(booking.bookingStatus);
-                document.getElementById('detail-total').textContent = 'RM' + (booking.totalPrice ? booking.totalPrice.toFixed(2) : '0.00');
-                document.getElementById('detail-payment').textContent = booking.paymentStatus ? booking.paymentStatus.charAt(0).toUpperCase() + booking.paymentStatus.slice(1) : 'N/A';
-            }
-            document.getElementById('detailsModal').classList.add('active');
-        }
-
-        function showModifyModal(bookingId) {
-            document.getElementById('modifyBookingId').value = bookingId;
-            
-            const booking = findBookingById(bookingId);
-            if (booking) {
-                document.getElementById('current-booking-details').innerHTML = `
-                    <strong>Vehicle:</strong> ${booking.model}<br>
-                    <strong>Dates:</strong> ${formatDate(booking.pickupDate)} - ${formatDate(booking.returnDate)}<br>
-                    <strong>Total:</strong> RM${booking.totalPrice ? booking.totalPrice.toFixed(2) : '0.00'}
-                `;
-                
-                // Pre-fill form fields
-                document.getElementById('pickupDate').value = formatDateForInput(booking.pickupDate);
-                document.getElementById('returnDate').value = formatDateForInput(booking.returnDate);
-            }
-            
-            document.getElementById('modifyModal').classList.add('active');
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-        }
-
-        function confirmCancel() {
-            const bookingId = document.getElementById('modifyBookingId').value;
-            const reason = document.getElementById('cancellationReason').value;
-            
-            if (confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
-                // Send cancellation request to server
-                fetch(`/customer/booking/${bookingId}/cancel`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({ reason: reason })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Booking cancelled successfully. Refund will be processed within 2 weeks of working days.');
-                        closeModal('modifyModal');
-                        location.reload(); // Refresh page to update booking list
-                    } else {
-                        alert('Failed to cancel booking: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred. Please try again.');
-                });
-            }
-        }
-
-        function saveModification() {
-            const bookingId = document.getElementById('modifyBookingId').value;
-            const pickupDate = document.getElementById('pickupDate').value;
-            const returnDate = document.getElementById('returnDate').value;
-            const pickupTime = document.getElementById('pickupTime').value;
-            const returnTime = document.getElementById('returnTime').value;
-            const pickupLocation = document.getElementById('pickupLocation').value;
-            const returnLocation = document.getElementById('returnLocation').value;
-            
-            // Send modification request to server
-            fetch(`/customer/booking/${bookingId}/modify`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    pickupDate: pickupDate,
-                    returnDate: returnDate,
-                    pickupTime: pickupTime,
-                    returnTime: returnTime,
-                    pickupLocation: pickupLocation,
-                    returnLocation: returnLocation
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Booking modified successfully! A confirmation email has been sent to you.');
-                    closeModal('modifyModal');
-                    location.reload(); // Refresh page to update booking list
-                } else {
-                    alert('Failed to modify booking: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred. Please try again.');
-            });
-        }
-
-        function downloadReceipt() {
-            const bookingId = document.getElementById('modifyBookingId').value;
-            // Generate and download receipt
-            window.open(`/customer/booking/${bookingId}/receipt`, '_blank');
-        }
-
-        // Utility functions
-        function findBookingById(id) {
-            return bookingsData.find(booking => booking.id == id);
-        }
-
-        function formatDate(dateString) {
-            try {
-                const date = new Date(dateString);
-                return date.toLocaleDateString('en-GB', {
-                    day: '2-digit',
-                    month: 'short',
-                    year: 'numeric'
-                });
-            } catch (e) {
-                return dateString;
-            }
-        }
-
-        function formatDateForInput(dateString) {
-            try {
-                const date = new Date(dateString);
-                return date.toISOString().split('T')[0];
-            } catch (e) {
-                return '';
-            }
-        }
-
-        function formatBookingStatus(status) {
-            if (!status) return 'N/A';
-            return status.charAt(0).toUpperCase() + status.slice(1);
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.classList.remove('active');
-            }
-        }
-
-        // Profile dropdown functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const profileContainer = document.getElementById('profile-container');
-            const profileDropdown = document.getElementById('profile-dropdown');
-            
-            if (profileContainer) {
-                profileContainer.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    profileDropdown.style.display = profileDropdown.style.display === 'block' ? 'none' : 'block';
-                });
-            }
-            
-            // Close dropdown when clicking elsewhere
-            document.addEventListener('click', function() {
-                if (profileDropdown) {
-                    profileDropdown.style.display = 'none';
-                }
-            });
+            body: JSON.stringify({ reason })
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert(data.message || 'Booking cancelled successfully');
+            location.reload();
         });
-    </script>
+    }
+
+    function downloadReceipt() {
+        const bookingId = document.getElementById('cancelBookingId').value;
+        window.open(`/customer/booking/${bookingId}/receipt`, '_blank');
+    }
+
+    function formatDate(date) {
+        if (!date) return '-';
+        return new Date(date).toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
+    }
+
+    window.onclick = function(e) {
+        if (e.target.classList.contains('modal')) {
+            e.target.classList.remove('active');
+        }
+    };
+</script>
+
+
 </body>
 </html>
