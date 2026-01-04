@@ -156,7 +156,6 @@
                
             <div class="actions">
                 <a href="{{ route('customer.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
-                <a href="{{ route('customer.profile.edit') }}" class="btn btn-primary">Edit Profile</a>
             </div>
         </div>
     </div>
