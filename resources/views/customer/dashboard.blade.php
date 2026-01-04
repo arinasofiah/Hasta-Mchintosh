@@ -54,102 +54,107 @@
     </div>
 </div>
 
-<div id="body">
+{{-- Search & Filter Section --}}
+<div class="browse-header">
+    <h1>Our Car Models</h1>
+    <p>Explore our extensive range of car models from compact cars to spacious SUVs.</p>
+
+    <form action="{{ route('customer.dashboard') }}" method="GET" id="filterForm">
+        <div class="search-container">
+            <div class="search-input-wrapper">
+                <input type="text" 
+                       name="search" 
+                       id="searchInput" 
+                       value="{{ request('search') }}" 
+                       placeholder="Search Car Model...">
+                <button type="submit" style="display: none;"><i class="fas fa-search"></i></button>
+            </div>
+        </div>
+
+        <div class="filter-container">
+            <input type="hidden" name="category" id="categoryInput" value="{{ request('category', 'All') }}">
+            
+            @php
+                $categories = [
+                    'All' => 'All vehicles',
+                    'Sedan' => 'Sedan',
+                    'Hatchback' => 'Hatchback',
+                    'MPV' => 'MPV',
+                    'SUV' => 'SUV',
+                    'Minivan' => 'Minivan'
+                ];
+            @endphp
+
+            @foreach($categories as $key => $label)
+                <button type="button" 
+                        onclick="filterCategory('{{ $key }}')"
+                        class="filter-pill {{ (request('category', 'All') == $key) ? 'active' : '' }}">
+                    {{ $label }}
+                </button>
+            @endforeach
+        </div>
+    </form>
+</div>
+
+{{-- Vehicle Grid --}}
+<div class="car-grid">
+    @php
+        // Ensure $vehicles is always defined
+        $vehicles = $vehicles ?? collect();
+    @endphp
     
-    {{-- Search & Filter Section (Centered at top) --}}
-    <div class="browse-header">
-        <h1>Our Car Models</h1>
-        <p>Explore our extensive range of car models from compact cars to spacious SUVs.</p>
-
-        <form action="{{ url()->current() }}" method="GET" id="filterForm">
-            <div class="search-container">
-                <div class="search-input-wrapper">
-                    <input type="text" name="search" value="{{ request('search') }}" 
-                           placeholder="Search Car Model..." onchange="this.form.submit()">
+    @forelse($vehicles as $vehicle)
+        <div class="car-card">
+            @if($vehicle->vehiclePhoto)
+                <img src="{{ Storage::url($vehicle->vehiclePhoto) }}" 
+                     alt="{{ $vehicle->model }}"
+                     onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.jpg') }}'">
+            @else
+                <img src="{{ asset('img/vehicles/'.$vehicle->vehicleID.'.png') }}" 
+                     alt="{{ $vehicle->model }}"
+                     onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.jpg') }}'">
+            @endif   
+            
+            <h4>{{ $vehicle->model }}</h4>
+            
+            <div style="padding: 0 20px;">
+                <h3 style="color: #bc3737; margin: 5px 0;">RM{{ number_format($vehicle->pricePerDay, 2) }}/day</h3>
+            </div>
+            
+            <div class="specs-grid">
+                <div class="spec-item" title="Seats">
+                    <i class="fas fa-users"></i>
+                    <span>{{ $vehicle->seat }}</span>
+                </div>
+                <div class="spec-item" title="Fuel Type">
+                    <i class="fas fa-gas-pump"></i>
+                    <span>{{ $vehicle->fuelType }}</span>
+                </div>
+                <div class="spec-item" title="Transmission">
+                    <i class="fas fa-cog"></i>
+                    <span>{{ str_contains(strtolower($vehicle->transmission), 'auto') ? 'Auto' : 'Manual' }}</span>
+                </div>
+                <div class="spec-item" title="AC">
+                    <i class="fas fa-snowflake"></i>
+                    <span>{{ $vehicle->ac ? 'Yes' : 'No' }}</span>
                 </div>
             </div>
-
-            <div class="filter-container">
-                <input type="hidden" name="category" id="categoryInput" value="{{ request('category', 'All') }}">
-                
-                @php
-                    $categories = [
-                        'All' => 'All vehicles',
-                        'Sedan' => 'Sedan',
-                        'Hatchback' => 'Hatchback',
-                        'MPV' => 'MPV',
-                        'SUV' => 'SUV',
-                        'Minivan' => 'Minivan'
-                    ];
-                @endphp
-
-                @foreach($categories as $key => $label)
-                    <button type="button" 
-                            onclick="filterCategory('{{ $key }}')"
-                            class="filter-pill {{ (request('category', 'All') == $key) ? 'active' : '' }}">
-                        {{ $label }}
-                    </button>
-                @endforeach
-            </div>
-        </form>
-    </div>
-
-    {{-- The Grid --}}
-    <div id="body">
-    <div class="car-grid"> <!-- Removed the extra < character -->
-        @php
-            // Ensure $vehicles is always defined
-            $vehicles = $vehicles ?? collect();
-        @endphp
-        
-        @forelse($vehicles as $vehicle)
-            <div class="car-card"> <!-- ADD THIS OPENING DIV -->
-                @if($vehicle->vehiclePhoto)
-                    <img src="{{ Storage::url($vehicle->vehiclePhoto) }}" 
-                         alt="{{ $vehicle->model }}"
-                         onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.jpg') }}'">
-                @else
-                    <img src="{{ asset('img/vehicles/'.$vehicle->vehicleID.'.png') }}" 
-                         alt="{{ $vehicle->model }}"
-                         onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.jpg') }}'">
-                @endif   
-                
-                <h4>{{ $vehicle->model }}</h4>
-                
-                <div style="margin: 10px 0;">
-                    <h3 style="color: #bc3737; margin: 5px 0;">RM{{ number_format($vehicle->pricePerDay, 2) }}/day</h3>
-                </div>
-                
-                <div class="specs-grid">
-                    <div class="spec-item" title="Seats">
-                        <i class="fas fa-users"></i>
-                        <span>{{ $vehicle->seat }}</span>
-                    </div>
-                    <div class="spec-item" title="Fuel Level">
-                        <i class="fas fa-gas-pump"></i>
-                        <span>{{ $vehicle->fuelType }}</span>
-                    </div>
-                    <div class="spec-item" title="Transmission">
-                        <i class="fas fa-cog"></i>
-                        <span>{{ str_contains(strtolower($vehicle->transmission), 'auto') ? 'Auto' : 'Manual' }}</span>
-                    </div>
-                    <div class="spec-item" title="AC">
-                        <i class="fas fa-snowflake"></i>
-                        <span>{{ $vehicle->ac ? 'Yes' : 'No' }}</span>
-                    </div>
-                </div>
-               
-                <a href="{{ route('selectVehicle', $vehicle->vehicleID) }}" class="btn">
-                    View Details & Book
+           
+            <a href="{{ route('selectVehicle', $vehicle->vehicleID) }}" class="btn">
+                View Details & Book
+            </a>
+        </div>
+    @empty
+        <div style="grid-column: 1 / -1; text-align: center; padding: 60px;">
+            <h3>No vehicles found</h3>
+            <p>Try adjusting your filters or search keywords.</p>
+            @if(request('category') || request('search'))
+                <a href="{{ route('customer.dashboard') }}" class="btn" style="background-color: #bc3737; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; margin-top: 10px;">
+                    Clear All Filters
                 </a>
-            </div> <!-- ADD THIS CLOSING DIV -->
-        @empty
-            <div style="grid-column: 1 / -1; text-align: center; padding: 60px;">
-                <h3>No vehicles found</h3>
-                <p>Try adjusting your filters or search keywords.</p>
-            </div>
-        @endforelse
-    </div>
+            @endif
+        </div>
+    @endforelse
 </div>
 
 <footer class="footer">
@@ -212,19 +217,52 @@
             </ul>
         </div>
     </div>
-     <div class="copyright">
-
+    <div class="copyright">
         © {{ date('Y') }} Hasta Travel & Tour. All rights reserved.
-
     </div>
 </footer>
 
 <script>
+    // Function to handle category filtering
     function filterCategory(category) {
+        // Update the hidden input value
         document.getElementById('categoryInput').value = category;
+        
+        // Remove active class from all buttons
+        document.querySelectorAll('.filter-pill').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Add active class to clicked button
+        event.target.classList.add('active');
+        
+        // Submit the form
         document.getElementById('filterForm').submit();
     }
+    
+    // Handle search input
+    document.getElementById('searchButton').addEventListener('click', function() {
+        document.getElementById('filterForm').submit();
+    });
+    
+    // Submit on Enter key in search input
+    document.getElementById('searchInput').addEventListener('keyup', function(event) {
+        if (event.key === 'Enter') {
+            document.getElementById('filterForm').submit();
+        }
+    });
+    
+    // Optional: Auto-submit after typing stops (debounced search)
+    let searchTimeout;
+    document.getElementById('searchInput').addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            // Only submit if the input has a value
+            if (this.value.trim()) {
+                document.getElementById('filterForm').submit();
+            }
+        }, 800);
+    });
 </script>
-
 </body>
 </html>
