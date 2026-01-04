@@ -38,4 +38,14 @@ class Bookings extends Model
     {
         return $this->hasOne(\App\Models\Payment::class, 'bookingID', 'bookingID');
     }
+
+    public function pickup()
+{
+    return $this->hasOne(PickUp::class, 'bookingID', 'bookingID');
+}
+
+public function returnCar()
+{
+    return $this->hasOne(ReturnCar::class, 'bookingID', 'bookingID');
+}
 }
