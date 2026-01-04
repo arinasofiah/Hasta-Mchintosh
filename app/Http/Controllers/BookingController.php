@@ -332,7 +332,10 @@ class BookingController extends Controller
     }
 
     public function confirmBooking(Request $request)
-    {
+{
+        \Log::info('Booking request received', $request->all()); // ✅ ADD THIS LINE
+
+    try {
         $request->validate([
             'vehicleID' => 'required|exists:vehicles,vehicleID',
             'pickup_date' => 'required|date',
@@ -344,47 +347,75 @@ class BookingController extends Controller
             'bank_name' => 'required|string',
             'bank_owner_name' => 'required|string',
             'payAmount' => 'required|in:full,deposit',
-            'payment_receipt' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'payment_receipt' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
         ]);
 
         $vehicle = Vehicles::findOrFail($request->vehicleID);
         
         if ($vehicle->status !== 'available') {
-            return response()->json(['success' => false, 'message' => 'Vehicle no longer available']);
+            return response()->json([
+                'success' => false, 
+                'message' => 'Vehicle no longer available'
+            ], 400);
         }
 
         $pickup = Carbon::parse($request->pickup_date . ' ' . $request->pickup_time);
         $return = Carbon::parse($request->return_date . ' ' . $request->return_time);
         $durationHours = $return->diffInHours($pickup);
-        $totalPrice = $durationHours * $vehicle->pricePerHour;
+        
+        // Calculate total price with promotion discount if applicable
+        $subtotal = $durationHours * $vehicle->pricePerHour;
+        $promotionDiscount = 0;
+        
+        if ($request->promo_id) {
+            $promo = Promotion::find($request->promo_id);
+            if ($promo && $promo->isActive) {
+                $promotionDiscount = ($subtotal * $promo->discountPercentage) / 100;
+            }
+        }
+        
+        $totalPrice = $subtotal - $promotionDiscount;
+        $depositAmount = $totalPrice * 0.3; // 30% deposit
 
+        // Create booking
         $booking = new Bookings();
         $booking->customerID = auth()->id();
         $booking->vehicleID = $vehicle->vehicleID;
         $booking->startDate = $request->pickup_date;
         $booking->endDate = $request->return_date;
         $booking->bookingDuration = $durationHours;
-        $booking->bookingStatus = 'pending';
-        $booking->reservation_expires_at = now()->addMinutes(30); // Extended to 30 mins
+        $booking->bookingStatus = 'pending'; // Will be confirmed by staff
+        $booking->reservation_expires_at = now()->addMinutes(30);
         $booking->totalPrice = $totalPrice;
-        $booking->depositAmount = $request->depoBalance ?? 0;
+        $booking->depositAmount = $depositAmount;
         $booking->promo_id = $request->promo_id;
-        //$booking->voucher_id = $request->voucher_id;
         $booking->destination = $request->destination;
         $booking->remark = $request->remark;
         $booking->bank_name = $request->bank_name;
         $booking->bank_owner_name = $request->bank_owner_name;
         $booking->pay_amount_type = $request->payAmount;
         
-        if ($request->filled('for_someone_else')) {
+        // If booking for someone else, store driver info
+        if ($request->filled('for_someone_else') && $request->for_someone_else == 1) {
+            $booking->for_someone_else = true;
             $booking->driver_matric_number = $request->matricNumber;
             $booking->driver_license_number = $request->licenseNumber;
             $booking->driver_college = $request->college;
             $booking->driver_faculty = $request->faculty;
+            $booking->driver_deposit_balance = $request->depoBalance ?? 0;
+        }
+        
+        // Upload payment receipt
+        if ($request->hasFile('payment_receipt')) {
+            $file = $request->file('payment_receipt');
+            $filename = 'receipt_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('receipts', $filename, 'public');
+            $booking->payment_receipt_path = $path;
         }
         
         $booking->save();
 
+        // Create pickup record
         PickUp::create([
             'bookingID' => $booking->bookingID,
             'pickupDate' => $request->pickup_date,
@@ -392,6 +423,7 @@ class BookingController extends Controller
             'location' => $request->pickupLocation,
         ]);
 
+        // Create return record
         ReturnCar::create([
             'bookingID' => $booking->bookingID,
             'returnDate' => $request->return_date,
@@ -399,26 +431,51 @@ class BookingController extends Controller
             'location' => $request->returnLocation,
         ]);
 
-        if ($request->hasFile('payment_receipt')) {
-            $path = $request->file('payment_receipt')->store('receipts', 'public');
-            $booking->payment_receipt_path = $path;
-            $booking->save();
-        }
-
+        // Mark voucher as used
         if ($request->voucher_id) {
             Voucher::where('voucherID', $request->voucher_id)
-                ->update(['isUsed' => true]);
+                ->where('customerID', auth()->id())
+                ->where('isUsed', false)
+                ->update([
+                    'isUsed' => true,
+                    'usedAt' => now()
+                ]);
         }
 
+        // Update loyalty card (optional - uncomment if you want to use)
         /*$loyaltyCard = LoyaltyCard::firstOrNew(['userID' => auth()->id()]);
         $loyaltyCard->stampCount = ($loyaltyCard->stampCount ?? 0) + 1;
         $loyaltyCard->save();*/
 
+        // ✅ Update vehicle status to unavailable
         $vehicle->status = 'unavailable';
         $vehicle->save();
 
-        return response()->json(['success' => true]);
+        // Optional: Send notification to staff about new booking
+        // Notification::send($staffUsers, new NewBookingNotification($booking));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Booking submitted successfully!',
+            'booking_id' => $booking->bookingID
+        ]);
+
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Validation failed',
+            'errors' => $e->errors()
+        ], 422);
+        
+    } catch (\Exception $e) {
+        \Log::error('Booking confirmation failed: ' . $e->getMessage());
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Booking failed. Please try again.'
+        ], 500);
     }
+}
 
 /* public function validateVoucher(Request $request)
     {

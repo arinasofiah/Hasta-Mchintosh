@@ -247,7 +247,7 @@
             padding: 40px;
             text-align: center;
             background-color: #fafafa;
-            cursor: pointer;
+            transition: all 0.3s ease;
         }
 
         .upload-area:hover {
@@ -273,24 +273,42 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
+        .browse-btn:hover {
+            background-color: #777;
+        }
+
+        /* ✅ FIX: Center Terms Checkbox */
         .terms {
             text-align: center;
             margin: 30px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .terms label {
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            justify-content: center;
             gap: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .terms input[type="checkbox"] {
+            width: auto;
             cursor: pointer;
         }
 
         .terms a {
             color: #d94444;
             text-decoration: none;
+        }
+
+        .terms a:hover {
+            text-decoration: underline;
         }
 
         .submit-btn {
@@ -308,6 +326,11 @@
 
         .submit-btn:hover {
             background-color: #c23939;
+        }
+
+        .submit-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
         }
 
         /* Voucher Tabs */
@@ -427,24 +450,13 @@
     <div id="profile">
         <div id="profile-container">
             <img id="pfp" src="{{ asset('img/racc_icon.png') }}">
-
-            <div id="profile-dropdown">
-                @guest
-                    <a href="{{ route('login') }}" class="dropdown-item">Login</a>
-                    <a href="{{ route('register') }}" class="dropdown-item">Register</a>
-                   
-                @endguest
-
-               
-            </div>
         </div>
-
         @guest
             <a id="username" href="{{ route('login') }}">Log in</a>
         @endguest
-
     </div>
 </div>
+
 <!-- Progress Steps -->
 <div class="progress-container">
     <div class="steps">
@@ -457,7 +469,7 @@
 </div>
 
 <!-- Form -->
-<form id="paymentForm" enctype="multipart/form-data">
+<form id="paymentForm" method="POST" action="{{ route('booking.confirm') }}" enctype="multipart/form-data">
     @csrf
     <input type="hidden" name="vehicleID" value="{{ $vehicle->vehicleID }}">
     <input type="hidden" name="pickup_date" value="{{ $pickupDate }}">
@@ -543,16 +555,6 @@
         <div class="section">
             <h2>Payment Details</h2>
             
-            <!-- Voucher Section -->
-            <div class="form-group">
-                <label>Apply Voucher (Optional)</label>
-                <div class="voucher-tabs">
-                    <button type="button" class="tab-btn active" data-tab="eligible">Eligible</button>
-                    <button type="button" class="tab-btn" data-tab="enter">Enter Code</button>
-                </div>
-                         
-            </div>
-
             <div class="form-group">
                 <label>Bank Name</label>
                 <select name="bank_name" required>
@@ -602,7 +604,6 @@
                 <p class="company-name">HASTA TRAVEL SDN BHD</p>
             </div>
 
-
             <div class="form-group">
                 <label>Upload Receipt</label>
                 <p style="color: #999; font-size: 13px; margin-bottom: 10px;">Kindly upload a screenshot of receipt payment</p>
@@ -611,28 +612,25 @@
                     <p class="upload-text" id="uploadText">Drag files here or click "Browse" to upload</p>
                     <button type="button" class="browse-btn" id="browseBtn">Browse</button>
                     <input type="file" id="fileInput" name="payment_receipt" accept="image/*" style="display: none;" required>
-                    <!-- Preview container -->
                     <div id="imagePreview" style="display: none; margin-top: 15px;">
                         <img id="previewImage" src="" alt="Receipt Preview" style="max-width: 100%; max-height: 200px; border: 1px solid #ddd; border-radius: 5px;">
                         <button type="button" id="removeImage" style="margin-top: 10px; background: #d94444; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Remove</button>
                     </div>
-                    <!-- Error message container -->
                     <div id="fileError" style="color: red; font-size: 12px; margin-top: 5px; display: none;"></div>
                 </div>
             </div>
-
         </div>
     </div>
 
+    <!-- ✅ FIX: Centered Terms Checkbox -->
     <div class="terms">
         <label>
             <input type="checkbox" id="termsCheckbox" required>
-            I have read and accepted the 
-            <a href="#" onclick="showTermsModal(); return false;">Terms and Conditions</a>
+            <span>I have read and accepted the <a href="#" onclick="showTermsModal(); return false;">Terms and Conditions</a></span>
         </label>
     </div>
 
-    <button type="submit" class="submit-btn">Submit</button>
+    <button type="submit" class="submit-btn" id="submitBtn">Submit</button>
 </form>
 
 <!-- Terms Modal -->
@@ -660,156 +658,88 @@
         </p>
         <div class="modal-btns">
             <button class="modal-btn btn-primary" onclick="window.location='{{ route('booking.history') }}'">View My Bookings</button>
-            <button class="modal-btn btn-secondary" onclick="window.location='{{ route('booking.history') }}'">Close</button>
+            <button class="modal-btn btn-secondary" onclick="window.location='{{ route('welcome') }}'">Close</button>
         </div>
     </div>
 </div>
 
 <script>
-    // Toggle voucher tabs
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-        });
-    });
+// ✅ FIX: File Upload - Simplified and Working
+const fileInput = document.getElementById('fileInput');
+const browseBtn = document.getElementById('browseBtn');
+const uploadText = document.getElementById('uploadText');
+const imagePreview = document.getElementById('imagePreview');
+const previewImage = document.getElementById('previewImage');
+const removeImageBtn = document.getElementById('removeImage');
+const fileError = document.getElementById('fileError');
+const uploadArea = document.getElementById('uploadArea');
 
-    // Select eligible voucher
-    document.querySelectorAll('.voucher-item').forEach(item => {
-        item.addEventListener('click', () => {
-            document.querySelectorAll('.voucher-item').forEach(i => i.classList.remove('selected'));
-            item.classList.add('selected');
-            document.getElementById('selected_voucher_id').value = item.dataset.id;
-        });
-    });
+// Browse button click handler
+browseBtn.onclick = function(e) {
+    e.preventDefault();
+    fileInput.click();
+};
 
-    // Apply voucher code
-    document.getElementById('apply_voucher').addEventListener('click', function() {
-        const code = document.getElementById('voucher_code').value;
-        if (!code) {
-            document.getElementById('voucher_message').innerHTML = '<span style="color:red;">Please enter a code</span>';
-            return;
-        }
+// File selection handler
+fileInput.onchange = function(e) {
+    handleFileSelect(e.target.files[0]);
+};
 
-        fetch("{{ route('validate.voucher') }}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({ code: code })
-        })
-        .then(res => res.json())
-        .then(data => {
-            const msgEl = document.getElementById('voucher_message');
-            if (data.valid) {
-                msgEl.innerHTML = '<span style="color:green;">Voucher applied!</span>';
-                document.getElementById('selected_voucher_id').value = data.voucher_id;
-            } else {
-                msgEl.innerHTML = '<span style="color:red;">' + (data.message || 'Invalid voucher') + '</span>';
-                document.getElementById('selected_voucher_id').value = '';
-            }
-        })
-        .catch(() => {
-            document.getElementById('voucher_message').innerHTML = '<span style="color:red;">Error validating voucher</span>';
-        });
-    });
+// Drag and drop handlers
+uploadArea.ondragover = function(e) {
+    e.preventDefault();
+    uploadArea.style.borderColor = '#d94444';
+    uploadArea.style.backgroundColor = '#fff';
+};
 
+uploadArea.ondragleave = function(e) {
+    uploadArea.style.borderColor = '#ddd';
+    uploadArea.style.backgroundColor = '#fafafa';
+};
 
-        const fileInput = document.getElementById('fileInput');
-        const browseBtn = document.getElementById('browseBtn');
-        const uploadText = document.getElementById('uploadText');
-        const imagePreview = document.getElementById('imagePreview');
-        const previewImage = document.getElementById('previewImage');
-        const removeImageBtn = document.getElementById('removeImage');
-        const fileError = document.getElementById('fileError');
-        const uploadArea = document.getElementById('uploadArea');
+uploadArea.ondrop = function(e) {
+    e.preventDefault();
+    uploadArea.style.borderColor = '#ddd';
+    uploadArea.style.backgroundColor = '#fafafa';
+    if (e.dataTransfer.files.length > 0) {
+        fileInput.files = e.dataTransfer.files;
+        handleFileSelect(e.dataTransfer.files[0]);
+    }
+};
 
-// Make the Browse button work
-if (browseBtn) {
-    browseBtn.addEventListener('click', function(e) {
-        e.preventDefault(); // Prevent form submission
-        e.stopPropagation(); // Stop event bubbling
-        fileInput.click();
-    });
-}
+// Remove image handler
+removeImageBtn.onclick = function(e) {
+    e.preventDefault();
+    fileInput.value = '';
+    uploadText.textContent = 'Drag files here or click "Browse" to upload';
+    imagePreview.style.display = 'none';
+    previewImage.src = '';
+    hideError();
+};
 
 // Handle file selection
-if (fileInput) {
-    fileInput.addEventListener('change', function(e) {
-        if (e.target.files.length > 0) {
-            const file = e.target.files[0];
-            
-            // Validate file type
-            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-            if (!validTypes.includes(file.type)) {
-                showError('Please select a valid image file (JPEG, JPG, PNG, or GIF).');
-                fileInput.value = '';
-                return;
-            }
-            
-            // Validate file size (max 5MB)
-            const maxSize = 5 * 1024 * 1024;
-            if (file.size > maxSize) {
-                showError('File size exceeds 5MB. Please select a smaller file.');
-                fileInput.value = '';
-                return;
-            }
-            
-            // Update text and show preview
-            uploadText.textContent = file.name;
-            showImagePreview(file);
-            hideError();
-        }
-    });
+function handleFileSelect(file) {
+    if (!file) return;
+    
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    if (!validTypes.includes(file.type)) {
+        showError('Please select a valid image file (JPEG, JPG, PNG, or GIF).');
+        fileInput.value = '';
+        return;
+    }
+    
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+        showError('File size exceeds 5MB. Please select a smaller file.');
+        fileInput.value = '';
+        return;
+    }
+    
+    uploadText.textContent = file.name;
+    showImagePreview(file);
+    hideError();
 }
 
-// Handle drag and drop
-if (uploadArea) {
-    uploadArea.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        uploadArea.style.borderColor = '#d94444';
-        uploadArea.style.backgroundColor = '#fff';
-    });
-
-    uploadArea.addEventListener('dragleave', function(e) {
-        uploadArea.style.borderColor = '#ddd';
-        uploadArea.style.backgroundColor = '#fafafa';
-    });
-
-    uploadArea.addEventListener('drop', function(e) {
-        e.preventDefault();
-        uploadArea.style.borderColor = '#ddd';
-        uploadArea.style.backgroundColor = '#fafafa';
-        
-        if (e.dataTransfer.files.length > 0) {
-            const file = e.dataTransfer.files[0];
-            
-            // Validate file
-            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-            if (!validTypes.includes(file.type)) {
-                showError('Please select a valid image file (JPEG, JPG, PNG, or GIF).');
-                return;
-            }
-            
-            const maxSize = 5 * 1024 * 1024;
-            if (file.size > maxSize) {
-                showError('File size exceeds 5MB. Please select a smaller file.');
-                return;
-            }
-            
-            // Assign file to input
-            fileInput.files = e.dataTransfer.files;
-            uploadText.textContent = file.name;
-            showImagePreview(file);
-            hideError();
-        }
-    });
-}
-
-// Show image preview
 function showImagePreview(file) {
     const reader = new FileReader();
     reader.onload = function(e) {
@@ -819,86 +749,45 @@ function showImagePreview(file) {
     reader.readAsDataURL(file);
 }
 
-// Remove image
-if (removeImageBtn) {
-    removeImageBtn.addEventListener('click', function(e) {
-        e.preventDefault(); // Prevent form submission
-        e.stopPropagation(); // Stop event bubbling
-        fileInput.value = '';
-        uploadText.textContent = 'Drag files here or click "Browse" to upload';
-        imagePreview.style.display = 'none';
-        previewImage.src = '';
-        hideError();
-    });
-}
-
-// Error handling functions
 function showError(message) {
-    if (fileError) {
-        fileError.textContent = message;
-        fileError.style.display = 'block';
-    }
+    fileError.textContent = message;
+    fileError.style.display = 'block';
 }
 
 function hideError() {
-    if (fileError) {
-        fileError.style.display = 'none';
-        fileError.textContent = '';
-    }
+    fileError.style.display = 'none';
+    fileError.textContent = '';
 }
 
-// Show terms modal
 function showTermsModal() {
-    const termsModal = document.getElementById('termsModal');
-    if (termsModal) {
-        termsModal.style.display = 'block';
-    }
-}
-
-// Form submission
-const paymentForm = document.getElementById('paymentForm');
-if (paymentForm) {
-    paymentForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const termsCheckbox = document.getElementById('termsCheckbox');
-        const terms = termsCheckbox ? termsCheckbox.checked : false;
-        
-        if (!terms) {
-            alert('Please accept Terms and Conditions');
-            return;
-        }
-
-        // Validate file is selected
-        if (!fileInput.files.length) {
-            showError('Please upload a payment receipt.');
-            return;
-        }
-
-        // If all validations pass, submit the form
-        this.submit();
-    });
+    document.getElementById('termsModal').style.display = 'block';
 }
 
 // Form submission
 document.getElementById('paymentForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
-    const termsCheckbox = document.getElementById('termsCheckbox');
-    const terms = termsCheckbox ? termsCheckbox.checked : false;
-    
-    if (!terms) {
+    if (!document.getElementById('termsCheckbox').checked) {
         alert('Please accept Terms and Conditions');
         return;
     }
 
-    // Validate file is selected
     if (!fileInput.files.length) {
         showError('Please upload a payment receipt.');
         return;
     }
 
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+
     const formData = new FormData(this);
+
+    // ✅ Debug: Log what we're sending
+    console.log('Submitting form data:');
+    for (let pair of formData.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+    }
 
     fetch("{{ route('booking.confirm') }}", {
         method: 'POST',
@@ -907,20 +796,26 @@ document.getElementById('paymentForm').addEventListener('submit', function(e) {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Response status:', response.status); // ✅ Debug
+        return response.json();
+    })
     .then(data => {
+        console.log('Response data:', data); // ✅ Debug
+        
         if (data.success) {
-            const successModal = document.getElementById('successModal');
-            if (successModal) {
-                successModal.style.display = 'block';
-            }
+            document.getElementById('successModal').style.display = 'block';
         } else {
             alert(data.message || 'Submission failed. Please try again.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit';
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        console.error('Fetch error:', error); // ✅ Debug
         alert('An error occurred. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit';
     });
 });
 </script>
