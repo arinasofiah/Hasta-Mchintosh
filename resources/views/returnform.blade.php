@@ -21,17 +21,21 @@
 <body>
 @include('profile.partials.header')
 <div id="body">
-<p id="hd">Return from</p>    
+<p id="hd">Return form</p>    
 <div class="container">
     <div class="return-layout">
+
         <div class="photo-upload">
             <p class="main_txt">Upload Photos</p>
             <p class="sub_txt">Upload photos of the car before returning it</p>
  <form action="{{ route('return.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
+        <input type="hidden" name="returnID" value="{{ $returnCar->returnID }}">
+        <input type="hidden" name="returnID" value="{{ $returnCar->returnID }}">
+        <input type="hidden" name="vehicle_id" value="{{ $vehicle->id }}">
             <div id="drop-zone">
                 <p>Drop files to upload</p>
-                <span>or</apan>
+                <span>or</span>
                 <p><input type="file" id="file-input" name="returnPhoto" multiple accept="image/*" /></p>
             </div>
 
@@ -47,17 +51,15 @@
          <div class="return_form">
             <p class="main_txt">Return Details</p>
             <p class="sub_txt">Fill in return details</p>
-            
 
-    <input type="hidden" name="vehicle_id" value="{{ $vehicle->id }}">
                 <div class="form-row">
                     <div class="input-group">
                         <label for="loc">Return location:</label>
-                        <input type="text" id="loc" name="returnLocation" required>
+                        <p class="static-data">{{ $returnCar->returnLocation }}</p>
                     </div>
                     <div class="input-group">
                         <label for="date_return">Return date date:</label>
-                        <input type="date" id="date_return" name="returnDate" required>
+                        <p class="static-data">{{ $returnCar->returnDate }}</p>
                     </div>
                 </div>
 

@@ -41,36 +41,34 @@
             <p id="all_pr">Total MYR 530</p>
 </div>
          <div class="pickup_form">
+        <form action="{{ route('pickup.store') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <input type="hidden" name="pickupID" value="{{ $pickup->pickupID }}">
+        <input type="hidden" name="bookingID" value="{{ $booking->bookingID }}">
             <!--<div class="no-pay">
                 <p>Before confirming Pick Up details, Please pay.</p>
             </div>-->
             <p id="form_name">Pick Up Details</p>
             <p class="main_txt">Upload Photos</p>
             <p class="sub_txt">Upload photos of the car before pick up</p>
-            <form action="{{ route('pickup.store') }}" method="POST" enctype="multipart/form-data">
-            @csrf
             <div id="drop-zone">
                 <p>Drop files to upload</p>
                 <p>or</p>
                 <p><input type="file" id="file-input" accept="image/*" name="pickupPhoto"/></p>
             </div>
             <p class="main_txt">Pick Up Information</p>
-            <p class="sub_txt">Fill in pick up details</p>
-            
-           @if(session('success'))
-    <div class="alert alert-success">
-        {{ session('success') }}
-    </div>
-@endif
+            <p class="sub_txt">Confirm pick up details</p>
+
     <input type="hidden" name="vehicle_id" value="{{ $vehicle->id }}">
+
                 <div class="form-row">
                     <div>
                     <label for="loc">Location:</label>
-                   <input type="text" id="loc" name="pickupLocation" required>
+                   <p class="static-data">{{ $pickup->pickupLocation }}</p>
                     </div>
                     <div>
                     <label for="date_pickup">Pickup date:</label>
-                    <input type="date" id="date_pickup" name="pickupDate" required>
+                    <p class="static-data">{{ $pickup->pickupDate }}</p>
                     </div>
                 </div>
 

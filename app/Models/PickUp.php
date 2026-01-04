@@ -10,6 +10,7 @@ class PickUp extends Model
     protected $primaryKey = 'pickupID';       
     
     protected $fillable = [
+        'bookingID',
         'pickupDate',
         'pickupLocation',
         'pickupPhoto',
@@ -18,6 +19,6 @@ class PickUp extends Model
     ];
 
     public function booking() {
-        return $this->belongsTo(Booking::class, 'bookingID');
+        return $this->belongsTo(Bookings::class, 'bookingID','bookingID');
     }
 };

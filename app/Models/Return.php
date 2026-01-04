@@ -10,10 +10,10 @@ class ReturnTrip extends Model
     protected $primaryKey = 'returnID';
 
     protected $fillable = [
-        'bookingID',       // <-- must be fillable
+        'bookingID',
         'returnDate',
         'returnTime',
-        'returnLocation',  // <-- correct field name
+        'returnLocation',
         'returnPhoto',
         'agreementForm',
     ];
