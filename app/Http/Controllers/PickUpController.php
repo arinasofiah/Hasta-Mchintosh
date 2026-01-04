@@ -12,13 +12,8 @@ class PickUpController extends Controller
     public function show($bookingID)
     {
         $booking = Bookings::with('vehicle')->findOrFail($bookingID);
-
-        $payment = Payment::where('bookingID', $bookingID)
-                      ->where('paymentStatus', 'completed')
-                      ->first();
         
-        
-        $onlyDepositPaid = ($payment >= $booking->depositAmount) && ($payment< $booking->totalPrice);
+        $onlyDepositPaid = ($booking->pay_amount_type === 'deposit');
 
         $pickup = PickUp::where('bookingID', $bookingID)->first();
 
