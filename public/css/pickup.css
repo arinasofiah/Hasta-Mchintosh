@@ -84,6 +84,9 @@ html, body {
     display: flex;
     align-items: center;
 }
+i{
+    margin-right: 10px;
+}
 .features {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
