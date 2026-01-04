@@ -178,26 +178,39 @@ class CustomerController extends Controller
     /**
      * Display customer bookings.
      */
-    public function bookings()
-    {
-        // Check if user is customer
-        if (auth()->user()->userType !== 'customer') {
-            abort(403, 'Unauthorized. Customer access only.');
-        }
-        
-        // Get user ID
-        $userId = Auth::user()->userID;
-        
-        // Get customer bookings (assuming you have a bookings table)
-        $bookings = DB::table('booking')
-            ->where('customerID', $userId)
-            ->join('vehicles', 'booking.vehicleID', '=', 'vehicles.vehicleID')
-            ->select('booking.*', 'vehicles.model', 'vehicles.vehicleType', 'vehicles.plateNumber')
-            ->orderBy('booking.created_at', 'desc')
-            ->get();
-        
-        return view('customer.bookings', compact('bookings'));
+public function bookings()
+{
+    if (auth()->user()->userType !== 'customer') {
+        abort(403, 'Unauthorized. Customer access only.');
     }
+    
+    $userId = Auth::user()->userID;
+    
+    // Get all bookings
+    $bookings = DB::table('booking')
+        ->where('customerID', $userId)
+        ->join('vehicles', 'booking.vehicleID', '=', 'vehicles.vehicleID')
+        ->select('booking.*', 'vehicles.model', 'vehicles.vehicleType', 'vehicles.plateNumber')
+        ->orderBy('booking.created_at', 'desc')
+        ->get();
+    
+    // Create status-based variables
+    $upcoming = $bookings->filter(function($booking) {
+        // Define what "upcoming" means - perhaps bookings with future dates
+        // or bookings with status 'confirmed' but not yet started
+        return $booking->status == 'confirmed' && 
+               strtotime($booking->pickupDate) > time();
+    });
+    
+    $completed = $bookings->where('status', 'completed');
+    $pending = $bookings->where('status', 'pending');
+    $cancelled = $bookings->where('status', 'cancelled');
+    $active = $bookings->where('status', 'active'); // Currently rented
+    
+    return view('bookingHistory', compact(
+        'bookings', 'upcoming', 'completed', 'pending', 'cancelled', 'active'
+    ));
+}
     
     /**
      * Show booking form for a specific vehicle.

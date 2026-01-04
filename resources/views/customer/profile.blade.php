@@ -57,7 +57,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('customer.bookings') }}">
+                    <a href="{{ route('bookingHistory') }}">
                         My Bookings
                     </a>
                 </li>
