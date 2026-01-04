@@ -10,8 +10,7 @@ use App\Models\PickUp;
 use App\Models\ReturnCar;
 use App\Models\LoyaltyCard;
 use App\Models\Promotion;
-//use App\Models\Voucher;          // ✅ Uncommented
-//use App\Models\LoyaltyCard;      // ✅ Uncommented
+use App\Models\Voucher;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -201,20 +200,24 @@ class BookingController extends Controller
     }
 
     // Check promotion
-    /*public function checkPromotion(Request $request)
+    public function checkPromotion(Request $request)
     {
         $day = $request->day;
-        $amount = $request->amount;
-
-        $promotion = Promotion::whereNotNull('applicableDays')
-            ->get()
-            ->first(function ($promo) use ($day) {
-                $applicableDays = json_decode($promo->applicableDays, true);
-                return is_array($applicableDays) && in_array($day, $applicableDays);
-            });
+        $amount = $request->amount; 
+        $promotion = Promotion::all()->first(function ($promo) use ($day) {
+            $applicableDays = json_decode($promo->applicableDays, true);
+            return is_array($applicableDays) && in_array($day, $applicableDays);
+        });
 
         if ($promotion) {
-            $discount = min($promotion->discountValue, $amount);
+            $discount = 0;
+            if ($promotion->discountType == 'percentage') {
+                $discount = $amount * ($promotion->discountValue / 100);
+            } else {
+                $discount = $promotion->discountValue; // fixed amount
+            }
+            
+            $discount = min($discount, $amount);
 
             return response()->json([
                 'hasPromotion' => true,
@@ -223,112 +226,82 @@ class BookingController extends Controller
             ]);
         }
 
+        return response()->json(['hasPromotion' => false]);
+    }
+
+    public function validateVoucher(Request $request)
+    {
+        $request->validate(['code' => 'required']); 
+
+        $voucher = Voucher::where('voucherCode', $request->code)
+            ->where('isUsed', 0)
+            ->first();
+
+        if (!$voucher) {
+            return response()->json(['valid' => false, 'message' => 'Invalid or used voucher']);
+        }
+
+        if ($voucher->expiryTime < time()) {
+             return response()->json(['valid' => false, 'message' => 'Voucher expired']);
+        }
+
         return response()->json([
-            'hasPromotion' => false
+            'valid' => true,
+            'voucher_id' => $voucher->voucherCode,
+            'amount' => $voucher->value,
+            'message' => 'Voucher applied! - RM' . number_format($voucher->value, 2)
         ]);
-    }*/
+    }
 
     // Show payment form
     public function showPaymentForm(Request $request)
     {
         $vehicleID = $request->input('vehicleID');
-        if (!$vehicleID) {
-            return back()->withErrors(['error' => 'Vehicle ID is missing']);
-        }
+        if (!$vehicleID) return back()->withErrors(['error' => 'Vehicle ID is missing']);
 
         $vehicle = Vehicles::findOrFail($vehicleID);
 
-        $pickupDate = $request->input('pickup_date');
-        $pickupTime = $request->input('pickup_time');
-        $returnDate = $request->input('return_date');
-        $returnTime = $request->input('return_time');
-        $pickupLocation = $request->input('pickupLocation');
-        $returnLocation = $request->input('returnLocation');
-        $destination = $request->input('destination');
-        $remark = $request->input('remark');
-        $forSomeoneElse = $request->boolean('for_someone_else');
+        $data = $request->all();
 
-        $subtotal = $request->input('subtotal');
+        $subtotal = $request->input('subtotal', 0);
         $promotionDiscount = $request->input('promotionDiscount', 0);
-        $total = $request->input('total');
-        $duration = $request->input('duration');
+        $total = $request->input('total', $subtotal - $promotionDiscount);
+        $deposit = $total * 0.5;
 
-        if (!$pickupDate || !$pickupTime || !$returnDate || !$returnTime) {
-            return back()->withErrors(['error' => 'Booking dates/times are missing.']);
+        $eligibleVouchers = [];
+        $user = Auth::user();
+        $customer = DB::table('customer')->where('userID', $user->userID)->first();
+        
+        if ($customer) {
+            $card = LoyaltyCard::where('matricNumber', $customer->matricNumber)->first();
+            if ($card) {
+                $eligibleVouchers = $card->promotions()
+                                 ->wherePivot('is_used', false)
+                                 ->get();
+            }
         }
 
-        try {
-            $pickup = Carbon::parse($pickupDate . ' ' . $pickupTime);
-            $return = Carbon::parse($returnDate . ' ' . $returnTime);
-            if ($return <= $pickup) {
-                return back()->withErrors(['error' => 'Return date must be after pickup date.']);
-            }
-        } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Invalid date/time format.']);
-        }
-
-        $diffHours = $return->diffInHours($pickup);
-        $days = floor($diffHours / 24);
-        $remainingHours = $diffHours % 24;
-
-        // Calculate prices
-        $calculatedSubtotal = ($days * $vehicle->pricePerDay) + ($remainingHours * $vehicle->pricePerHour);
-        $finalSubtotal = $subtotal ?? $calculatedSubtotal;
-        $finalTotal = $total ?? ($finalSubtotal - $promotionDiscount);
-        $deposit = $finalTotal * 0.5;
-
-        // Build data for view
-        $pickupLocationDisplay = $pickupLocation;
-        $returnLocationDisplay = $returnLocation;
-        $dateRange = Carbon::parse($pickupDate)->format('d M Y') . ' - ' . Carbon::parse($returnDate)->format('d M Y');
-        $durationText = $duration ?? (
-            $days > 0 
-                ? "{$days} day" . ($days > 1 ? 's' : '') . " {$remainingHours} hour" . ($remainingHours != 1 ? 's' : '')
-                : "{$diffHours} hour" . ($diffHours != 1 ? 's' : '')
-        );
-
-        // Get eligible vouchers
-       /* $userId = auth()->id();
-        $eligibleVouchers = Voucher::where('userID', $userId)
-            ->where('isUsed', false)
-            ->where('expiryTime', '>', now())
-            ->where('voucherType', 'general')
-            ->get();
-
-        $loyaltyCard = LoyaltyCard::where('userID', $userId)->first();
-        if ($loyaltyCard && $loyaltyCard->stampCount >= 3) {
-            $loyaltyVoucher = Voucher::where('userID', $userId)
-                ->where('voucherType', 'loyalty')
-                ->where('isUsed', false)
-                ->where('expiryTime', '>', now())
-                ->first();
-            if ($loyaltyVoucher) {
-                $eligibleVouchers->push($loyaltyVoucher);
-            }
-        }*/
-
-        return view('paymentform', compact(
-            'vehicle',
-            'pickupLocationDisplay',
-            'returnLocationDisplay',
-            'dateRange',
-            'durationText',
-            'finalSubtotal',
-            'promotionDiscount',
-            'finalTotal',
-            'deposit',
-            //'eligibleVouchers',
-            //'loyaltyCard',
-            'pickupDate',
-            'pickupTime',
-            'returnDate',
-            'returnTime',
-            'pickupLocation',
-            'returnLocation',
-            'destination',
-            'remark',
-            'forSomeoneElse'
-        ));
+        return view('paymentform', array_merge($data, [
+            'vehicle' => $vehicle,
+            'finalSubtotal' => $subtotal,
+            'finalTotal' => $total,
+            'deposit' => $deposit,
+            'promotionDiscount' => $promotionDiscount,
+            'pickupLocationDisplay' => $request->pickupLocation,
+            'returnLocationDisplay' => $request->returnLocation,
+            'dateRange' => $request->pickup_date . ' - ' . $request->return_date,
+            'durationText' => $request->duration,
+            'pickupDate' => $request->pickup_date, 
+            'pickupTime' => $request->pickup_time,
+            'returnDate' => $request->return_date,
+            'returnTime' => $request->return_time,
+            'pickupLocation' => $request->pickupLocation,
+            'returnLocation' => $request->returnLocation,
+            'destination' => $request->destination,
+            'remark' => $request->remark,
+            'forSomeoneElse' => $request->boolean('for_someone_else'),
+            'eligibleVouchers' => $eligibleVouchers
+        ]));
     }
 
     public function confirmBooking(Request $request)
@@ -347,7 +320,7 @@ class BookingController extends Controller
             'bank_name' => 'required|string',
             'bank_owner_name' => 'required|string',
             'payAmount' => 'required|in:full,deposit',
-            'payment_receipt' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
+            'payment_receipt' => 'required|image',
         ]);
 
         $vehicle = Vehicles::findOrFail($request->vehicleID);
@@ -384,11 +357,15 @@ class BookingController extends Controller
         $booking->startDate = $request->pickup_date;
         $booking->endDate = $request->return_date;
         $booking->bookingDuration = $durationHours;
-        $booking->bookingStatus = 'pending'; // Will be confirmed by staff
+        $booking->bookingStatus = 'pending';
         $booking->reservation_expires_at = now()->addMinutes(30);
-        $booking->totalPrice = $totalPrice;
-        $booking->depositAmount = $depositAmount;
+
+        $booking->totalPrice = $request->input('finalTotal') ?? ($durationHours * $vehicle->pricePerHour); 
+        
+        $booking->depositAmount = $request->depoBalance ?? 0;
         $booking->promo_id = $request->promo_id;
+        $booking->voucher_id = $request->voucher_id;
+        
         $booking->destination = $request->destination;
         $booking->remark = $request->remark;
         $booking->bank_name = $request->bank_name;
@@ -431,6 +408,16 @@ class BookingController extends Controller
             'location' => $request->returnLocation,
         ]);
 
+        if ($request->hasFile('payment_receipt')) {
+            $path = $request->file('payment_receipt')->store('receipts', 'public');
+            $booking->payment_receipt_path = $path;
+            $booking->save();
+        }
+
+        if ($request->voucher_id) {
+            Voucher::where('voucherCode', $request->voucher_id)
+                ->update(['isUsed' => 1]); 
+        }
         // Mark voucher as used
         // if ($request->voucher_id) {
         //     Voucher::where('voucherID', $request->voucher_id)
@@ -451,31 +438,16 @@ class BookingController extends Controller
         $vehicle->status = 'unavailable';
         $vehicle->save();
 
-        // Optional: Send notification to staff about new booking
-        // Notification::send($staffUsers, new NewBookingNotification($booking));
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Booking submitted successfully!',
-            'booking_id' => $booking->bookingID
-        ]);
-
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Validation failed',
-            'errors' => $e->errors()
-        ], 422);
-        
-    } catch (\Exception $e) {
-        \Log::error('Booking confirmation failed: ' . $e->getMessage());
-        
-        return response()->json([
-            'success' => false,
-            'message' => 'Booking failed. Please try again.'
-        ], 500);
+        return response()->json(['success' => true]);
+    }catch (\Exception $e) { 
+            \Log::error('Booking Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong: ' . $e->getMessage()
+            ], 500);
+        }
     }
-}
+
 
 /* public function validateVoucher(Request $request)
     {
@@ -507,15 +479,15 @@ class BookingController extends Controller
 
     public function bookingHistory()
 {
-    $bookings = Booking::where('customer_id', auth()->id())->get();
+    $bookings = Bookings::where('customer_id', auth()->id())->get();
 
-    $active = Booking::where('bookingStatus', 'approved')->get();
+    $active = Bookings::where('bookingStatus', 'approved')->get();
 
-    $pending = Booking::whereIn('bookingStatus', ['pending', 'confirmed'])->get();
+    $pending = Bookings::whereIn('bookingStatus', ['pending', 'confirmed'])->get();
 
-    $completed = Booking::where('bookingStatus', 'completed')->get();
+    $completed = Bookings::where('bookingStatus', 'completed')->get();
 
-    $cancelled = Booking::where('bookingStatus', 'cancelled')->get();
+    $cancelled = Bookings::where('bookingStatus', 'cancelled')->get();
 
     return view('bookingHistory', compact(
         'active',
