@@ -65,8 +65,17 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/admin/reporting/export', [ReportController::class, 'exportReport'])->name('admin.reporting.export');
 
     Route::get('/promotions', [PromotionController::class, 'index'])->name('admin.promotions');
+    
+    // Promo
     Route::post('/promotions/store', [PromotionController::class, 'store'])->name('admin.promotions.store');
     Route::delete('/promotions/{id}', [PromotionController::class, 'destroy'])->name('admin.promotions.destroy');
+
+    // Voucher
+    Route::post('/vouchers/store', [PromotionController::class, 'storeVoucher'])->name('admin.vouchers.store');
+    Route::delete('/vouchers/{id}', [PromotionController::class, 'destroyVoucher'])->name('admin.vouchers.destroy');
+
+    // Commission
+    Route::post('/commission/reset/{id}', [PromotionController::class, 'resetCommission'])->name('admin.commission.reset');
 });
 
 //  Booking routes (customer)
