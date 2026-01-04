@@ -452,8 +452,9 @@
             <a id="username" href="{{ route('login') }}">Log in</a>
         @endguest
 
+         </div>
     </div>
-</div>
+    
     <!-- Progress Steps -->
     <div class="progress-container">
         <div class="steps">

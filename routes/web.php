@@ -51,6 +51,12 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     //Route::post('/vehicles/store', [VehicleController::class, 'store'])->name('admin.vehicles.store');
     //Route::put('/vehicles/update/{id}', [VehicleController::class, 'update'])->name('admin.vehicles.update');
     //Route::delete('/vehicles/delete/{id}', [VehicleController::class, 'destroy'])->name('admin.vehicles.destroy');
+    Route::get('/fleet', [AdminController::class, 'fleet'])->name('admin.fleet');
+    Route::get('/vehicles/create', [AdminController::class, 'createVehicle'])->name('admin.vehicles.create');
+    Route::post('/vehicles', [AdminController::class, 'storeVehicle'])->name('admin.vehicles.store');
+    Route::put('/vehicles/{vehicleID}', [AdminController::class, 'updateVehicle'])->name('admin.vehicles.update');
+    Route::delete('/vehicles/{vehicleID}', [AdminController::class, 'destroyVehicle'])->name('admin.vehicles.destroy');
+
 
     Route::get('/staff/create', [AdminController::class, 'createStaff'])->name('admin.staff.create');
 

@@ -122,9 +122,12 @@
         @if($vehicles->count() > 0)
             @foreach($vehicles as $vehicle)
                 <div class="vehicle-card">
-                    <img src="{{ asset('img/vehicles/' . $vehicle->vehicleID . '.png') }}" class="vehicle-img" alt="Car" 
-                         onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.png') }}'">
-                    
+                    @if($vehicle->vehiclePhoto)
+                            <img src="{{ Storage::url($vehicle->vehiclePhoto) }}" class="vehicle-img" alt="Car">
+                        @else
+                            <img src="{{ asset('img/vehicles/' . $vehicle->vehicleID . '.png') }}" class="vehicle-img" alt="Car" 
+                                onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.png') }}'">
+                        @endif
                     <div class="vehicle-info">
                         <h4 class="mb-1">{{ $vehicle->model }}</h4>
                         <p class="text-muted mb-1">
@@ -172,6 +175,17 @@
                             </div>
                             <div class="modal-body">
                                 <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label class="form-label">Vehicle Photo</label>
+                                        <input type="file" name="vehiclePhoto" class="form-control" accept="image/*">
+                                        @if($vehicle->vehiclePhoto)
+                                            <div class="mt-2">
+                                                <small>Current photo:</small><br>
+                                                <img src="{{ Storage::url($vehicle->vehiclePhoto) }}" alt="Current photo" style="max-width: 200px; max-height: 150px;">
+                                            </div>
+                                        @endif
+                                        <small class="text-muted">Leave empty to keep current photo</small>
+                                    </div>
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label">Model Name</label>
                                         <input type="text" name="model" class="form-control" value="{{ $vehicle->model }}" required>

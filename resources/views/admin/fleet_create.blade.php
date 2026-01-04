@@ -55,13 +55,32 @@
             <h2 class="mt-2">Register New Fleet</h2>
         </div>
 
+        @if($errors->any())
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <div class="form-container">
-            <form action="{{ route('admin.vehicles.store') }}" method="POST">
+            <!-- FIX: Add enctype="multipart/form-data" -->
+            <form action="{{ route('admin.vehicles.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="row">
+                    <!-- Vehicle Photo Field -->
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label fw-bold">Vehicle Photo</label>
+                        <input type="file" name="vehiclePhoto" class="form-control" accept="image/*">
+                        <small class="text-muted">Upload a photo of the vehicle (JPEG, PNG, JPG, GIF - max 2MB)</small>
+                    </div>
+                    
                     <div class="col-md-12 mb-3">
                         <label class="form-label fw-bold">Model Name</label>
-                        <input type="text" name="model" class="form-control" placeholder="e.g. Honda Civic 2020" required>
+                        <input type="text" name="model" class="form-control" placeholder="e.g. Honda Civic 2020" 
+                               value="{{ old('model') }}" required>
                     </div>
                 </div>
 
@@ -69,16 +88,17 @@
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold">Vehicle Type</label>
                         <select name="vehicleType" class="form-select">
-                            <option value="Sedan">Sedan</option>
-                            <option value="Hatchback">Hatchback</option>
-                            <option value="SUV">SUV</option>
-                            <option value="MPV">MPV</option>
-                            <option value="Luxury">Luxury</option>
+                            <option value="Sedan" {{ old('vehicleType') == 'Sedan' ? 'selected' : '' }}>Sedan</option>
+                            <option value="Hatchback" {{ old('vehicleType') == 'Hatchback' ? 'selected' : '' }}>Hatchback</option>
+                            <option value="SUV" {{ old('vehicleType') == 'SUV' ? 'selected' : '' }}>SUV</option>
+                            <option value="MPV" {{ old('vehicleType') == 'MPV' ? 'selected' : '' }}>MPV</option>
+                            <option value="Luxury" {{ old('vehicleType') == 'Luxury' ? 'selected' : '' }}>Luxury</option>
                         </select>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold">Plate Number</label>
-                        <input type="text" name="plateNumber" class="form-control" placeholder="VAB 1234" required>
+                        <input type="text" name="plateNumber" class="form-control" placeholder="VAB 1234" 
+                               value="{{ old('plateNumber') }}" required>
                     </div>
                 </div>
 
@@ -87,16 +107,16 @@
                         <label class="form-label fw-bold">Transmission Type</label>
                         <select name="transmission" class="form-select" required>
                             <option value="">Select Transmission</option>
-                            <option value="Manual">Manual</option>
-                            <option value="Automatic">Automatic</option>
+                            <option value="Manual" {{ old('transmission') == 'Manual' ? 'selected' : '' }}>Manual</option>
+                            <option value="Automatic" {{ old('transmission') == 'Automatic' ? 'selected' : '' }}>Automatic</option>
                         </select>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold">Air Conditioning</label>
                         <select name="ac" class="form-select" required>
                             <option value="">Select AC Status</option>
-                            <option value="1">Yes</option>
-                            <option value="0">No</option>
+                            <option value="1" {{ old('ac') == '1' ? 'selected' : '' }}>Yes</option>
+                            <option value="0" {{ old('ac') == '0' ? 'selected' : '' }}>No</option>
                         </select>
                     </div>
                 </div>
@@ -104,11 +124,12 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold">Price Per Day (RM)</label>
-                        <input type="number" name="pricePerDay" class="form-control" required>
+                        <input type="number" name="pricePerDay" class="form-control" 
+                               value="{{ old('pricePerDay') }}" step="0.01" min="0" required>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold">Number of Seats</label>
-                        <input type="number" name="seat" class="form-control" value="5" required>
+                        <input type="number" name="seat" class="form-control" value="{{ old('seat', 5) }}" min="1" required>
                     </div>
                 </div>
 
@@ -116,15 +137,16 @@
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold">Fuel Type</label>
                         <select name="fuelType" class="form-select">
-                            <option value="Petrol">Petrol</option>
-                            <option value="Diesel">Diesel</option>
-                            <option value="Electric">Electric</option>
-                            <option value="Hybrid">Hybrid</option>
+                            <option value="Petrol" {{ old('fuelType') == 'Petrol' ? 'selected' : '' }}>Petrol</option>
+                            <option value="Diesel" {{ old('fuelType') == 'Diesel' ? 'selected' : '' }}>Diesel</option>
+                            <option value="Electric" {{ old('fuelType') == 'Electric' ? 'selected' : '' }}>Electric</option>
+                            <option value="Hybrid" {{ old('fuelType') == 'Hybrid' ? 'selected' : '' }}>Hybrid</option>
                         </select>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold">Fuel Level (%)</label>
-                        <input type="number" name="fuelLevel" class="form-control" min="0" max="100" value="100" required>
+                        <input type="number" name="fuelLevel" class="form-control" 
+                               value="{{ old('fuelLevel', 100) }}" min="0" max="100" required>
                     </div>
                 </div>
 

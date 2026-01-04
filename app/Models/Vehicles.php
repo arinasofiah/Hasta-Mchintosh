@@ -23,6 +23,7 @@ class Vehicles extends Model
         'status', 
         'pricePerHour', 
         'pricePerDay', 
+        'vehiclePhoto',
         'reservation_expires_at' 
     ]; 
     

@@ -26,7 +26,7 @@ class CustomerController extends Controller
         $vehicles = DB::table('vehicles')
             ->where('status', 'available')
             ->select('vehicleID', 'vehicleType', 'model', 'plateNumber', 'fuelLevel', 
-                     'fuelType', 'ac', 'seat', 'status', 'pricePerDay', 'pricePerHour')
+                     'fuelType', 'ac', 'seat', 'status', 'pricePerDay', 'pricePerHour', 'vehiclePhoto', 'transmission')
             ->get();
         
         // Pass vehicles to the view
