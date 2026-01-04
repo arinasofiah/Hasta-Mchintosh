@@ -180,10 +180,6 @@
                                     <td>{{ $staff->position }}</td>
                                 </tr>
                                 <tr>
-                                    <th>Commission Count:</th>
-                                    <td>{{ $staff->commissionCount }}</td>
-                                </tr>
-                                <tr>
                                     <th>Member Since:</th>
                                     <td>{{ \Carbon\Carbon::parse($staff->created_at)->format('d M Y') }}</td>
                                 </tr>
