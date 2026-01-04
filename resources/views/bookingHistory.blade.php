@@ -495,53 +495,109 @@
 
         <div class="section">
             <div class="section-title completed">Completed</div>
-            <div class="booking-card">
-                <img src="https://images.unsplash.com/photo-1597404294360-fcd6e48f0eb9?w=300&h=200&fit=crop" alt="Perodua Axia" class="car-image">
-                <div class="booking-details">
-                    <div class="car-info">
-                        <h3>Perodua Axia 2018</h3>
-                        <p>Hatchback</p>
+
+            @forelse($completed as $booking)
+                <div class="booking-card">
+                    <img src="{{ $booking->vehicle->image ?? asset('img/default-car.png') }}"
+                        class="car-image">
+
+                    <div class="booking-details">
+
+                        <div class="car-info">
+                            <h3>{{ $booking->vehicle->model }}</h3>
+                            <p>{{ $booking->vehicle->vehicleType }}</p>
+                        </div>
+
+                        <div class="price">RM{{ $booking->total }}</div>
+
+                        <div class="dates">
+                            {{ $booking->pickup_date->format('d M Y') }} -
+                            {{ $booking->return_date->format('d M Y') }}
+                        </div>
+
+                        <div class="status completed">Completed</div>
+
+                        <button class="action-btn"
+                                onclick="showDetailsModal({{ $booking->id }})">
+                            View Details
+                        </button>
                     </div>
-                    <div class="price">RM240</div>
-                    <div class="dates">12-14 Dec 2025</div>
-                    <div class="status completed">Completed</div>
-                    <button class="action-btn" onclick="showDetailsModal()">View Details</button>
                 </div>
-            </div>
+            @empty
+                <p>No completed bookings yet.</p>
+            @endforelse
         </div>
 
         <div class="section">
             <div class="section-title upcoming">Upcoming</div>
-            <div class="booking-card">
-                <img src="https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=300&h=200&fit=crop" alt="Toyota Vios" class="car-image">
-                <div class="booking-details">
-                    <div class="car-info">
-                        <h3>Toyota Vios 2020</h3>
-                        <p>Toyota Vios</p>
+
+            @forelse($upcoming as $booking)
+                <div class="booking-card">
+                    <img src="{{ $booking->vehicle->image ?? asset('img/default-car.png') }}"
+                        class="car-image">
+
+                    <div class="booking-details">
+
+                        <div class="car-info">
+                            <h3>{{ $booking->vehicle->model }}</h3>
+                            <p>{{ $booking->vehicle->vehicleType }}</p>
+                        </div>
+
+                        <div class="price">RM{{ $booking->total }}</div>
+
+                        <div class="dates">
+                            {{ $booking->pickup_date->format('d M Y') }} -
+                            {{ $booking->return_date->format('d M Y') }}
+                        </div>
+
+                        <div class="status upcoming">Upcoming</div>
+
+                        <button class="action-btn"
+                                onclick="showModifyModal({{ $booking->id }})">
+                            Modify / Cancel
+                        </button>
+
                     </div>
-                    <div class="price">RM350</div>
-                    <div class="dates">24-26 Dec 2025</div>
-                    <div class="status upcoming">Upcoming</div>
-                    <button class="action-btn" onclick="showModifyModal()">Modify/Cancel</button>
                 </div>
-            </div>
+            @empty
+                <p>No upcoming bookings yet.</p>
+            @endforelse
         </div>
 
         <div class="section">
             <div class="section-title cancelled">Cancelled</div>
-            <div class="booking-card">
-                <img src="https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=300&h=200&fit=crop" alt="Proton Saga" class="car-image">
-                <div class="booking-details">
-                    <div class="car-info">
-                        <h3>Proton Saga 2019</h3>
-                        <p>Proton Saga</p>
+
+            @forelse($cancelled as $booking)
+                <div class="booking-card">
+                    <img src="{{ $booking->vehicle->image ?? asset('img/default-car.png') }}"
+                        class="car-image">
+
+                    <div class="booking-details">
+
+                        <div class="car-info">
+                            <h3>{{ $booking->vehicle->model }}</h3>
+                            <p>{{ $booking->vehicle->vehicleType }}</p>
+                        </div>
+
+                        <div class="price">RM{{ $booking->total }}</div>
+
+                        <div class="dates">
+                            {{ $booking->pickup_date->format('d M Y') }} -
+                            {{ $booking->return_date->format('d M Y') }}
+                        </div>
+
+                        <div class="status cancelled">Cancelled</div>
+
+                        <a href="{{ route('selectVehicle', $booking->vehicleID) }}"
+                        class="action-btn">
+                            Rebook
+                        </a>
+
                     </div>
-                    <div class="price">RM180</div>
-                    <div class="dates">01-03 Nov 2025</div>
-                    <div class="status cancelled">Cancelled</div>
-                    <a href="booking-form.html" class="action-btn">Rebook</a>
                 </div>
-            </div>
+            @empty
+                <p>No cancelled bookings.</p>
+            @endforelse
         </div>
 
         <div class="pagination">
@@ -553,114 +609,10 @@
     </div>
 
     <!-- Details Modal -->
-    <div id="detailsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Booking Details</h2>
-                <button class="close-btn" onclick="closeModal('detailsModal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <img src="https://images.unsplash.com/photo-1597404294360-fcd6e48f0eb9?w=400&h=250&fit=crop" alt="Perodua Axia" class="car-detail-image">
-                
-                <div class="detail-section">
-                    <h3>Vehicle Information</h3>
-                    <div class="detail-row">
-                        <span class="detail-label">Vehicle</span>
-                        <span class="detail-value">Perodua Axia 2018</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Type</span>
-                        <span class="detail-value">Hatchback</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">License Plate</span>
-                        <span class="detail-value">WXY 1234</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Transmission</span>
-                        <span class="detail-value">Automatic</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Seats</span>
-                        <span class="detail-value">5</span>
-                    </div>
-                </div>
+    <button class="action-btn" onclick="showDetailsModal({{ $booking->id }})">
+        View Details
+    </button>
 
-                <div class="detail-section">
-                    <h3>Booking Information</h3>
-                    <div class="detail-row">
-                        <span class="detail-label">Booking ID</span>
-                        <span class="detail-value">#BK20251212001</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Pickup Date & Time</span>
-                        <span class="detail-value">12 Dec 2025, 10:00 AM</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Return Date & Time</span>
-                        <span class="detail-value">14 Dec 2025, 10:00 AM</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Duration</span>
-                        <span class="detail-value">2 Days</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Pickup Location</span>
-                        <span class="detail-value">HASTA Headquarters, Kuala Lumpur</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Return Location</span>
-                        <span class="detail-value">HASTA Headquarters, Kuala Lumpur</span>
-                    </div>
-                </div>
-
-                <div class="detail-section">
-                    <h3>Payment Details</h3>
-                    <div class="detail-row">
-                        <span class="detail-label">Daily Rate</span>
-                        <span class="detail-value">RM120/day</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Number of Days</span>
-                        <span class="detail-value">2</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Insurance</span>
-                        <span class="detail-value">RM20</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Tax (6%)</span>
-                        <span class="detail-value">RM14.40</span>
-                    </div>
-                    <div class="total-section">
-                        <div class="total-row">
-                            <span>Total Amount</span>
-                            <span>RM240.00</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="detail-section">
-                    <h3>Customer Information</h3>
-                    <div class="detail-row">
-                        <span class="detail-label">Name</span>
-                        <span class="detail-value">Aminah Talib</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Phone</span>
-                        <span class="detail-value">+60 12-345 6789</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Email</span>
-                        <span class="detail-value">aminah.talib@email.com</span>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeModal('detailsModal')">Close</button>
-            </div>
-        </div>
-    </div>
 
     <!-- Modify/Cancel Modal -->
     <div id="modifyModal" class="modal">
@@ -746,6 +698,15 @@
     </div>
 
     <script>
+        function showDetailsModal(id) {
+            fetch(`/booking/${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    // fill modal fields here
+                    document.getElementById('detailsModal').classList.add('active');
+                });
+        }
+
         function showDetailsModal() {
             document.getElementById('detailsModal').classList.add('active');
         }

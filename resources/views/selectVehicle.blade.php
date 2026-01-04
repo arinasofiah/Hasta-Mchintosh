@@ -9,7 +9,7 @@
     <link href="{{ asset('css/header.css') }}" rel="stylesheet">
 
     <style>
-                * {
+        * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -94,6 +94,9 @@
             background-color: white;
             color: #999;
             font-weight: 600;
+            cursor: default;
+            pointer-events: none;
+            opacity: 0.6;
         }
 
         .step.active {
@@ -112,6 +115,14 @@
             background-color: #ddd;
         }
 
+        .step.enabled{
+            border-color: #d94242;
+            color: #d94242;
+            cursor: pointer;          
+            pointer-events: auto;
+            opacity: 1;
+        }
+
         /* Booking Form */
         .booking-form {
             max-width: 1200px;
@@ -121,22 +132,30 @@
             justify-content: center;
         }
 
+        .booking-form form {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
         .date-time-row {
             display: flex;
             gap: 15px;
-            align-items: end;
+            justify-content: center;
+            align-items: flex-end;
         }
 
         .input-wrapper {
             position: relative;
-            flex: 1;
-            max-width: 200px;
+            flex: 0 1 auto;
+            min-width: 150px;
         }
 
         .input-label {
             font-size: 12px;
             color: #666;
-            margin-bottom: 7px;
+            margin-bottom: 5px;
+            font-weight: 600;
         }
 
         input[type="date"],
@@ -147,6 +166,12 @@
             border-radius: 5px;
             font-size: 14px;
             font-family: 'Inter', sans-serif;
+            cursor: pointer;
+        }
+
+        input[type="date"]:hover,
+        input[type="time"]:hover {
+            border-color: #d94242;
         }
 
         .input-icon {
@@ -155,12 +180,7 @@
             top: 50%;
             transform: translateY(-50%);
             color: #999;
-        }
-
-        .format-hint {
-            font-size: 11px;
-            color: #999;
-            margin-top: 5px;
+            pointer-events: none;
         }
 
         /* Featured Vehicle */
@@ -249,11 +269,12 @@
         }
 
         .availability-badge {
-            padding: 10px 50px;
+            padding: 12px 40px;
             border: 2px solid #4CAF50;
-            border-radius: 30px;
-            color: #4CAF50;
+            border-radius: 5px;
+            color: #2E7D32;
             font-weight: 600;
+            background-color: #EAF8EC;
         }
 
         .book-btn {
@@ -338,17 +359,27 @@
         }
 
         .card-spec {
-            text-align: center;
+        display: flex;
+        align-items: center;
+        gap: 6px;
         }
 
         .card-spec-icon {
-            font-size: 18px;
-            margin-bottom: 3px;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            color: #444;
         }
+
 
         @media (max-width: 1024px) {
             .vehicle-grid {
                 grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .date-time-group {
+                flex-wrap: wrap;
             }
         }
 
@@ -363,6 +394,15 @@
 
             .booking-form {
                 flex-direction: column;
+            }
+            
+            .date-time-group {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .input-wrapper {
+                width: 100%;
             }
 
             .featured-vehicle {
@@ -381,87 +421,85 @@
 </head>
 <body>
 
-   <div id="header">
-    <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}">
-    <div id="menu">
-        <button class="head_button">Home</button>
-        <button class="head_button">Vehicles</button>
-        <button class="head_button">Details</button>
-        <button class="head_button">About Us</button>
-        <button class="head_button">Contact Us</button>
-    </div>
-
-    <div id="profile">
-        <div id="profile-container">
-            <img id="pfp" src="{{ asset('img/racc_icon.png') }}">
-            <div id="profile-dropdown">
-                @guest
-                    <a href="{{ route('login') }}" class="dropdown-item">Login</a>
-                    <a href="{{ route('register') }}" class="dropdown-item">Register</a>
-                   
-                @endguest
-                @auth
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="dropdown-item">Logout</button>
-                    </form>
-                @endauth
-            </div>
+    <div id="header">
+        <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}">
+        <div id="menu">
+            <button class="head_button">Home</button>
+            <button class="head_button">Vehicles</button>
+            <button class="head_button">Details</button>
+            <button class="head_button">About Us</button>
+            <button class="head_button">Contact Us</button>
         </div>
-        @auth
-            <span id="username">{{ Auth::user()->name }}</span>
-        @endauth
-         @guest
-            <a id="username" href="{{ route('login') }}">Log in</a>
-        @endguest
-    </div>
-</div>
 
-<!-- Progress Steps -->
-<div class="progress-container">
-    <div class="steps">
-        <div class="step active"><span class="step-icon">✓</span><span>Vehicle</span></div>
-        <div class="step-connector"></div>
-        <div class="step"><span class="step-icon">✓</span><span>Booking Details</span></div>
-        <div class="step-connector"></div>
-        <div class="step"><span class="step-icon">✓</span><span>Payment</span></div>
-    </div>
-</div>
-
-<!-- Booking Form -->
-<div class="booking-form">
-    <form action="{{ route('selectVehicle', $featuredVehicle->vehicleID) ?? 0 }}" method="GET" id="dateForm">
-        <div class="date-time-row">
-            <div class="input-wrapper">
-                <div class="input-label">Pickup Date</div>
-                <input type="date" id="pickup_date" name="pickup_date" value="{{ $pickupDate }}">
-                <span class="input-icon"></span>
+        <div id="profile">
+            <div id="profile-container">
+                <img id="pfp" src="{{ asset('img/racc_icon.png') }}">
+                <div id="profile-dropdown">
+                    @guest
+                        <a href="{{ route('login') }}" class="dropdown-item">Login</a>
+                        <a href="{{ route('register') }}" class="dropdown-item">Register</a>
+                    @endguest
+                    @auth
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="dropdown-item">Logout</button>
+                        </form>
+                    @endauth
+                </div>
             </div>
-            <div class="input-wrapper">
-                <div class="input-label">Pickup Time</div>
-                <input type="time" id="pickup_time" name="pickup_time" value="{{ $pickupTime }}">
-                <span class="input-icon"></span>
-            </div>
-            <div class="input-wrapper">
-                <div class="input-label">Return Date</div>
-                <input type="date" id="return_date" name="return_date" value="{{ $returnDate }}">
-                <span class="input-icon"></span>
-            </div>
-            <div class="input-wrapper">
-                <div class="input-label">Return Time</div>
-                <input type="time" id="return_time" name="return_time" value="{{ $returnTime }}">
-                <span class="input-icon"></span>
-            </div>
+            @auth
+                <span id="username">{{ Auth::user()->name }}</span>
+            @endauth
+            @guest
+                <a id="username" href="{{ route('login') }}">Log in</a>
+            @endguest
         </div>
-    </form>
-</div>
-
-<!-- Featured Vehicle -->
-<div class="featured-vehicle">
-
-    <div class="vehicle-image">
-        <img src="{{ asset($featuredVehicle->image ?? 'img/vehicles/default.jpg') }}" alt="{{ $featuredVehicle->model }}">
     </div>
+
+    <!-- Progress Steps -->
+    <div class="progress-container">
+        <div class="steps">
+            <div class="step active" id="step-vehicle"><span class="step-icon">✓</span><span>Vehicle</span></div>
+            <div class="step-connector"></div>
+            <div class="step" id="step-booking"><span class="step-icon">✓</span><span>Booking Details</span></div>
+            <div class="step-connector"></div>
+            <div class="step" id="step-payment"><span class="step-icon">✓</span><span>Payment</span></div>
+        </div>
+    </div>
+
+    <!-- Booking Form -->
+    <div class="booking-form">
+        <form id="bookingForm" action="{{ route('selectVehicle', $featuredVehicle->vehicleID) }}" method="GET">
+            <div class="date-time-group">
+                <div class="input-wrapper">
+                    <div class="input-label">Pickup Date</div>
+                    <input type="date" name="pickup_date" value="{{ $pickupDate }}" onchange="this.form.submit()">
+                    <span class="input-icon"></span>
+                </div>
+                <div class="input-wrapper">
+                    <div class="input-label">Pickup Time</div>
+                    <input type="time" name="pickup_time" value="{{ $pickupTime }}" onchange="this.form.submit()">
+                    <span class="input-icon"></span>
+                </div>
+                <div class="input-wrapper">
+                    <div class="input-label">Return Date</div>
+                    <input type="date" name="return_date" value="{{ $returnDate }}" onchange="this.form.submit()">
+                    <span class="input-icon"></span>
+                </div>
+                <div class="input-wrapper">
+                    <div class="input-label">Return Time</div>
+                    <input type="time" name="return_time" value="{{ $returnTime }}" onchange="this.form.submit()">
+                    <span class="input-icon"></span>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Featured Vehicle -->
+    <div class="featured-vehicle">
+        <div class="vehicle-image">
+            <img src="{{ asset($featuredVehicle->image ?? 'img/vehicles/default.jpg') }}" alt="{{ $featuredVehicle->model }}">
+        </div>
 
     <div class="vehicle-details">
         <h2 class="vehicle-name">{{ $featuredVehicle->model }}</h2>
@@ -471,78 +509,113 @@
             <span class="price-amount">RM {{ $featuredVehicle->pricePerDay }}</span> / day
         </div>
 
-        <div class="vehicle-specs">
-            <span>Seats: {{ $featuredVehicle->seat }}</span>
-            <span>AC: {{ $featuredVehicle->ac }}</span>
-            <span>Transmission: {{ $featuredVehicle->transmission }}
-            <span>Fuel: {{ $featuredVehicle->fuelType }}</span>
+            <div class="vehicle-specs">
+                <span>Seats: {{ $featuredVehicle->seat }}</span>
+                <span>AC: {{ $featuredVehicle->ac }}</span>
+                <span>Transmission: {{ $featuredVehicle->transmission }}</span>
+                <span>Fuel: {{ $featuredVehicle->fuelType }}</span>
+            </div>
+
+            <div class="availability-section">
+                @if($featuredVehicle->status == 'available')
+                    <button class="availability-badge">Available!</button>
+                    <button class="book-btn" onclick="handleBooking()">Book</button>
+                    
+                    <script>
+                        function handleBooking(){
+                            @auth
+                                window.location.href = "{{ route('booking.form', ['vehicleID' => $featuredVehicle->vehicleID]) }}";
+                            @else
+                                window.location.href = "{{ route('login') }}";
+                            @endauth
+                        }
+                    </script>
+                @else
+                    <span class="availability-badge" style="border-color: #999; color: #999;">Not Available</span>
+                @endif
+            </div>
         </div>
-
-        @if($featuredVehicle->status == 'available')
-            <button class="availability-badge">Available!</button>
-            <button class="book-btn" onclick="handleBooking()">Book</button>
-            
-            <script>
-                function handleBooking() {
-                    const pickupDate  = document.getElementById('pickup_date').value;
-                    const pickupTime  = document.getElementById('pickup_time').value;
-                    const returnDate  = document.getElementById('return_date').value;
-                    const returnTime  = document.getElementById('return_time').value;
-
-                   if (!pickupDate || !pickupTime || !returnDate || !returnTime) {
-                alert('Please select pickup and return date/time first.');
-                return;
-            }
-
-            @auth          
-            const baseUrl = "{{ route('booking.form', ['vehicleID' => $featuredVehicle->vehicleID]) }}";
-            const params = new URLSearchParams({
-                pickup_date: pickupDate,
-                pickup_time: pickupTime,
-                return_date: returnDate,
-                return_time: returnTime
-            });
-            
-            window.location.href = `${baseUrl}?${params.toString()}`;
-        @else
-            window.location.href = "{{ route('login') }}";
-        @endauth
-                }
-            </script>
-
-
-        @else
-            <span class="availability-badge">Not Available</span>
-        @endif
     </div>
-</div>
 
-<!-- Other Vehicles -->
-<div class="vehicle-grid">
-    @foreach($otherVehicles as $vehicle)
-    <div class="vehicle-card">
+    <!-- Other Vehicles -->
+    <div class="vehicle-grid">
+        @foreach($otherVehicles as $vehicle)
+        <div class="vehicle-card">
+            <div class="card-image">
+                <img src="{{ asset($vehicle->image ?? 'img/vehicles/default.jpg') }}" alt="{{ $vehicle->model }}">
+            </div>
 
-        <div class="card-image">
-            <img src="{{ asset($vehicle['image']) }}" alt="{{ $vehicle['name'] }}">
-        </div>
-
-        <div class="card-header">
-            <h3 class="card-name">{{ $vehicle->model }}</h3>
+            <div class="card-header">
+                <h3 class="card-name">{{ $vehicle->model }}</h3>
+                <div class="card-price">RM{{ $vehicle->pricePerDay }}</div>
+            </div>
+            
             <p class="card-type">{{ $vehicle->vehicleType }}</p>
-            <div class="card-price">RM{{ $vehicle->pricePerDay }}</div>
-        </div>
 
-        <div class="card-specs">
-            <span>Seats: {{ $vehicle->seat }}</span>
-            <span>AC: {{ $vehicle->ac }}</span>
-            <span>Transmission: {{ $vehicle->transmission }}</span>
-            <span>Fuel: {{ $vehicle->fuelType }}</span>
+            <div class="card-specs">
+    
+    <!-- Seats -->
+    <div class="card-spec">
+        <div class="card-spec-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="5" y="3" width="14" height="8" rx="2"/>
+                <path d="M7 11v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-5"/>
+                <path d="M5 21h14"/>
+            </svg>
         </div>
-
+        <div>{{ $vehicle->seat }} Seats</div>
     </div>
-    @endforeach
+
+    <!-- Aircond -->
+    <div class="card-spec">
+        <div class="card-spec-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.6"
+                stroke-linecap="round" stroke-linejoin="round">
+
+                <circle cx="12" cy="12" r="2"/>
+                <path d="M12 4c2 0 4 2 4 4s-2 4-4 4"/>
+                <path d="M12 20c-2 0-4-2-4-4s2-4 4-4"/>
+                <path d="M4 12c0-2 2-4 4-4s4 2 4 4"/>
+                <path d="M20 12c0 2-2 4-4 4s-4-2-4-4"/>
+            </svg>
+        </div>
+
+        <div>{{ $vehicle->ac }}</div>
+    </div>
+
+    <!-- Transmission -->
+    <div class="card-spec">
+        <div class="card-spec-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="8" y="3" width="8" height="6" rx="2"/>
+                <path d="M12 9v6"/>
+                <circle cx="12" cy="19" r="2"/>
+            </svg>
+        </div>
+        <div>{{ $vehicle->transmission }}</div>
+    </div>
+
+    <!-- Fuel -->
+    <div class="card-spec">
+        <div class="card-spec-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="12" height="18" rx="2"/>
+                <path d="M15 7h2l3 3v7a2 2 0 0 1-2 2h-1"/>
+                <path d="M6 10h6"/>
+            </svg>
+        </div>
+        <div>{{ $vehicle->fuelType }}</div>
+    </div>
 
 </div>
+
+        </div>
+        @endforeach
+    </div>
 
 <script>
 const pickupInput = document.getElementById('pickup_date');

@@ -25,6 +25,12 @@
 </head>
 
 <body>
+    
+@if(session('error'))
+    <div class="alert alert-danger text-center" style="margin: 0; padding: 12px; font-weight: 500;">
+        {{ session('error') }}
+    </div>
+@endif
 
 <div id="header">
     <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}">

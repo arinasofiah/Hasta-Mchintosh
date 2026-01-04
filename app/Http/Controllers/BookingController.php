@@ -7,8 +7,8 @@ use App\Models\Bookings;
 use App\Models\PickUp;
 use App\Models\ReturnCar;
 use App\Models\Promotion;
-//use App\Models\Voucher;          // ✅ Uncommented
-//use App\Models\LoyaltyCard;      // ✅ Uncommented
+//use App\Models\Voucher;          
+//use App\Models\LoyaltyCard;      
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -109,7 +109,7 @@ class BookingController extends Controller
 
         $booking = new Bookings();
         $booking->vehicleID = $vehicleID;
-        $booking->customerID = auth()->id(); // ✅ Standardized to auth()->id()
+        $booking->customerID = auth()->id();
         $booking->startDate = $request->pickup_date;
         $booking->endDate = $request->return_date;
         $booking->bookingDuration = $end->diffInHours($start);
@@ -391,10 +391,23 @@ class BookingController extends Controller
     public function bookingHistory()
     {
         $bookings = Bookings::with('vehicle')
-            ->where('customerID', auth()->id())
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->where('customerID', auth()->id()) 
+            ->orderBy('created_at', 'desc')  
+            ->get();
 
-        return view('booking-history', compact('bookings'));
+        return view('booking-history', [
+            'completed' => $bookings->where('status', 'Completed'),
+            'upcoming'  => $bookings->where('status', 'Upcoming'),
+            'cancelled' => $bookings->where('status', 'Cancelled'),
+        ]);
+    }
+
+    private function checkBlacklist()
+    {
+        if (auth()->check() && auth()->user()->is_blacklisted) {
+            return redirect()->route('welcome')
+                ->with('error', 'You are blacklisted and cannot make bookings.')
+                ->send();
+        }
     }
 }

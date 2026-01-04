@@ -14,7 +14,6 @@ class Payment extends Model
         'bookingID',  
         'bankName',
         'amount',
-        'qrPayment',
         'receiptImage',
         'paymentStatus',
         'paymentDate',

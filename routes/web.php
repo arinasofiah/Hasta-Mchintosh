@@ -60,20 +60,21 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::delete('/promotions/{id}', [PromotionController::class, 'destroy'])->name('admin.promotions.destroy');
 });
 
-// 🔑 Booking routes (customer)
+//  Booking routes (customer)
 Route::middleware(['auth'])->prefix('booking')->name('booking.')->group(function () {
     Route::get('/{vehicleID}', [BookingController::class, 'showForm'])->name('form');
     Route::post('/{vehicleID}', [BookingController::class, 'store'])->name('store');
     Route::post('/start/{vehicleID}', [BookingController::class, 'start'])->name('start');
-    Route::post('/confirm', [BookingController::class, 'confirmBooking'])->name('confirm'); // ✅ NEW
-    Route::get('/history', [BookingController::class, 'bookingHistory'])->name('history');  // ✅ NEW
+    Route::post('/confirm', [BookingController::class, 'confirmBooking'])->name('confirm');
+    Route::get('/history', [BookingController::class, 'bookingHistory'])->name('history'); // ✅
+    Route::post('/payment-form', [BookingController::class, 'showPaymentForm'])->name('payment.form');
 });
 
-// 🔑 Payment-related routes (used during booking flow)
+// Payment-related routes (used during booking flow)
 Route::middleware(['auth'])->group(function () {
     Route::post('/payment-form', [BookingController::class, 'showPaymentForm'])->name('payment.form');
     Route::post('/check-promotion', [BookingController::class, 'checkPromotion']);
-    Route::post('/validate-voucher', [BookingController::class, 'validateVoucher'])->name('validate.voucher'); // ✅ NEW
+    Route::post('/validate-voucher', [BookingController::class, 'validateVoucher'])->name('validate.voucher'); 
 });
 
 // Profile
@@ -96,5 +97,6 @@ Route::middleware(['auth'])->prefix('staff')->name('staff.')->group(function () 
     Route::put('/commission/update', [StaffController::class, 'updateBank'])->name('commission.update');
     Route::post('/commission/redeem', [StaffController::class, 'redeem'])->name('commission.redeem');
 });
+
 
 require __DIR__.'/auth.php';

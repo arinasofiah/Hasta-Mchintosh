@@ -589,12 +589,19 @@
             <div class="form-group">
                 <label>Upload Receipt</label>
                 <p style="color: #999; font-size: 13px; margin-bottom: 10px;">Kindly upload a screenshot of receipt payment</p>
-                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-area" id="uploadArea">
                     <div class="upload-icon">📄</div>
-                    <p class="upload-text">Drag files to upload</p>
-                    <button class="browse-btn">Browse</button>
+                    <p class="upload-text">Drag files here or click "Browse" to upload</p>
+                    <button type="button" class="browse-btn" id="browseBtn">Browse</button>
                     <input type="file" id="fileInput" name="payment_receipt" accept="image/*" style="display: none;" required>
+                    <!-- Preview container -->
+                    <div id="imagePreview" style="display: none; margin-top: 15px;">
+                        <img id="previewImage" src="" alt="Receipt Preview" style="max-width: 100%; max-height: 200px; border: 1px solid #ddd; border-radius: 5px;">
+                        <button type="button" id="removeImage" style="margin-top: 10px; background: #d94444; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Remove</button>
+                    </div>
                 </div>
+                <!-- Error message container -->
+                <div id="fileError" style="color: red; font-size: 12px; margin-top: 5px; display: none;"></div>
             </div>
         </div>
     </div>
@@ -607,7 +614,7 @@
         </label>
     </div>
 
-    <button type="submit" class="submit-btn">Submit Payment</button>
+    <button type="submit" class="submit-btn">Submit</button>
 </form>
 
 <!-- Terms Modal -->
@@ -697,6 +704,17 @@
     // File upload
     const fileInput = document.getElementById('fileInput');
     const uploadArea = document.querySelector('.upload-area');
+    const browseBtn = document.getElementById('browseBtn');
+    const uploadText = uploadArea.querySelector('.upload-text');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewImage = document.getElementById('previewImage');
+    const removeImageBtn = document.getElementById('removeImage');
+    const fileError = document.getElementById('fileError');
+
+    browseBtn.addEventListener('click', () => {
+        fileInput.click();
+    });
+
     fileInput.addEventListener('change', function(e) {
         if (e.target.files.length > 0) {
             uploadArea.querySelector('.upload-text').textContent = 'Selected: ' + e.target.files[0].name;
