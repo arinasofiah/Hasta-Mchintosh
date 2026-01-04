@@ -102,8 +102,16 @@
                     <select name="filter" class="form-select border-0 bg-light" style="border-radius: 20px; width: 150px; cursor: pointer;">
                         <option value="">Filter</option>
                         <optgroup label="Faculty">
-                            <option value="fskm" {{ request('filter') == 'fskm' ? 'selected' : '' }}>FSKM</option>
-                            <option value="fpa" {{ request('filter') == 'fpa' ? 'selected' : '' }}>FPA</option>
+                            <option value="FKM" {{ request('filter') == 'FKM' ? 'selected' : '' }}>MECHANICAL ENGINEERING</option>
+                            <option value="FS" {{ request('filter') == 'FS' ? 'selected' : '' }}>SCIENCE </option>
+                            <option value="FM" {{ request('filter') == 'FM' ? 'selected' : '' }}>MANAGEMENT </option>
+                            <option value="FKA" {{ request('filter') == 'FKA' ? 'selected' : '' }}>CIVIL ENGINEERING</option>
+                            <option value="FC" {{ request('filter') == 'FC' ? 'selected' : '' }}>COMPUTING </option>
+                            <option value="FKE" {{ request('filter') == 'FKE' ? 'selected' : '' }}>ELECTRICAL ENGINEERING</option>
+                            <option value="FSSH" {{ request('filter') == 'FSSH' ? 'selected' : '' }}>SOCIAL SCIENCES AND HUMANITIES</option>
+                            <option value="FKT" {{ request('filter') == 'FKT' ? 'selected' : '' }}>CHEMICAL AND ENERGY ENGINEERING</option>
+                            <option value="FABU" {{ request('filter') == 'FABU' ? 'selected' : '' }}>BUILT ENVIRONMENT AND SURVEYING</option>
+                            <option value="FEST" {{ request('filter') == 'FEST' ? 'selected' : '' }}>EDUCATIONAL SCIENCES AND TECHNOLOGY</option>
                         </optgroup>
                         <optgroup label="College">
                             <option value="meranti" {{ request('filter') == 'meranti' ? 'selected' : '' }}>Kolej Meranti</option>

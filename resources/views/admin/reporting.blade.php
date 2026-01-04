@@ -64,9 +64,16 @@
                     @if($view === 'overview')
                         <div class="filter-group-container me-2">
                             <select name="faculty" class="filter-select">
-                                <option value="">All Faculty</option>
-                                <option value="fskm" {{ request('faculty') == 'fskm' ? 'selected' : '' }}>FSKM</option>
-                                <option value="fpa" {{ request('faculty') == 'fpa' ? 'selected' : '' }}>FPA</option>
+                            <option value="FKM" {{ request('faculty') == 'FKM' ? 'selected' : '' }}>MECHANICAL ENGINEERING</option>
+                            <option value="FS" {{ request('faculty') == 'FS' ? 'selected' : '' }}>SCIENCE </option>
+                            <option value="FM" {{ request('faculty') == 'FM' ? 'selected' : '' }}>MANAGEMENT </option>
+                            <option value="FKA" {{ request('faculty') == 'FKA' ? 'selected' : '' }}>CIVIL ENGINEERING</option>
+                            <option value="FC" {{ request('faculty') == 'FC' ? 'selected' : '' }}>COMPUTING </option>
+                            <option value="FKE" {{ request('faculty') == 'FKE' ? 'selected' : '' }}>ELECTRICAL ENGINEERING</option>
+                            <option value="FSSH" {{ request('faculty') == 'FSSH' ? 'selected' : '' }}>SOCIAL SCIENCES AND HUMANITIES</option>
+                            <option value="FKT" {{ request('faculty') == 'FKT' ? 'selected' : '' }}>CHEMICAL AND ENERGY ENGINEERING</option>
+                            <option value="FABU" {{ request('faculty') == 'FABU' ? 'selected' : '' }}>BUILT ENVIRONMENT AND SURVEYING</option>
+                            <option value="FEST" {{ request('faculty') == 'FEST' ? 'selected' : '' }}>EDUCATIONAL SCIENCES AND TECHNOLOGY</option>
                             </select>
                             <div class="filter-divider"></div>
                             <select name="college" class="filter-select">

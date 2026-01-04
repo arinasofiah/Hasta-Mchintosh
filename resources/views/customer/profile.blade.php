@@ -67,8 +67,8 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#">
-                        Settings
+                    <a href="{{ route('customer.profile.edit') }}">
+                        Edit Profile
                     </a>
                 </li>
             </ul>
@@ -98,6 +98,23 @@
                 <div class="section-value">
                     <span>Matric Number:</span>
                     <span>{{ $customer->matricNumber ?? 'Not provided' }}</span>
+                </div>
+            </div>
+            
+            {{-- Emergency Contact Section --}}
+            <div class="info-section">
+                <div class="section-label">Emergency Contact</div>
+                <div class="section-value">
+                    <span>Contact Name:</span>
+                    <span>{{ $customer->emergency_contact_name ?? 'Not provided' }}</span>
+                </div>
+                <div class="section-value">
+                    <span>Contact Phone:</span>
+                    <span>{{ $customer->emergency_contact_phone ?? 'Not provided' }}</span>
+                </div>
+                <div class="section-value">
+                    <span>Relationship:</span>
+                    <span>{{ $customer->emergency_contact_relationship ?? 'Not specified' }}</span>
                 </div>
             </div>
             
