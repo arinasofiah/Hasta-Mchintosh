@@ -154,24 +154,29 @@ class AdminController extends Controller
         'ac' => 'nullable|in:1,0',
         'fuelType' => 'nullable|string|max:50',
         'fuelLevel' => 'nullable|integer|min:0|max:100',
-        'vehiclePhoto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Add this
+        'seat' => 'required|integer',
+        'vehicleType' => 'required|string',
+        'vehiclePhoto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // File validation
     ]);
 
-    if ($request->has('ac')) {
-        $validated['ac'] = $request->ac == '1' ? 1 : 0;
-    }
-
-    // Handle photo upload
+    // Handle file upload
     if ($request->hasFile('vehiclePhoto')) {
         // Delete old photo if exists
-        if ($vehicle->vehiclePhoto && Storage::disk('public')->exists($vehicle->vehiclePhoto)) {
-            Storage::disk('public')->delete($vehicle->vehiclePhoto);
+        if ($vehicle->vehiclePhoto) {
+            Storage::delete($vehicle->vehiclePhoto);
         }
         
-        $photo = $request->file('vehiclePhoto');
-        $filename = time() . '_' . $photo->getClientOriginalName();
-        $path = $photo->storeAs('vehicle_photos', $filename, 'public');
+        // Store new photo
+        $path = $request->file('vehiclePhoto')->store('vehicle-photos', 'public');
         $validated['vehiclePhoto'] = $path;
+    } else {
+        // Keep existing photo
+        $validated['vehiclePhoto'] = $vehicle->vehiclePhoto;
+    }
+
+    // Convert AC value to integer if provided
+    if ($request->has('ac')) {
+        $validated['ac'] = $request->ac == '1' ? 1 : 0;
     }
 
     $vehicle->update($validated);
