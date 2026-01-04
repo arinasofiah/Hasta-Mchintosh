@@ -157,11 +157,20 @@ textarea.input {resize:vertical; min-height:100px;}
 <!-- Progress Steps -->
 <div class="progress-container">
     <div class="steps">
-        <div class="step filled"><span class="step-icon">✓</span><span>Vehicle</span></div>
+        <div class="step filled">
+            <i class="fas fa-car"></i>
+            <span>Vehicle</span>
+        </div>
+        <div class="step active"></div>
+        <div class="step active">
+            <i class="fas fa-calendar-check"></i>
+            <span>Booking Details</span>
+        </div>
         <div class="step-connector"></div>
-        <div class="step active"><span class="step-icon">✓</span><span>Booking Details</span></div>
-        <div class="step-connector"></div>
-        <div class="step"><span class="step-icon">✓</span><span>Payment</span></div>
+        <div class="step">
+            <i class="fas fa-credit-card"></i>
+            <span>Payment</span>
+        </div>
     </div>
 </div>
 
