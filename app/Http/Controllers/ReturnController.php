@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+
 use App\Models\Vehicles;
 use Illuminate\Http\Request;
 use App\Models\ReturnCar;
 use App\Models\Bookings;
+use Carbon\Carbon;
 
 class ReturnController extends Controller
 {
@@ -18,7 +20,7 @@ class ReturnController extends Controller
         return view('returnform', [
             'booking' => $booking,
             'vehicle' => $booking->vehicle,
-            'returnCar' => $returnCar
+            'returnCar' => $returnCar,
         ]);
     }
 
@@ -31,7 +33,7 @@ class ReturnController extends Controller
             'returnPhoto' => 'required|image|mimes:jpeg,png,jpg|max:2048',
             'trafficTicketPhoto' => 'image|mimes:jpeg,png,jpg|max:2048',
             'feedback' => 'required|min:20',
-            'fuelAmount' => 'required'
+            'fuelAmount' => 'required',
         ]);
 
         $returnCar = ReturnCar::findOrFail($request->returnID);
@@ -47,11 +49,24 @@ class ReturnController extends Controller
         $fileName = time() . '_ticket.' . $file->getClientOriginalExtension();
         $file->move(public_path('uploads/tickets'), $fileName);
         $returnCar->trafficTicketPhoto = 'uploads/tickets/' . $fileName;
-    }
+        }
+
+        $scheduledDeadline = Carbon::parse($returnCar->returnDate . ' ' . $returnCar->returnTime,'Asia/Kuala_Lumpur');
+        $actualReturn = Carbon::now('Asia/Kuala_Lumpur');
+
+        $hoursLate = 0;
+
+        if ($actualReturn->gt($scheduledDeadline)) {
+            $hoursLate = $actualReturn->diffInHours($scheduledDeadline, true);
+        } else {
+            $hoursLate = 0;
+        }
+
         $returnCar->bookingID = $request->bookingID;
         $returnCar->fuelAmount = $request->fuelAmount;
         $returnCar->isfined = ($request->isFined === 'yes') ? 1 : 0;
         $returnCar->feedback = $request->feedback;
+        $returnCar->lateHours = $hoursLate;
         $returnCar->save();
 
         return redirect()->route('dashboard')->with('success', 'Return completed!');

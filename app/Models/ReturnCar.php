@@ -20,6 +20,7 @@ class ReturnCar extends Model
         'fuelAmount',
         'returnTime',
         'agreementForm',
+        'lateHours'
     ];
 
      public function booking()
