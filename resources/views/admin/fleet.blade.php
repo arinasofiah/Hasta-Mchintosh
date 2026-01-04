@@ -96,26 +96,23 @@
         <div class="header-flex">
             <h2>Vehicles Management</h2>
             <a href="{{ route('admin.vehicles.create') }}" class="btn btn-success" style="border-radius: 20px; background-color: #1a8f36;">
-                + Add New Vehicle
+                + Add New 
             </a>
         </div>
 
         <div class="tab-menu">
             <a href="?status=available" class="tab-link {{ $status == 'available' ? 'active' : '' }}">
                 Active 
-                <span class="count-badge available-count">{{ $availableCount }}</span>
             </a>
             <a href="?status=rented" class="tab-link {{ $status == 'rented' ? 'active' : '' }}">
                 On Rent 
-                <span class="count-badge rented-count">{{ $onRentCount }}</span>
             </a>
             <a href="?status=maintenance" class="tab-link {{ $status == 'maintenance' ? 'active' : '' }}">
                 Inactive 
-                <span class="count-badge maintenance-count">{{ $maintenanceCount }}</span>
             </a>
             
             <div class="stats-counter">
-                Showing <b>{{ $vehicles->count() }}</b> of <b>{{ $totalCount }}</b> vehicles
+                Total <b>{{ $totalCount }}</b>
             </div>
         </div>
 
@@ -132,13 +129,8 @@
                         <h4 class="mb-1">{{ $vehicle->model }}</h4>
                         <p class="text-muted mb-1">
                             {{ $vehicle->vehicleType }} • 
-                            {{ $vehicle->plateNumber }} • 
-                            RM{{ number_format($vehicle->pricePerDay, 2) }}/day
+                            {{ $vehicle->plateNumber }} 
                         </p>
-                        <small class="text-muted">
-                            {{ $vehicle->seat }} seats • {{ $vehicle->transmission }} • 
-                            {{ $vehicle->ac ? 'AC' : 'No AC' }} • {{ $vehicle->fuelType }}
-                        </small>
                     </div>
 
                     <div>
@@ -150,7 +142,7 @@
                     <div class="ms-5 d-flex">
                         {{-- 📝 EDIT BUTTON --}}
                         <button type="button" class="action-btn" data-bs-toggle="modal" data-bs-target="#editModal{{ $vehicle->vehicleID }}">
-                            📝 Edit
+                            📝
                         </button>
 
                         {{-- 🗑️ DELETE FORM --}}
@@ -158,7 +150,7 @@
                               onsubmit="return confirm('Are you sure you want to delete {{ $vehicle->model }} ({{ $vehicle->plateNumber }})?')">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="action-btn delete">🗑️ Delete</button>
+                            <button type="submit" class="action-btn delete">🗑️</button>
                         </form>
                     </div>
                 </div>

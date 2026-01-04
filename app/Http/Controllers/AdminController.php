@@ -16,34 +16,47 @@ class AdminController extends Controller
 {
     // Dashboard
     public function index()
-    {
-        if (auth()->user()->userType !== 'admin') {
-            abort(403, 'Unauthorized. Admin access only.');
-        }
-
-        // Existing Stats
-        $totalVehicles = DB::table('vehicles')->count();
-        $availableCount = DB::table('vehicles')->where('status', 'available')->count();
-        $onRentCount = DB::table('vehicles')->where('status', 'rented')->count();
-        $maintenanceCount = DB::table('vehicles')->where('status', 'maintenance')->count();
-
-        // NEW: Get usage data for the Pie Chart (Top 5 most used models currently on rent)
-        $usageData = DB::table('vehicles')
-            ->select('model', DB::raw('count(*) as count'))
-            ->where('status', 'rented')
-            ->groupBy('model')
-            ->orderBy('count', 'desc')
-            ->take(5)
-            ->get();
-
-        return view('admin.dashboard', compact(
-            'totalVehicles', 
-            'availableCount', 
-            'onRentCount', 
-            'maintenanceCount',
-            'usageData'
-        ));
+{
+    if (auth()->user()->userType !== 'admin') {
+        abort(403, 'Unauthorized. Admin access only.');
     }
+
+    // 1. Existing Stats
+    $totalVehicles = DB::table('vehicles')->count();
+    $availableCount = DB::table('vehicles')->where('status', 'available')->count();
+    $onRentCount = DB::table('vehicles')->where('status', 'rented')->count();
+    $maintenanceCount = DB::table('vehicles')->where('status', 'maintenance')->count();
+
+    // 2. Pie Chart Data
+    $usageData = DB::table('vehicles')
+        ->select('model', DB::raw('count(*) as count'))
+        ->where('status', 'rented')
+        ->groupBy('model')
+        ->orderBy('count', 'desc')
+        ->take(5)
+        ->get();
+
+    // 3. NEW: Fetch Feedback with Customer Names
+    // Assuming 'return' table has 'userID' to link to 'users' table
+    $feedback = DB::table('return as r')
+    ->join('booking as b', 'r.bookingID', '=', 'b.bookingID')
+    ->join('users as u', 'b.customerID', '=', 'u.userID') // Assuming customerID is the foreign key in booking table
+    ->select('u.name', 'r.feedback', 'r.returnDate', 'r.returnID')
+    ->whereNotNull('r.feedback')
+    ->where('r.feedback', '!=', '')  // Fixed: Added empty string value
+    ->orderBy('r.returnDate', 'desc')
+    ->limit(10)
+    ->get();
+
+    return view('admin.dashboard', compact(
+        'totalVehicles', 
+        'availableCount', 
+        'onRentCount', 
+        'maintenanceCount',
+        'usageData',
+        'feedback'
+    ));
+}
 
     // Fleet Management
     public function fleet(Request $request)

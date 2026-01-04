@@ -196,8 +196,8 @@
                 <div class="staff-info">
                     <h4 class="mb-2">{{ $staff->name }}</h4>
                     <div class="text-muted small mt-3">
-                        <p class="mb-1">📧 {{ $staff->email }}</p>
-                        <p class="mb-0">📞 Phone: {{ $staff->phoneNumber ?? 'N/A' }}</p>
+                        <p class="mb-1">Email: {{ $staff->email }}</p>
+                        <p class="mb-0">Phone: {{ $staff->phoneNumber ?? 'N/A' }}</p>
                     </div>
                 </div>
 

@@ -31,6 +31,37 @@
         .chart-container {
             height: 220px;
         }
+
+        .feedback-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.feedback-scroll::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.feedback-scroll::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+
+.feedback-scroll::-webkit-scrollbar-thumb:hover {
+    background: #bc3737;
+}
+
+.feedback-card {
+    transition: background 0.3s ease;
+}
+
+.feedback-card:hover {
+    background: #fff !important;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.italic {
+    font-style: italic;
+}
     </style>
 </head>
 <body>
@@ -155,6 +186,45 @@
             </div>
         </div>
     </div>
+    <div class="row mt-4 mb-5">
+    <div class="col-12">
+        <div class="stat-card p-4 bg-white rounded-4 shadow-sm">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold mb-0">
+                    <i class="fas fa-comments text-danger me-2"></i> Recent Customer Feedback
+                </h5>
+                <span class="badge bg-light text-dark">{{ $feedback->count() }} New Reviews</span>
+            </div>
+
+            <div class="feedback-scroll" style="max-height: 350px; overflow-y: auto; padding-right: 10px;">
+                @forelse($feedback as $feedback)
+                    <div class="feedback-card p-3 mb-3 border-start border-4 border-danger bg-light rounded-2">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="fw-bold mb-0 text-dark">{{ $feedback->name }}</h6>
+                            <small class="text-muted">
+                                <i class="far fa-calendar-alt me-1"></i> 
+                                {{ date('d M Y', strtotime($feedback->returnDate)) }}
+                            </small>
+                        </div>
+                        <p class="mb-0 text-secondary italic">
+                            "{{ $feedback->feedback }}"
+                        </p>
+                        <div class="mt-2">
+                            <small class="text-uppercase fw-bold" style="font-size: 10px; color: #bc3737;">
+                                Return ID: #{{ $feedback->returnID }}
+                            </small>
+                        </div>
+                    </div>
+                @empty
+                    <div class="text-center py-5">
+                        <i class="fas fa-comment-slash fa-3x text-light mb-3"></i>
+                        <p class="text-muted">No feedback found in the database.</p>
+                    </div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
