@@ -31,10 +31,10 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // Pickup & Return (public or auth? assuming auth later)
-Route::post('/pickup', [PickUpController::class, 'store'])->name('pickup.store');
+Route::get('/pickup/{bookingID}', [PickUpController::class, 'show'])->name('pickup.show');
 Route::get('/pickup', [PickUpController::class, 'show']);
 
-Route::get('/return', [ReturnController::class, 'show']);
+Route::get('/return/{bookingID}', [ReturnController::class, 'show'])->name('return.show');
 Route::post('/return', [ReturnController::class, 'store'])->name('return.store');
 
 // Vehicle routes
