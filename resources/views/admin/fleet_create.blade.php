@@ -44,8 +44,7 @@
         <a href="{{ route('admin.fleet') }}" class="nav-item active"> Fleet</a> 
         <a href= "{{ route('admin.customers') }}" class="nav-item">Customer</a>
         <a href="{{ route('admin.staff') }}" class="nav-item">Staff</a>
-        <a href="{{ route('admin.promotions') }}" class="nav-item"> Promotions</a>
-        <a href="#" class="nav-item"> Settings</a>
+        <a href="{{ route('admin.promotions') }}" class="nav-item">Promotions</a>
     
     </div>
 
