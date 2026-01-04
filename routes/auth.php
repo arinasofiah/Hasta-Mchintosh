@@ -75,8 +75,16 @@ Route::middleware('auth')->group(function () {
         Route::get('/profile', [CustomerController::class, 'profile'])->name('customer.profile');
         Route::get('/profile/edit', [CustomerController::class, 'edit'])->name('customer.profile.edit');
         Route::put('/profile/update', [CustomerController::class, 'update'])->name('customer.profile.update');
-            
-        Route::get('/bookings', [CustomerController::class, 'bookings'])->name('bookingHistory');
+       Route::get('/customer/bookings', [CustomerController::class, 'bookings'])
+        ->name('bookingHistory');
+    
+    // Booking Form
+    Route::get('/customer/book/{vehicleId}', [CustomerController::class, 'bookingForm'])
+        ->name('customer.booking.form');
+    
+    // Booking Details API (for modals)
+    Route::get('/customer/booking/{id}', [CustomerController::class, 'getBookingDetails'])
+        ->name('customer.booking.details');
     });
     
 });
