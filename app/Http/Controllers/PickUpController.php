@@ -12,12 +12,21 @@ class PickUpController extends Controller
     public function show($bookingID)
     {
         $booking = Bookings::with('vehicle')->findOrFail($bookingID);
+
+        $payment = Payment::where('bookingID', $bookingID)
+                      ->where('paymentStatus', 'completed')
+                      ->first();
+        
+        
+        $onlyDepositPaid = ($payment >= $booking->depositAmount) && ($payment< $booking->totalPrice);
+
         $pickup = PickUp::where('bookingID', $bookingID)->first();
 
         return view('pickupform', [
         'booking' => $booking,
         'vehicle' => $booking->vehicle,
-        'pickup' => $pickup
+        'pickup' => $pickup,
+        'onlyDepositPaid' => $onlyDepositPaid
     ]);
     }
     

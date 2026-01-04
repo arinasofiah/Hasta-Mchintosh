@@ -45,9 +45,11 @@
         @csrf
         <input type="hidden" name="pickupID" value="{{ $pickup->pickupID }}">
         <input type="hidden" name="bookingID" value="{{ $booking->bookingID }}">
-            <!--<div class="no-pay">
+        @if($onlyDepositPaid)
+            <div class="no-pay">
                 <p>Before confirming Pick Up details, Please pay.</p>
-            </div>-->
+            </div>
+        @endif
             <p id="form_name">Pick Up Details</p>
             <p class="main_txt">Upload Photos</p>
             <p class="sub_txt">Upload photos of the car before pick up</p>
@@ -78,7 +80,7 @@
                 </label>
 
                 <div id="btn_div"> 
-                    <button class="btn-primary">Save</button>
+                    <button class="btn-primary" {{ $onlyDepositPaid ? 'disabled style=opacity:0.5;cursor:not-allowed;' : '' }}>Save</button>
                 </div>
             </form>
         </div>
