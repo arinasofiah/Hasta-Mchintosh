@@ -8,8 +8,9 @@
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('css/header.css') }}" rel="stylesheet">
     <link href="{{ asset('css/footer.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/profile.css') }}" rel="stylesheet"> <style>
-
+    <link href="{{ asset('css/profile.css') }}" rel="stylesheet"> 
+    
+    <style>
         .loyalty-card-box {
             background: linear-gradient(135deg, #bc3737 0%, #8a2424 100%);
             border-radius: 20px;
@@ -55,6 +56,19 @@
             box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
         }
 
+        .stamp-circle.special-stamp {
+            border-color: #ffd700;
+            color: #ffd700; 
+            background-color: rgba(255, 215, 0, 0.1);
+        }
+        
+        .stamp-circle.special-stamp.active {
+            background: linear-gradient(45deg, #ffd700, #ffecb3); 
+            color: #8a2424;
+            border: 2px solid #fff;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+            transform: scale(1.1);
+        }
         .voucher-item {
             background: white;
             border: 1px solid #eee;
@@ -119,9 +133,7 @@
             <ul class="sidebar-menu">
                 <li><a href="{{ route('customer.profile') }}">My Profile</a></li>
                 <li><a href="{{ route('bookingHistory') }}">My Bookings</a></li>
-                
                 <li><a href="{{ route('customer.loyaltycard') }}" class="active">Loyalty Card</a></li>
-                
                 <li> <a href="{{ route('customer.profile.edit') }}">Edit Profile </a></li>
             </ul>
         </div>
@@ -141,12 +153,22 @@
                     </div>
                 </div>
 
-                <p>Collect 5 stamps to unlock a RM10 Voucher! (Rent > 9 Hours = 1 Stamp)</p>
+                <p style="font-size: 1.1rem;">
+                    🎁 <strong>Every stamp</strong> gets a <span style="text-decoration: underline;">RM10 Voucher</span>! <br>
+                    🌟 Collect <strong>5 stamps</strong> for a <strong style="color: #ffd700;">SPECIAL REWARD</strong>!
+                </p>
 
                 <div class="stamp-container">
                     @for($i = 1; $i <= 5; $i++)
-                        <div class="stamp-circle {{ ($card->stampCount % 5 >= $i || ($card->stampCount > 0 && $card->stampCount % 5 == 0)) ? 'active' : '' }}">
-                            {{ $i }}
+                        <div class="stamp-circle 
+                            {{ $i == 5 ? 'special-stamp' : '' }} 
+                            {{ ($card->stampCount % 5 >= $i || ($card->stampCount > 0 && $card->stampCount % 5 == 0)) ? 'active' : '' }}">
+                            
+                            @if($i == 5)
+                                ★
+                            @else
+                                {{ $i }}
+                            @endif
                         </div>
                     @endfor
                 </div>
@@ -180,8 +202,8 @@
                 </div>
             @empty
                 <div class="text-center p-5 text-muted" style="background: #f8f9fa; border-radius: 10px;">
-                    <h4>No vouchers yet 😢</h4>
-                    <p>Complete 5 rentals (more than 9 hours each) to get your first reward!</p>
+                    <h4>Start Your Journey! 🚗</h4>
+                    <p>Rent for 9+ hours to get your first <strong>RM10 Voucher</strong> instantly!</p>
                 </div>
             @endforelse
 
