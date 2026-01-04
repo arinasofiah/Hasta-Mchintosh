@@ -17,7 +17,9 @@ class ReturnCar extends Model
         'isfined',
         'trafficTicketPhoto',
         'feedback',
-        'fuelAmount'
+        'fuelAmount',
+        'returnTime',
+        'agreementForm',
     ];
 
      public function booking()

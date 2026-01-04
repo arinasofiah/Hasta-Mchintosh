@@ -592,21 +592,22 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function goToPayment() {
-        const form = document.querySelector('form');
-        
-        // Validate form
-        if (!form.checkValidity()) {
-            form.reportValidity();
-            return;
-        }
-    document.querySelectorAll('input[name="subtotal"], input[name="promotionDiscount"], input[name="total"], input[name="duration"]').forEach(el => el.remove());
-
-       
-        const hiddenFields = [
-            { name: 'subtotal', value: baseGrandTotal },
-            { name: 'promotionDiscount', value: promotionDiscount },
-            { name: 'total', value: (baseGrandTotal - promotionDiscount) },
-            { name: 'duration', value: document.querySelector('.duration-box input').value }
+    const form = document.querySelector('form');
+    
+    // Validate form
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
+    // Remove any existing dynamic fields (to prevent duplicates)
+    document.querySelectorAll('input.dynamic-field').forEach(el => el.remove());
+    
+    const hiddenFields = [
+        { name: 'subtotal', value: baseGrandTotal },
+        { name: 'promotionDiscount', value: promotionDiscount },
+        { name: 'total', value: (baseGrandTotal - promotionDiscount) },
+        { name: 'duration', value: document.querySelector('.duration-box input').value }
     ];
     
     hiddenFields.forEach(field => {
@@ -614,11 +615,13 @@ function goToPayment() {
         input.type = 'hidden';
         input.name = field.name;
         input.value = field.value;
+        input.classList.add('dynamic-field'); // For easy removal later
         form.appendChild(input);
     });
-        // Submit form
-        form.submit();
-    }
+    
+    // Submit form
+    form.submit();
+}
 </script>
 
 </body>

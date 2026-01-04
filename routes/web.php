@@ -112,4 +112,16 @@ Route::middleware(['auth'])->prefix('staff')->name('staff.')->group(function () 
     Route::post('/payment/approve/{id}', [StaffController::class, 'approvePayment'])->name('payment.approve');
 });
 
+Route::get('/select-vehicle', function () {
+    return view('selectVehicle');
+})->name('vehicle.select');
+
+Route::get('/booking-form', function () {
+    return view('bookingform');
+})->name('booking.form');
+
+Route::get('/payment-form', function () {
+    return view('paymentform');
+})->name('payment.form');
+
 require __DIR__.'/auth.php';

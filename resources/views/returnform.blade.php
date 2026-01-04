@@ -86,7 +86,7 @@
                 </label>
 
                 <div id="btn_div"> 
-                    <button class="btn-primary">Save</button>
+                    <button class="btn-primary" type="submit">Save</button>
                 </div>
             </form>
         </div>
