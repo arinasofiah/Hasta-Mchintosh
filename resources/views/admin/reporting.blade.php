@@ -64,22 +64,34 @@
                     @if($view === 'overview')
                         <div class="filter-group-container me-2">
                             <select name="faculty" class="filter-select">
-                            <option value="FKM" {{ request('faculty') == 'FKM' ? 'selected' : '' }}>MECHANICAL ENGINEERING</option>
-                            <option value="FS" {{ request('faculty') == 'FS' ? 'selected' : '' }}>SCIENCE </option>
-                            <option value="FM" {{ request('faculty') == 'FM' ? 'selected' : '' }}>MANAGEMENT </option>
-                            <option value="FKA" {{ request('faculty') == 'FKA' ? 'selected' : '' }}>CIVIL ENGINEERING</option>
-                            <option value="FC" {{ request('faculty') == 'FC' ? 'selected' : '' }}>COMPUTING </option>
-                            <option value="FKE" {{ request('faculty') == 'FKE' ? 'selected' : '' }}>ELECTRICAL ENGINEERING</option>
-                            <option value="FSSH" {{ request('faculty') == 'FSSH' ? 'selected' : '' }}>SOCIAL SCIENCES AND HUMANITIES</option>
-                            <option value="FKT" {{ request('faculty') == 'FKT' ? 'selected' : '' }}>CHEMICAL AND ENERGY ENGINEERING</option>
-                            <option value="FABU" {{ request('faculty') == 'FABU' ? 'selected' : '' }}>BUILT ENVIRONMENT AND SURVEYING</option>
-                            <option value="FEST" {{ request('faculty') == 'FEST' ? 'selected' : '' }}>EDUCATIONAL SCIENCES AND TECHNOLOGY</option>
+                                <option value="">All Faculty</option>
+                                <option value="FKM" {{ request('faculty') == 'FKM' ? 'selected' : '' }}>MECHANICAL ENGINEERING</option>
+                                <option value="FS" {{ request('faculty') == 'FS' ? 'selected' : '' }}>SCIENCE </option>
+                                <option value="FM" {{ request('faculty') == 'FM' ? 'selected' : '' }}>MANAGEMENT </option>
+                                <option value="FKA" {{ request('faculty') == 'FKA' ? 'selected' : '' }}>CIVIL ENGINEERING</option>
+                                <option value="FC" {{ request('faculty') == 'FC' ? 'selected' : '' }}>COMPUTING </option>
+                                <option value="FKE" {{ request('faculty') == 'FKE' ? 'selected' : '' }}>ELECTRICAL ENGINEERING</option>
+                                <option value="FSSH" {{ request('faculty') == 'FSSH' ? 'selected' : '' }}>SOCIAL SCIENCES AND HUMANITIES</option>
+                                <option value="FKT" {{ request('faculty') == 'FKT' ? 'selected' : '' }}>CHEMICAL AND ENERGY ENGINEERING</option>
+                                <option value="FABU" {{ request('faculty') == 'FABU' ? 'selected' : '' }}>BUILT ENVIRONMENT AND SURVEYING</option>
+                                <option value="FEST" {{ request('faculty') == 'FEST' ? 'selected' : '' }}>EDUCATIONAL SCIENCES AND TECHNOLOGY</option>
                             </select>
                             <div class="filter-divider"></div>
                             <select name="college" class="filter-select">
                                 <option value="">All College</option>
-                                <option value="meranti" {{ request('college') == 'meranti' ? 'selected' : '' }}>Meranti</option>
-                                <option value="jati" {{ request('college') == 'jati' ? 'selected' : '' }}>Jati</option>
+                                <option value="KTR" {{ request('college') == 'KTR' ? 'selected' : '' }}>KOLEJ TUN RAZAK (KTR)</option>
+                                <option value="KTF" {{ request('college') == 'KTF' ? 'selected' : '' }}>KOLEJ TUN FATIMAH (KTF)</option>
+                                <option value="KRP" {{ request('college') == 'KRP' ? 'selected' : '' }}>KOLEJ RAHMAN PUTRA (KRP)</option>
+                                <option value="KTDI" {{ request('college') == 'KTDI' ? 'selected' : '' }}>KOLEJ TUN DR. ISMAIL (KTDI)</option>
+                                <option value="KTC" {{ request('college') == 'KTC' ? 'selected' : '' }}>KOLEJ TUANKU CANSELOR (KTC)</option>
+                                <option value="KTHO" {{ request('college') == 'KTHO' ? 'selected' : '' }}>KOLEJ TUN HUSSEIN ONN (KTHO)</option>
+                                <option value="KDSE" {{ request('college') == 'KDSE' ? 'selected' : '' }}>MeKOLEJ DATIN SRI ENDON (KDSE)rbau</option>
+                                <option value="K9/K10" {{ request('college') == 'K9/K10' ? 'selected' : '' }}>KOLEJ 9/10</option>
+                                <option value="KP" {{ request('college') == 'KP' ? 'selected' : '' }}>KOLEJ PERDANA (KP)</option>
+                                <option value="KDOJ" {{ request('college') == 'KDOJ' ? 'selected' : '' }}>KOLEJ DATO’ ONN JAAFAR (KDOJ)</option>
+                                <option value="KLG" {{ request('college') == 'KLG' ? 'selected' : '' }}>KLG</option>
+                                <option value="UTMI" {{ request('college') == 'UTMI' ? 'selected' : '' }}>UTM International</option>
+                                <option value="Outside UTM" {{ request('college') == 'Outside UTM' ? 'selected' : '' }}>None</option>
                             </select>
                             <div class="filter-divider"></div>
                             <select name="vehicleType" class="filter-select">

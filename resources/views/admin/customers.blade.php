@@ -100,7 +100,7 @@
             <div class="d-flex align-items-center gap-3">
                 <form action="{{ route('admin.customers') }}" method="GET" class="d-flex gap-2">
                     <select name="filter" class="form-select border-0 bg-light" style="border-radius: 20px; width: 150px; cursor: pointer;">
-                        <option value="">Filter</option>
+                        <option value="">All Filter</option>
                         <optgroup label="Faculty">
                             <option value="FKM" {{ request('filter') == 'FKM' ? 'selected' : '' }}>MECHANICAL ENGINEERING</option>
                             <option value="FS" {{ request('filter') == 'FS' ? 'selected' : '' }}>SCIENCE </option>
@@ -114,8 +114,19 @@
                             <option value="FEST" {{ request('filter') == 'FEST' ? 'selected' : '' }}>EDUCATIONAL SCIENCES AND TECHNOLOGY</option>
                         </optgroup>
                         <optgroup label="College">
-                            <option value="meranti" {{ request('filter') == 'meranti' ? 'selected' : '' }}>Kolej Meranti</option>
-                            <option value="jati" {{ request('filter') == 'jati' ? 'selected' : '' }}>Kolej Jati</option>
+                                <option value="KTR" {{ request('filter') == 'KTR' ? 'selected' : '' }}>KOLEJ TUN RAZAK (KTR)</option>
+                                <option value="KTF" {{ request('filter') == 'KTF' ? 'selected' : '' }}>KOLEJ TUN FATIMAH (KTF)</option>
+                                <option value="KRP" {{ request('filter') == 'KRP' ? 'selected' : '' }}>KOLEJ RAHMAN PUTRA (KRP)</option>
+                                <option value="KTDI" {{ request('filter') == 'KTDI' ? 'selected' : '' }}>KOLEJ TUN DR. ISMAIL (KTDI)</option>
+                                <option value="KTC" {{ request('filter') == 'KTC' ? 'selected' : '' }}>KOLEJ TUANKU CANSELOR (KTC)</option>
+                                <option value="KTHO" {{ request('filter') == 'KTHO' ? 'selected' : '' }}>KOLEJ TUN HUSSEIN ONN (KTHO)</option>
+                                <option value="KDSE" {{ request('filter') == 'KDSE' ? 'selected' : '' }}>MeKOLEJ DATIN SRI ENDON (KDSE)rbau</option>
+                                <option value="K9/K10" {{ request('filter') == 'K9/K10' ? 'selected' : '' }}>KOLEJ 9/10</option>
+                                <option value="KP" {{ request('filter') == 'KP' ? 'selected' : '' }}>KOLEJ PERDANA (KP)</option>
+                                <option value="KDOJ" {{ request('filter') == 'KDOJ' ? 'selected' : '' }}>KOLEJ DATO’ ONN JAAFAR (KDOJ)</option>
+                                <option value="KLG" {{ request('filter') == 'KLG' ? 'selected' : '' }}>KLG</option>
+                                <option value="UTMI" {{ request('filter') == 'UTMI' ? 'selected' : '' }}>UTM International</option>
+                                <option value="Outside UTM" {{ request('filter') == 'Outside UTM' ? 'selected' : '' }}>None</option>
                         </optgroup>
                     </select>
                     <button type="submit" class="btn btn-success px-4" style="background-color: #1a8f36; border-radius: 20px; border: none;">Submit</button>
@@ -133,10 +144,9 @@
             <div class="customer-card">
                 <div class="customer-info">
                     <h5 class="mb-0">{{ strtoupper($customer->name) }}</h5>
-                    <div class="text-muted small">
-                        <p class="mb-1">👤 ID: {{ $customer->userID }}</p>
-                        <p class="mb-1">📧 {{ $customer->email }}</p>
-                        <p class="mb-0">📞 Phone: {{ $customer->phoneNumber ?? 'N/A' }}</p>
+                    <div class="text-muted small mt-3">
+                        <p class="mb-1">Email: {{ $customer->email }}</p>
+                        <p class="mb-0">Phone: {{ $customer->phoneNumber ?? 'N/A' }}</p>
                     </div>
                 </div>
 
@@ -174,6 +184,7 @@
                                 <p class="mb-2"><strong>License:</strong> {{ $customer->licenseNumber ?? 'N/A' }}</p>
                                 <p class="mb-2"><strong>Faculty:</strong> {{ strtoupper($customer->faculty ?? 'N/A') }}</p>
                                 <p class="mb-0"><strong>College:</strong> {{ $customer->college ?? 'N/A' }}</p>
+                                <p class="mb-0"><strong>Emergency Contact:</strong> {{ $customer->emergency_contact_phone ?? 'N/A' }}</p>
                             </div>
                         </div>
                     </div>

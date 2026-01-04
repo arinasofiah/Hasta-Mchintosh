@@ -153,13 +153,7 @@
                         @endif
                     </span>
                 </div>
-                
-                <div class="section-value">
-                    <span>Deposit Balance:</span>
-                    <span class="balance">RM{{ number_format($customer->depoBalance ?? 0, 2) }}</span>
-                </div>
-            </div>
-            
+               
             <div class="actions">
                 <a href="{{ route('customer.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
                 <a href="{{ route('customer.profile.edit') }}" class="btn btn-primary">Edit Profile</a>

@@ -147,7 +147,7 @@
                             <option value="KDOJ" {{ old('college', $customer->college) == 'KDOJ' ? 'selected' : '' }}>KOLEJ DATO’ ONN JAAFAR (KDOJ)</option>
                             <option value="KLG" {{ old('college', $customer->college) == 'KLG' ? 'selected' : '' }}>KLG</option>
                             <option value="UTMI" {{ old('college', $customer->college) == 'UTMI' ? 'selected' : '' }}>UTM International</option>
-                            <option value="Outside UTM" {{ old('college', $customer->college) == 'Outside UTM' ? 'selected' : '' }}>Merbau</option>
+                            <option value="Outside UTM" {{ old('college', $customer->college) == 'Outside UTM' ? 'selected' : '' }}>None</option>
                         </select>
                     </div>
                     
