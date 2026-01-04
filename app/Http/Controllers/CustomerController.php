@@ -16,23 +16,39 @@ class CustomerController extends Controller
     /**
      * Display customer dashboard.
      */
-    public function index()
-    {
-        // Check if user is customer
-        if (auth()->user()->userType !== 'customer') {
-            abort(403, 'Unauthorized. Customer access only.');
-        }
-        
-        // Fetch available vehicles from database
-        $vehicles = DB::table('vehicles')
-            ->where('status', 'available')
-            ->select('vehicleID', 'vehicleType', 'model', 'plateNumber', 'fuelLevel', 
+   public function index(Request $request)
+{
+    // Check if user is customer
+    if (auth()->user()->userType !== 'customer') {
+        abort(403, 'Unauthorized. Customer access only.');
+    }
+    
+    // Fetch available vehicles from database with filters
+    $query = DB::table('vehicles')
+        ->where('status', 'available');
+    
+    // Apply search filter
+    if ($request->filled('search')) {
+        $search = $request->input('search');
+        $query->where(function($q) use ($search) {
+            $q->where('model', 'LIKE', "%{$search}%")
+              ->orWhere('vehicleType', 'LIKE', "%{$search}%")
+              ->orWhere('plateNumber', 'LIKE', "%{$search}%");
+        });
+    }
+    
+    // Apply category filter
+    if ($request->filled('category') && $request->category !== 'All') {
+        $query->where('vehicleType', $request->category);
+    }
+    
+    $vehicles = $query->select('vehicleID', 'vehicleType', 'model', 'plateNumber', 'fuelLevel', 
                      'fuelType', 'ac', 'seat', 'status', 'pricePerDay', 'pricePerHour', 'vehiclePhoto', 'transmission')
             ->get();
-        
-        // Pass vehicles to the view
-        return view('customer.dashboard', compact('vehicles'));
-    }
+    
+    // Pass vehicles to the view
+    return view('customer.dashboard', compact('vehicles'));
+}
     
     /**
      * Display customer profile.

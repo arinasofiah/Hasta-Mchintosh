@@ -53,6 +53,9 @@
         .tab-menu { border-bottom: 1px solid #eee; margin-bottom: 20px; padding-bottom: 5px; }
         .tab-link { padding: 10px 20px; text-decoration: none; color: #888; display: inline-block; transition: 0.3s; }
         .tab-link.active { color: #1a8f36; border-bottom: 3px solid #1a8f36; font-weight: 600; }
+        
+        /* Phone number display */
+        .phone-number { font-family: monospace; background: #f8f9fa; padding: 2px 6px; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -100,14 +103,17 @@
             <h2>Customers</h2>
             <div class="d-flex align-items-center gap-3">
                 <form action="{{ route('admin.customers') }}" method="GET" class="d-flex gap-2">
+                    <!-- Hidden input to preserve status parameter -->
+                    <input type="hidden" name="status" value="{{ $status }}">
+                    
                     <select name="filter" class="form-select border-0 bg-light" style="border-radius: 20px; width: 150px; cursor: pointer;">
                         <option value="">All Filter</option>
                         <optgroup label="Faculty">
                             <option value="FKM" {{ request('filter') == 'FKM' ? 'selected' : '' }}>MECHANICAL ENGINEERING</option>
-                            <option value="FS" {{ request('filter') == 'FS' ? 'selected' : '' }}>SCIENCE </option>
-                            <option value="FM" {{ request('filter') == 'FM' ? 'selected' : '' }}>MANAGEMENT </option>
+                            <option value="FS" {{ request('filter') == 'FS' ? 'selected' : '' }}>SCIENCE</option>
+                            <option value="FM" {{ request('filter') == 'FM' ? 'selected' : '' }}>MANAGEMENT</option>
                             <option value="FKA" {{ request('filter') == 'FKA' ? 'selected' : '' }}>CIVIL ENGINEERING</option>
-                            <option value="FC" {{ request('filter') == 'FC' ? 'selected' : '' }}>COMPUTING </option>
+                            <option value="FC" {{ request('filter') == 'FC' ? 'selected' : '' }}>COMPUTING</option>
                             <option value="FKE" {{ request('filter') == 'FKE' ? 'selected' : '' }}>ELECTRICAL ENGINEERING</option>
                             <option value="FSSH" {{ request('filter') == 'FSSH' ? 'selected' : '' }}>SOCIAL SCIENCES AND HUMANITIES</option>
                             <option value="FKT" {{ request('filter') == 'FKT' ? 'selected' : '' }}>CHEMICAL AND ENERGY ENGINEERING</option>
@@ -115,114 +121,154 @@
                             <option value="FEST" {{ request('filter') == 'FEST' ? 'selected' : '' }}>EDUCATIONAL SCIENCES AND TECHNOLOGY</option>
                         </optgroup>
                         <optgroup label="College">
-                                <option value="KTR" {{ request('filter') == 'KTR' ? 'selected' : '' }}>KOLEJ TUN RAZAK (KTR)</option>
-                                <option value="KTF" {{ request('filter') == 'KTF' ? 'selected' : '' }}>KOLEJ TUN FATIMAH (KTF)</option>
-                                <option value="KRP" {{ request('filter') == 'KRP' ? 'selected' : '' }}>KOLEJ RAHMAN PUTRA (KRP)</option>
-                                <option value="KTDI" {{ request('filter') == 'KTDI' ? 'selected' : '' }}>KOLEJ TUN DR. ISMAIL (KTDI)</option>
-                                <option value="KTC" {{ request('filter') == 'KTC' ? 'selected' : '' }}>KOLEJ TUANKU CANSELOR (KTC)</option>
-                                <option value="KTHO" {{ request('filter') == 'KTHO' ? 'selected' : '' }}>KOLEJ TUN HUSSEIN ONN (KTHO)</option>
-                                <option value="KDSE" {{ request('filter') == 'KDSE' ? 'selected' : '' }}>MeKOLEJ DATIN SRI ENDON (KDSE)rbau</option>
-                                <option value="K9/K10" {{ request('filter') == 'K9/K10' ? 'selected' : '' }}>KOLEJ 9/10</option>
-                                <option value="KP" {{ request('filter') == 'KP' ? 'selected' : '' }}>KOLEJ PERDANA (KP)</option>
-                                <option value="KDOJ" {{ request('filter') == 'KDOJ' ? 'selected' : '' }}>KOLEJ DATO’ ONN JAAFAR (KDOJ)</option>
-                                <option value="KLG" {{ request('filter') == 'KLG' ? 'selected' : '' }}>KLG</option>
-                                <option value="UTMI" {{ request('filter') == 'UTMI' ? 'selected' : '' }}>UTM International</option>
-                                <option value="Outside UTM" {{ request('filter') == 'Outside UTM' ? 'selected' : '' }}>None</option>
+                            <option value="KTR" {{ request('filter') == 'KTR' ? 'selected' : '' }}>KOLEJ TUN RAZAK (KTR)</option>
+                            <option value="KTF" {{ request('filter') == 'KTF' ? 'selected' : '' }}>KOLEJ TUN FATIMAH (KTF)</option>
+                            <option value="KRP" {{ request('filter') == 'KRP' ? 'selected' : '' }}>KOLEJ RAHMAN PUTRA (KRP)</option>
+                            <option value="KTDI" {{ request('filter') == 'KTDI' ? 'selected' : '' }}>KOLEJ TUN DR. ISMAIL (KTDI)</option>
+                            <option value="KTC" {{ request('filter') == 'KTC' ? 'selected' : '' }}>KOLEJ TUANKU CANSELOR (KTC)</option>
+                            <option value="KTHO" {{ request('filter') == 'KTHO' ? 'selected' : '' }}>KOLEJ TUN HUSSEIN ONN (KTHO)</option>
+                            <option value="KDSE" {{ request('filter') == 'KDSE' ? 'selected' : '' }}>KOLEJ DATIN SRI ENDON (KDSE)</option>
+                            <option value="K9/K10" {{ request('filter') == 'K9/K10' ? 'selected' : '' }}>KOLEJ 9/10</option>
+                            <option value="KP" {{ request('filter') == 'KP' ? 'selected' : '' }}>KOLEJ PERDANA (KP)</option>
+                            <option value="KDOJ" {{ request('filter') == 'KDOJ' ? 'selected' : '' }}>KOLEJ DATO' ONN JAAFAR (KDOJ)</option>
+                            <option value="KLG" {{ request('filter') == 'KLG' ? 'selected' : '' }}>KLG</option>
+                            <option value="UTMI" {{ request('filter') == 'UTMI' ? 'selected' : '' }}>UTM International</option>
+                            <option value="Outside UTM" {{ request('filter') == 'Outside UTM' ? 'selected' : '' }}>None</option>
                         </optgroup>
                     </select>
                     <button type="submit" class="btn btn-success px-4" style="background-color: #1a8f36; border-radius: 20px; border: none;">Submit</button>
+                    
+                    <!-- Clear filter button -->
+                    @if(request('filter'))
+                        <a href="?status={{ $status }}" class="btn btn-outline-secondary px-4" style="border-radius: 20px;">Clear</a>
+                    @endif
                 </form>
             </div>
         </div>
 
         <div class="tab-menu mb-4">
-            <a href="?status=active" class="tab-link {{ $status == 'active' ? 'active' : '' }}">Active</a>
-            <a href="?status=blacklisted" class="tab-link {{ $status == 'blacklisted' ? 'active' : '' }}">Blacklisted</a>
+            <a href="?status=active{{ request('filter') ? '&filter=' . request('filter') : '' }}" class="tab-link {{ $status == 'active' ? 'active' : '' }}">Active</a>
+            <a href="?status=blacklisted{{ request('filter') ? '&filter=' . request('filter') : '' }}" class="tab-link {{ $status == 'blacklisted' ? 'active' : '' }}">Blacklisted</a>
             <span class="float-end text-muted mt-2">Total <b>{{ $totalCount }}</b></span>
         </div>
 
-        @foreach($customers as $customer)
-            <div class="customer-card">
-                <div class="customer-info">
-                    <h5 class="mb-0">{{ strtoupper($customer->name) }}</h5>
-                    <div class="text-muted small mt-3">
-                        <p class="mb-1">Email: {{ $customer->email }}</p>
-                        <p class="mb-0">Phone: {{ $customer->phoneNumber ?? 'N/A' }}</p>
-                    </div>
-                </div>
-
-                <div class="d-flex align-items-center gap-4">
-                    @if($customer->isBlacklisted)
-                        <span class="badge" style="background-color: #fee2e2; color: #dc2626; padding: 8px 20px; border-radius: 20px; font-weight: 500;">Blacklisted</span>
+        @if($customers->isEmpty())
+            <div class="text-center py-5">
+                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                <h5>No customers found</h5>
+                <p class="text-muted">
+                    @if(request('filter'))
+                        No {{ $status }} customers match the filter "{{ request('filter') }}"
                     @else
-                        <span class="badge" style="background-color: #dcfce7; color: #1a8f36; padding: 8px 20px; border-radius: 20px; font-weight: 500;">Active</span>
+                        No {{ $status }} customers found
                     @endif
-
-                    <div class="d-flex gap-2">
-                        <button class="action-btn" data-bs-toggle="modal" data-bs-target="#profileModal{{ $customer->userID }}"> <i class="fas fa-user"></i></button>
-                        <button class="action-btn" data-bs-toggle="modal" data-bs-target="#editModal{{ $customer->userID }}"><i class="fas fa-edit"></i></button>
-                    </div>
-                </div>
+                </p>
             </div>
-
-            <div class="modal fade" id="profileModal{{ $customer->userID }}" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content" style="border-radius: 20px; border: none;">
-                        <div class="modal-header border-0">
-                            <h5 class="modal-title fw-bold">Customer Profile</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body text-center p-4">
-                            <div class="p-3 mb-4 bg-light rounded-4">
-                                <h6 class="text-muted small fw-bold">Outstanding Payment</h6>
-                                <h2 class="text-danger fw-bold mb-0">
-                                    RM {{ number_format($customer->outstanding_payment ?? 0, 2) }}
-                                </h2>
-                            </div>
-                            <div class="text-start">
-                                <p class="mb-2"><strong>Email:</strong> {{ $customer->email }}</p>
-                                <p class="mb-2"><strong>Matric Number:</strong> {{ $customer->matricNumber ?? 'N/A' }}</p>
-                                <p class="mb-2"><strong>License:</strong> {{ $customer->licenseNumber ?? 'N/A' }}</p>
-                                <p class="mb-2"><strong>Faculty:</strong> {{ strtoupper($customer->faculty ?? 'N/A') }}</p>
-                                <p class="mb-0"><strong>College:</strong> {{ $customer->college ?? 'N/A' }}</p>
-                                <p class="mb-0"><strong>Emergency Contact:</strong> {{ $customer->emergency_contact_phone ?? 'N/A' }}</p>
-                            </div>
+        @else
+            @foreach($customers as $customer)
+                <div class="customer-card">
+                    <div class="customer-info">
+                        <h5 class="mb-0">{{ strtoupper($customer->name) }}</h5>
+                        <div class="text-muted small mt-3">
+                            <p class="mb-0">Phone: 
+                                @php
+                                    // Get phone number from telephone table
+                                    $phone = DB::table('telephone')
+                                        ->where('userID', $customer->userID)
+                                        ->value('phoneNumber');
+                                @endphp
+                                <span class="phone-number">{{ $phone ?? 'N/A' }}</span>
+                            </p>
+                            @if($customer->matricNumber)
+                                <p class="mb-0 mt-1">Matric: {{ $customer->matricNumber }}</p>
+                            @endif
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="modal fade" id="editModal{{ $customer->userID }}" tabindex="-1">
-                <div class="modal-dialog">
-                    <form action="{{ route('admin.customers.update', $customer->userID) }}" method="POST" class="modal-content" style="border-radius: 20px; border: none;">
-                        @csrf
-                        @method('PUT')
-                        <div class="modal-header border-0">
-                            <h5 class="modal-title fw-bold">Update Status</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <div class="d-flex align-items-center gap-4">
+                        @if($customer->isBlacklisted)
+                            <span class="badge" style="background-color: #fee2e2; color: #dc2626; padding: 8px 20px; border-radius: 20px; font-weight: 500;">Blacklisted</span>
+                        @else
+                            <span class="badge" style="background-color: #dcfce7; color: #1a8f36; padding: 8px 20px; border-radius: 20px; font-weight: 500;">Active</span>
+                        @endif
+
+                        <div class="d-flex gap-2">
+                            <button class="action-btn" data-bs-toggle="modal" data-bs-target="#profileModal{{ $customer->userID }}"> <i class="fas fa-user"></i></button>
+                            <button class="action-btn" data-bs-toggle="modal" data-bs-target="#editModal{{ $customer->userID }}"><i class="fas fa-edit"></i></button>
                         </div>
-                        <div class="modal-body p-4">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Account Status</label>
-                                <select name="isBlacklisted" class="form-select" style="border-radius: 12px; padding: 12px;">
-                                    <option value="0" {{ !$customer->isBlacklisted ? 'selected' : '' }}>Active</option>
-                                    <option value="1" {{ $customer->isBlacklisted ? 'selected' : '' }}>Blacklist User</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Reason for Blacklist</label>
-                                <textarea name="blacklistReason" class="form-control" rows="3" style="border-radius: 12px;">{{ $customer->blacklistReason ?? '' }}</textarea>
-                            </div>
-                        </div>
-                        <div class="modal-footer border-0 p-4 pt-0">
-                            <button type="submit" class="btn btn-success w-100" style="background-color: #1a8f36; border-radius: 12px; padding: 12px; font-weight: 600;">Save Changes</button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
-            </div>
-        @endforeach
+
+                <!-- Profile Modal -->
+                <div class="modal fade" id="profileModal{{ $customer->userID }}" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content" style="border-radius: 20px; border: none;">
+                            <div class="modal-header border-0">
+                                <h5 class="modal-title fw-bold">Customer Profile</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body text-center p-4">
+                                <div class="p-3 mb-4 bg-light rounded-4">
+                                    <h6 class="text-muted small fw-bold">Outstanding Payment</h6>
+                                    <h2 class="text-danger fw-bold mb-0">
+                                        RM {{ number_format($customer->outstanding_payment ?? 0, 2) }}
+                                    </h2>
+                                </div>
+                                <div class="text-start">
+                                    <p class="mb-2"><strong>Email:</strong> {{ $customer->email }}</p>
+                                    <p class="mb-2"><strong>Matric Number:</strong> {{ $customer->matricNumber ?? 'N/A' }}</p>
+                                    <p class="mb-2"><strong>License:</strong> {{ $customer->licenseNumber ?? 'N/A' }}</p>
+                                    <p class="mb-2"><strong>Faculty:</strong> {{ strtoupper($customer->faculty ?? 'N/A') }}</p>
+                                    <p class="mb-2"><strong>College:</strong> {{ $customer->college ?? 'N/A' }}</p>
+                                    <p class="mb-2"><strong>Emergency Contact:</strong> {{ $customer->emergency_contact_name ?? 'N/A' }}</p>
+                                    <p class="mb-0"><strong>Emergency Phone:</strong> {{ $customer->emergency_contact_phone ?? 'N/A' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Modal -->
+                <div class="modal fade" id="editModal{{ $customer->userID }}" tabindex="-1">
+                    <div class="modal-dialog">
+                        <form action="{{ route('admin.customers.update', $customer->userID) }}" method="POST" class="modal-content" style="border-radius: 20px; border: none;">
+                            @csrf
+                            @method('PUT')
+                            <div class="modal-header border-0">
+                                <h5 class="modal-title fw-bold">Update Status</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body p-4">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Account Status</label>
+                                    <select name="isBlacklisted" class="form-select" style="border-radius: 12px; padding: 12px;">
+                                        <option value="0" {{ !$customer->isBlacklisted ? 'selected' : '' }}>Active</option>
+                                        <option value="1" {{ $customer->isBlacklisted ? 'selected' : '' }}>Blacklist User</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Reason for Blacklist</label>
+                                    <textarea name="blacklistReason" class="form-control" rows="3" style="border-radius: 12px;">{{ $customer->blacklistReason ?? '' }}</textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-0 p-4 pt-0">
+                                <button type="submit" class="btn btn-success w-100" style="background-color: #1a8f36; border-radius: 12px; padding: 12px; font-weight: 600;">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            @endforeach
+        @endif
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Debug helper to see current URL parameters
+        console.log('Current URL parameters:', {
+            status: '{{ $status }}',
+            filter: '{{ request("filter") }}',
+            search: '{{ request("search") }}'
+        });
+    </script>
 </body>
 </html>

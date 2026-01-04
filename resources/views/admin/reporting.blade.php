@@ -38,8 +38,25 @@
 </head>
 <body>
 
+    
     <div id="header">
         <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}">
+        <div id="profile">
+            <div id="profile-container">
+                <img id="pfp" src="{{ asset('img/racc_icon.png') }}">
+                <div id="profile-dropdown">
+                    @auth
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="dropdown-item">Logout</button>
+                        </form>
+                    @endauth
+                </div>
+            </div>
+            @auth
+                <span id="username">{{ Auth::user()->name }}</span>
+            @endauth
+        </div>
     </div>
 
     <div class="sidebar">
@@ -93,12 +110,6 @@
                                 <option value="UTMI" {{ request('college') == 'UTMI' ? 'selected' : '' }}>UTM International</option>
                                 <option value="Outside UTM" {{ request('college') == 'Outside UTM' ? 'selected' : '' }}>None</option>
                             </select>
-                            <div class="filter-divider"></div>
-                            <select name="vehicleType" class="filter-select">
-                                <option value="">All Types</option>
-                                <option value="Sedan" {{ request('vehicleType') == 'Sedan' ? 'selected' : '' }}>Sedan</option>
-                                <option value="SUV" {{ request('vehicleType') == 'SUV' ? 'selected' : '' }}>SUV</option>
-                            </select>
                         </div>
                     @endif
 
@@ -138,13 +149,6 @@
                         <div style="height: 300px;"><canvas id="statusChart"></canvas></div>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="report-card">
-                        <h5 class="fw-bold mb-4 text-secondary">Reward Program Usage</h5>
-                        <div style="height: 300px;"><canvas id="rewardChart"></canvas></div>
-                    </div>
-                </div>
-            </div>
 
             <div class="report-card">
                 <h5 class="fw-bold mb-4">Recent Bookings Activity</h5>
