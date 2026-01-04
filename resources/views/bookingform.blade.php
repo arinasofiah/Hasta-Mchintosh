@@ -531,12 +531,10 @@ function calculateDurationAndPrice() {
     console.log('Duration Hours:', diffHours);
     console.log('Base Grand Total:', baseGrandTotal);
 
-    checkPromotion();
+    checkPromotion(days);
 }
 
 function checkPromotion() {
-    const today = new Date();
-    const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
 
     fetch('/check-promotion', {
         method: 'POST',
@@ -545,7 +543,7 @@ function checkPromotion() {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
         },
         body: JSON.stringify({
-            day: dayName,
+            duration: durationDays,
             amount: baseGrandTotal
         })
     })

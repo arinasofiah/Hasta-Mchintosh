@@ -19,7 +19,8 @@ class Bookings extends Model
         'totalPrice',
         'depositAmount',
         'rewardApplied',
-        'reservation_expires_at'
+        'reservation_expires_at',
+        'voucher_id'
     ];
 
     protected $dates = [
@@ -48,4 +49,9 @@ public function returnCar()
 {
     return $this->hasOne(ReturnCar::class, 'bookingID', 'bookingID');
 }
+
+public function voucher()
+    {
+        return $this->belongsTo(Voucher::class, 'voucher_id', 'voucherCode');
+    }
 }
