@@ -118,19 +118,19 @@
             border-bottom: 2px solid;
         }
 
-        .section-title.completed {
-            color: #27ae60;
-            border-bottom-color: #27ae60;
+        .section-title.active {
+            color: #3498db;
+            border-bottom-color: #3498db;
         }
 
-        .section-title.upcoming {
+        .section-title.past {
+            color: #7f8c8d;
+            border-bottom-color: #7f8c8d;
+        }
+
+        .section-title.pending {
             color: #f39c12;
             border-bottom-color: #f39c12;
-        }
-
-        .section-title.cancelled {
-            color: #e74c3c;
-            border-bottom-color: #e74c3c;
         }
 
         .booking-card {
@@ -207,19 +207,24 @@
             min-width: 100px;
         }
 
+        .status.active {
+            background-color: #d6eaf8;
+            color: #3498db;
+        }
+
         .status.completed {
             background-color: #d4efdf;
             color: #27ae60;
         }
 
-        .status.upcoming {
-            background-color: #fef5e7;
-            color: #f39c12;
-        }
-
         .status.cancelled {
             background-color: #fdecea;
             color: #e74c3c;
+        }
+
+        .status.pending {
+            background-color: #fef5e7;
+            color: #f39c12;
         }
 
         .action-btn {
@@ -272,44 +277,26 @@
             border: 1px dashed #ddd;
         }
 
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
+        /* Past bookings section - combined */
+        .past-bookings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
 
-        .page-btn {
-            width: 40px;
-            height: 40px;
-            border: 1px solid #ddd;
-            background-color: white;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
+        .past-bookings-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
         }
 
-        .page-btn:hover {
-            background-color: #f8f9fa;
-            border-color: #bc3737;
-        }
-
-        .page-btn.active {
-            background-color: #bc3737;
-            color: white;
-            border-color: #bc3737;
-        }
-
-        .page-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        .past-bookings-section h4 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
         }
 
         /* Modal Styles */
@@ -660,6 +647,10 @@
                 width: 100%;
                 text-align: center;
             }
+            
+            .past-bookings-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         @media (max-width: 480px) {
@@ -688,8 +679,8 @@
         <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}" alt="Hasta Logo">
         
         <div id="menu">
-                <button class="head_button">Home</button>
-                <button class="head_button">Vehicles</button>
+            <button class="head_button" onclick="window.location.href='{{ route('customer.dashboard') }}'">Home</button>
+            <button class="head_button" onclick="window.location.href='{{ route('customer.dashboard') }}'">Vehicles</button>
             <button class="head_button">Details</button>
             <button class="head_button">About Us</button>
             <button class="head_button">Contact Us</button>
@@ -750,11 +741,11 @@
         <div class="booking-history-page">
             <h1 class="profile-title">My Booking History</h1>
 
-            <!-- Completed Bookings Section -->
+            <!-- Active/Ongoing Bookings Section (SHOW FIRST) -->
             <div class="booking-section">
-                <div class="section-title completed">Completed Bookings</div>
+                <div class="section-title active">Active Bookings</div>
                 
-                @forelse($completed as $booking)
+                @forelse($active as $booking)
                     <div class="booking-card">
                         <img src="{{ asset('img/default-car.png') }}" 
                              alt="Vehicle Image" 
@@ -773,7 +764,7 @@
                                 {{ date('d M Y', strtotime($booking->returnDate)) }}
                             </div>
 
-                            <div class="status completed">Completed</div>
+                            <div class="status active">Active</div>
 
                             <button class="action-btn" 
                                     onclick="showDetailsModal({{ $booking->id }})">
@@ -783,16 +774,16 @@
                     </div>
                 @empty
                     <div class="empty-state">
-                        No completed bookings yet.
+                        No active bookings currently.
                     </div>
                 @endforelse
             </div>
 
-            <!-- Upcoming Bookings Section -->
+            <!-- Pending Bookings Section -->
             <div class="booking-section">
-                <div class="section-title upcoming">Upcoming Bookings</div>
+                <div class="section-title pending">Pending Bookings</div>
                 
-                @forelse($upcoming as $booking)
+                @forelse($pending as $booking)
                     <div class="booking-card">
                         <img src="{{ asset('img/default-car.png') }}" 
                              alt="Vehicle Image" 
@@ -811,7 +802,7 @@
                                 {{ date('d M Y', strtotime($booking->returnDate)) }}
                             </div>
 
-                            <div class="status upcoming">Upcoming</div>
+                            <div class="status pending">Pending</div>
 
                             <button class="action-btn" 
                                     onclick="showModifyModal({{ $booking->id }})">
@@ -821,59 +812,83 @@
                     </div>
                 @empty
                     <div class="empty-state">
-                        No upcoming bookings yet.
+                        No pending bookings.
                     </div>
                 @endforelse
             </div>
 
-            <!-- Cancelled Bookings Section -->
+            <!-- Past Bookings Section - Combined Completed and Cancelled -->
             <div class="booking-section">
-                <div class="section-title cancelled">Cancelled Bookings</div>
+                <div class="section-title past">Past Bookings</div>
                 
-                @forelse($cancelled as $booking)
-                    <div class="booking-card">
-                        <img src="{{ asset('img/default-car.png') }}" 
-                             alt="Vehicle Image" 
-                             class="car-image">
-
-                        <div class="booking-details">
-                            <div class="car-info">
-                                <h3>{{ $booking->model ?? 'Car Model' }}</h3>
-                                <p>{{ $booking->vehicleType ?? 'Vehicle Type' }}</p>
+                <div class="past-bookings-grid">
+                    <!-- Completed Bookings Column -->
+                    <div class="past-bookings-section">
+                        <h4>Completed</h4>
+                        @forelse($completed as $booking)
+                            <div class="booking-card" style="margin-bottom: 10px; padding: 15px;">
+                                <div style="display: flex; align-items: center; width: 100%;">
+                                    <img src="{{ asset('img/default-car.png') }}" 
+                                         alt="Vehicle Image" 
+                                         style="width: 80px; height: 60px; border-radius: 4px; margin-right: 15px;">
+                                    
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; font-size: 14px;">{{ $booking->model }}</div>
+                                        <div style="font-size: 12px; color: #666;">{{ $booking->vehicleType }}</div>
+                                        <div style="font-size: 12px; color: #666; margin-top: 5px;">
+                                            {{ date('d M Y', strtotime($booking->pickupDate)) }} - 
+                                            {{ date('d M Y', strtotime($booking->returnDate)) }}
+                                        </div>
+                                    </div>
+                                    
+                                    <button class="action-btn" 
+                                            onclick="showDetailsModal({{ $booking->id }})"
+                                            style="padding: 5px 10px; font-size: 12px;">
+                                        View
+                                    </button>
+                                </div>
                             </div>
-
-                            <div class="price">RM{{ number_format($booking->totalPrice ?? 0, 2) }}</div>
-
-                            <div class="dates">
-                                {{ date('d M Y', strtotime($booking->pickupDate)) }} -
-                                {{ date('d M Y', strtotime($booking->returnDate)) }}
+                        @empty
+                            <div style="text-align: center; color: #666; font-size: 14px; padding: 20px;">
+                                No completed bookings
                             </div>
-
-                            <div class="status cancelled">Cancelled</div>
-
-                            <a href="{{ route('selectVehicle', ['vehicleId' => $booking->vehicleID]) }}" 
-                               class="action-btn-link">
-                                Rebook
-                            </a>
-                        </div>
+                        @endforelse
                     </div>
-                @empty
-                    <div class="empty-state">
-                        No cancelled bookings.
-                    </div>
-                @endforelse
-            </div>
 
-            <!-- Pagination -->
-            @if($bookings->count() > 10)
-                <div class="pagination">
-                    <button class="page-btn" disabled>&lt;</button>
-                    <button class="page-btn active">1</button>
-                    <button class="page-btn">2</button>
-                    <button class="page-btn">3</button>
-                    <button class="page-btn">&gt;</button>
+                    <!-- Cancelled Bookings Column -->
+                    <div class="past-bookings-section">
+                        <h4>Cancelled</h4>
+                        @forelse($cancelled as $booking)
+                            <div class="booking-card" style="margin-bottom: 10px; padding: 15px;">
+                                <div style="display: flex; align-items: center; width: 100%;">
+                                    <img src="{{ asset('img/default-car.png') }}" 
+                                         alt="Vehicle Image" 
+                                         style="width: 80px; height: 60px; border-radius: 4px; margin-right: 15px;">
+                                    
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; font-size: 14px;">{{ $booking->model }}</div>
+                                        <div style="font-size: 12px; color: #666;">{{ $booking->vehicleType }}</div>
+                                        <div style="font-size: 12px; color: #666; margin-top: 5px;">
+                                            {{ date('d M Y', strtotime($booking->pickupDate)) }} - 
+                                            {{ date('d M Y', strtotime($booking->returnDate)) }}
+                                        </div>
+                                    </div>
+                                    
+                                    <a href="{{ route('customer.booking.form', ['vehicleId' => $booking->vehicleID]) }}" 
+                                       class="action-btn-link"
+                                       style="padding: 5px 10px; font-size: 12px;">
+                                        Rebook
+                                    </a>
+                                </div>
+                            </div>
+                        @empty
+                            <div style="text-align: center; color: #666; font-size: 14px; padding: 20px;">
+                                No cancelled bookings
+                            </div>
+                        @endforelse
+                    </div>
                 </div>
-            @endif
+            </div>
         </div>
     </div>
 
@@ -1039,8 +1054,8 @@
                 plateNumber: "{{ $booking->plateNumber ?? 'ABC1234' }}",
                 pickupDate: "{{ $booking->pickupDate }}",
                 returnDate: "{{ $booking->returnDate }}",
+                bookingStatus: "{{ $booking->bookingStatus ?? 'pending' }}",
                 totalPrice: {{ $booking->totalPrice ?? 0 }},
-                status: "{{ $booking->status ?? 'pending' }}",
                 paymentStatus: "{{ $booking->paymentStatus ?? 'paid' }}"
             },
             @endforeach
@@ -1056,9 +1071,9 @@
                 document.getElementById('detail-id').textContent = booking.id;
                 document.getElementById('detail-pickup').textContent = formatDate(booking.pickupDate);
                 document.getElementById('detail-return').textContent = formatDate(booking.returnDate);
-                document.getElementById('detail-status').textContent = booking.status.charAt(0).toUpperCase() + booking.status.slice(1);
-                document.getElementById('detail-total').textContent = 'RM' + booking.totalPrice.toFixed(2);
-                document.getElementById('detail-payment').textContent = booking.paymentStatus.charAt(0).toUpperCase() + booking.paymentStatus.slice(1);
+                document.getElementById('detail-status').textContent = formatBookingStatus(booking.bookingStatus);
+                document.getElementById('detail-total').textContent = 'RM' + (booking.totalPrice ? booking.totalPrice.toFixed(2) : '0.00');
+                document.getElementById('detail-payment').textContent = booking.paymentStatus ? booking.paymentStatus.charAt(0).toUpperCase() + booking.paymentStatus.slice(1) : 'N/A';
             }
             document.getElementById('detailsModal').classList.add('active');
         }
@@ -1071,7 +1086,7 @@
                 document.getElementById('current-booking-details').innerHTML = `
                     <strong>Vehicle:</strong> ${booking.model}<br>
                     <strong>Dates:</strong> ${formatDate(booking.pickupDate)} - ${formatDate(booking.returnDate)}<br>
-                    <strong>Total:</strong> RM${booking.totalPrice.toFixed(2)}
+                    <strong>Total:</strong> RM${booking.totalPrice ? booking.totalPrice.toFixed(2) : '0.00'}
                 `;
                 
                 // Pre-fill form fields
@@ -1091,8 +1106,8 @@
             const reason = document.getElementById('cancellationReason').value;
             
             if (confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
-                // In real app, send cancellation request to server
-                fetch(`/bookings/${bookingId}/cancel`, {
+                // Send cancellation request to server
+                fetch(`/customer/booking/${bookingId}/cancel`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1126,8 +1141,8 @@
             const pickupLocation = document.getElementById('pickupLocation').value;
             const returnLocation = document.getElementById('returnLocation').value;
             
-            // In real app, send modification request to server
-            fetch(`/bookings/${bookingId}/modify`, {
+            // Send modification request to server
+            fetch(`/customer/booking/${bookingId}/modify`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1160,8 +1175,8 @@
 
         function downloadReceipt() {
             const bookingId = document.getElementById('modifyBookingId').value;
-            // In real app, generate and download receipt
-            window.open(`/bookings/${bookingId}/receipt`, '_blank');
+            // Generate and download receipt
+            window.open(`/customer/booking/${bookingId}/receipt`, '_blank');
         }
 
         // Utility functions
@@ -1170,17 +1185,30 @@
         }
 
         function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('en-GB', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric'
-            });
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-GB', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                });
+            } catch (e) {
+                return dateString;
+            }
         }
 
         function formatDateForInput(dateString) {
-            const date = new Date(dateString);
-            return date.toISOString().split('T')[0];
+            try {
+                const date = new Date(dateString);
+                return date.toISOString().split('T')[0];
+            } catch (e) {
+                return '';
+            }
+        }
+
+        function formatBookingStatus(status) {
+            if (!status) return 'N/A';
+            return status.charAt(0).toUpperCase() + status.slice(1);
         }
 
         // Close modal when clicking outside
@@ -1210,9 +1238,5 @@
             });
         });
     </script>
-
-    {{-- Footer --}}
- 
-
 </body>
 </html>

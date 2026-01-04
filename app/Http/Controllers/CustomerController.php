@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Carbon\Carbon;
 
 class CustomerController extends Controller
 {
@@ -26,7 +27,7 @@ class CustomerController extends Controller
         $vehicles = DB::table('vehicles')
             ->where('status', 'available')
             ->select('vehicleID', 'vehicleType', 'model', 'plateNumber', 'fuelLevel', 
-                     'fuelType', 'ac', 'seat', 'status', 'pricePerDay', 'pricePerHour')
+                     'fuelType', 'ac', 'seat', 'status', 'pricePerDay', 'pricePerHour', 'vehiclePhoto', 'transmission')
             ->get();
         
         // Pass vehicles to the view
@@ -176,41 +177,69 @@ class CustomerController extends Controller
     }
     
     /**
-     * Display customer bookings.
+     * Display customer bookings - CORRECTED VERSION
      */
-public function bookings()
-{
-    if (auth()->user()->userType !== 'customer') {
-        abort(403, 'Unauthorized. Customer access only.');
+    public function bookings()
+    {
+        if (auth()->user()->userType !== 'customer') {
+            abort(403, 'Unauthorized. Customer access only.');
+        }
+        
+        $userId = Auth::user()->userID;
+        
+        // Get all bookings with vehicle details
+        $bookings = DB::table('booking')
+            ->where('customerID', $userId)
+            ->join('vehicles', 'booking.vehicleID', '=', 'vehicles.vehicleID')
+            ->select('booking.*', 'vehicles.model', 'vehicles.vehicleType', 'vehicles.plateNumber')
+            ->orderBy('booking.created_at', 'desc')
+            ->get();
+        
+        // Categorize by bookingStatus (based on your database schema)
+        // Active/Ongoing: approved status AND current date between pickup and return
+        $active = $bookings->filter(function($booking) {
+            $now = Carbon::now();
+            try {
+                $pickupDate = Carbon::parse($booking->pickupDate);
+                $returnDate = Carbon::parse($booking->returnDate);
+                
+                return $booking->bookingStatus === 'approved' && 
+                       $now->between($pickupDate, $returnDate);
+            } catch (\Exception $e) {
+                return false;
+            }
+        })->values();
+        
+        // Upcoming: confirmed or approved with future pickup date
+        $upcoming = $bookings->filter(function($booking) {
+            try {
+                $pickupDate = Carbon::parse($booking->pickupDate);
+                return ($booking->bookingStatus === 'confirmed' || $booking->bookingStatus === 'approved') && 
+                       $pickupDate->isFuture();
+            } catch (\Exception $e) {
+                return false;
+            }
+        })->values();
+        
+        // Completed: completed status
+        $completed = $bookings->filter(function($booking) {
+            return $booking->bookingStatus === 'completed';
+        })->values();
+        
+        // Pending: pending status
+        $pending = $bookings->filter(function($booking) {
+            return $booking->bookingStatus === 'pending';
+        })->values();
+        
+        // Cancelled: cancelled status
+        $cancelled = $bookings->filter(function($booking) {
+            return $booking->bookingStatus === 'cancelled';
+        })->values();
+        
+        return view('bookingHistory', compact(
+            'bookings', 'active', 'upcoming', 'completed', 'pending', 'cancelled'
+        ));
     }
-    
-    $userId = Auth::user()->userID;
-    
-    // Get all bookings
-    $bookings = DB::table('booking')
-        ->where('customerID', $userId)
-        ->join('vehicles', 'booking.vehicleID', '=', 'vehicles.vehicleID')
-        ->select('booking.*', 'vehicles.model', 'vehicles.vehicleType', 'vehicles.plateNumber')
-        ->orderBy('booking.created_at', 'desc')
-        ->get();
-    
-    // Create status-based variables
-    $upcoming = $bookings->filter(function($booking) {
-        // Define what "upcoming" means - perhaps bookings with future dates
-        // or bookings with status 'confirmed' but not yet started
-        return $booking->status == 'confirmed' && 
-               strtotime($booking->pickupDate) > time();
-    });
-    
-    $completed = $bookings->where('status', 'completed');
-    $pending = $bookings->where('status', 'pending');
-    $cancelled = $bookings->where('status', 'cancelled');
-    $active = $bookings->where('status', 'active'); // Currently rented
-    
-    return view('bookingHistory', compact(
-        'bookings', 'upcoming', 'completed', 'pending', 'cancelled', 'active'
-    ));
-}
     
     /**
      * Show booking form for a specific vehicle.
@@ -276,7 +305,7 @@ public function bookings()
 
         // 6. Calculate outstanding payments from bookings table
         foreach ($customers as $customer) {
-            $customer->outstanding_payment = DB::table('bookings')
+            $customer->outstanding_payment = DB::table('booking')
                 ->where('customerID', $customer->userID)
                 ->where('paymentStatus', 'unpaid')
                 ->sum('totalPrice');
@@ -300,5 +329,30 @@ public function bookings()
 
         $message = $request->isBlacklisted ? 'Customer blacklisted.' : 'Customer activated.';
         return back()->with('success', $message);
+    }
+    
+    /**
+     * Get booking details for modal (optional)
+     */
+    public function getBookingDetails($id)
+    {
+        if (auth()->user()->userType !== 'customer') {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+        
+        $userId = Auth::user()->userID;
+        
+        $booking = DB::table('booking')
+            ->where('id', $id)
+            ->where('customerID', $userId)
+            ->join('vehicles', 'booking.vehicleID', '=', 'vehicles.vehicleID')
+            ->select('booking.*', 'vehicles.model', 'vehicles.vehicleType', 'vehicles.plateNumber')
+            ->first();
+        
+        if (!$booking) {
+            return response()->json(['error' => 'Booking not found'], 404);
+        }
+        
+        return response()->json($booking);
     }
 }

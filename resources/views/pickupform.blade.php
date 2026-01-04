@@ -45,9 +45,11 @@
         @csrf
         <input type="hidden" name="pickupID" value="{{ $pickup->pickupID }}">
         <input type="hidden" name="bookingID" value="{{ $booking->bookingID }}">
-            <!--<div class="no-pay">
+        @if($onlyDepositPaid)
+            <div class="no-pay">
                 <p>Before confirming Pick Up details, Please pay.</p>
-            </div>-->
+            </div>
+        @endif
             <p id="form_name">Pick Up Details</p>
             <p class="main_txt">Upload Photos</p>
             <p class="sub_txt">Upload photos of the car before pick up</p>
@@ -74,11 +76,15 @@
 
                 <label class="checkbox">
                      <input type="checkbox" name="agreementForm" value="yes" required> 
-                    <span>I have read and accepted the Terms and Conditions</span>
+                    <span>I have read and accepted the 
+                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#termsModal" style="color: #CB3737; text-decoration: underline; cursor: pointer;">
+                            Terms and Conditions
+                        </a>
+                        </span>
                 </label>
 
                 <div id="btn_div"> 
-                    <button class="btn-primary">Save</button>
+                    <button class="btn-primary" {{ $onlyDepositPaid ? 'disabled style=opacity:0.5;cursor:not-allowed;' : '' }}>Save</button>
                 </div>
             </form>
         </div>
@@ -110,5 +116,24 @@ document.addEventListener('DOMContentLoaded', function () {
     @endif
 });
 </script>
+
+<div class="modal fade" id="termsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center p-4" style="border-radius: 20px;">
+            <div class="modal-body">
+                <h3 class="fw-bold mb-3">Terms and Conditions</h3>
+                <p style="text-align: left; margin: 20px 0; line-height: 1.5; color: #333;">
+                    By proceeding with this {{ Request::is('*pickup*') ? 'pick up' : 'return' }}, you agree to the following terms:<br><br>
+                    • Vehicle must be returned in the same condition as received.<br>
+                    • Full liability applies for damages or late return.<br>
+                    • HASTA Travel reserves the right to cancel bookings for suspicious activity.
+                </p>
+                <button type="button" class="btn-primary" data-bs-dismiss="modal" style="width: 100%; border-radius: 12px; height: 45px;">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

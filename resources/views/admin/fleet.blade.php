@@ -6,6 +6,7 @@
     <title>Hasta - Fleet Management</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="{{ asset('css/header.css') }}" rel="stylesheet">
     <style>
         body { font-family: 'Poppins', sans-serif; background-color: #f8f9fa; }
@@ -96,46 +97,41 @@
         <div class="header-flex">
             <h2>Vehicles Management</h2>
             <a href="{{ route('admin.vehicles.create') }}" class="btn btn-success" style="border-radius: 20px; background-color: #1a8f36;">
-                + Add New Vehicle
+                + Add New 
             </a>
         </div>
 
         <div class="tab-menu">
             <a href="?status=available" class="tab-link {{ $status == 'available' ? 'active' : '' }}">
                 Active 
-                <span class="count-badge available-count">{{ $availableCount }}</span>
             </a>
             <a href="?status=rented" class="tab-link {{ $status == 'rented' ? 'active' : '' }}">
                 On Rent 
-                <span class="count-badge rented-count">{{ $onRentCount }}</span>
             </a>
             <a href="?status=maintenance" class="tab-link {{ $status == 'maintenance' ? 'active' : '' }}">
                 Inactive 
-                <span class="count-badge maintenance-count">{{ $maintenanceCount }}</span>
             </a>
             
             <div class="stats-counter">
-                Showing <b>{{ $vehicles->count() }}</b> of <b>{{ $totalCount }}</b> vehicles
+                Total <b>{{ $totalCount }}</b>
             </div>
         </div>
 
         @if($vehicles->count() > 0)
             @foreach($vehicles as $vehicle)
                 <div class="vehicle-card">
-                    <img src="{{ asset('img/vehicles/' . $vehicle->vehicleID . '.png') }}" class="vehicle-img" alt="Car" 
-                         onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.png') }}'">
-                    
+                    @if($vehicle->vehiclePhoto)
+                            <img src="{{ Storage::url($vehicle->vehiclePhoto) }}" class="vehicle-img" alt="Car">
+                        @else
+                            <img src="{{ asset('img/vehicles/' . $vehicle->vehicleID . '.png') }}" class="vehicle-img" alt="Car" 
+                                onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.png') }}'">
+                        @endif
                     <div class="vehicle-info">
                         <h4 class="mb-1">{{ $vehicle->model }}</h4>
                         <p class="text-muted mb-1">
                             {{ $vehicle->vehicleType }} • 
-                            {{ $vehicle->plateNumber }} • 
-                            RM{{ number_format($vehicle->pricePerDay, 2) }}/day
+                            {{ $vehicle->plateNumber }} 
                         </p>
-                        <small class="text-muted">
-                            {{ $vehicle->seat }} seats • {{ $vehicle->transmission }} • 
-                            {{ $vehicle->ac ? 'AC' : 'No AC' }} • {{ $vehicle->fuelType }}
-                        </small>
                     </div>
 
                     <div>
@@ -147,7 +143,7 @@
                     <div class="ms-5 d-flex">
                         {{-- 📝 EDIT BUTTON --}}
                         <button type="button" class="action-btn" data-bs-toggle="modal" data-bs-target="#editModal{{ $vehicle->vehicleID }}">
-                            📝 Edit
+                            <i class="fas fa-edit"></i>
                         </button>
 
                         {{-- 🗑️ DELETE FORM --}}
@@ -155,82 +151,98 @@
                               onsubmit="return confirm('Are you sure you want to delete {{ $vehicle->model }} ({{ $vehicle->plateNumber }})?')">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="action-btn delete">🗑️ Delete</button>
+                            <button type="submit" class="action-btn delete"><i class="fas fa-trash-alt"></i></button>
                         </form>
                     </div>
                 </div>
 
                 {{-- EDIT MODAL --}}
-                <div class="modal fade" id="editModal{{ $vehicle->vehicleID }}" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <form action="{{ route('admin.vehicles.update', $vehicle->vehicleID) }}" method="POST" class="modal-content">
-                            @csrf
-                            @method('PUT')
-                            <div class="modal-header">
-                                <h5 class="modal-title">Edit Vehicle: {{ $vehicle->model }}</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                {{-- EDIT MODAL --}}
+<div class="modal fade" id="editModal{{ $vehicle->vehicleID }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form action="{{ route('admin.vehicles.update', $vehicle->vehicleID) }}" method="POST" class="modal-content" enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Vehicle: {{ $vehicle->model }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label">Vehicle Photo</label>
+                        <input type="file" name="vehiclePhoto" class="form-control" accept="image/*">
+                        @if($vehicle->vehiclePhoto)
+                            <div class="mt-2">
+                                <small>Current photo:</small><br>
+                                <img src="{{ Storage::url($vehicle->vehiclePhoto) }}" alt="Current photo" style="max-width: 200px; max-height: 150px; border-radius: 5px;">
                             </div>
-                            <div class="modal-body">
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">Model Name</label>
-                                        <input type="text" name="model" class="form-control" value="{{ $vehicle->model }}" required>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">Plate Number</label>
-                                        <input type="text" name="plateNumber" class="form-control" value="{{ $vehicle->plateNumber }}" required>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">Vehicle Type</label>
-                                        <input type="text" name="vehicleType" class="form-control" value="{{ $vehicle->vehicleType }}" required>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">Daily Price (RM)</label>
-                                        <input type="number" step="0.01" name="pricePerDay" class="form-control" value="{{ $vehicle->pricePerDay }}" required>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">Seats</label>
-                                        <input type="number" name="seat" class="form-control" value="{{ $vehicle->seat }}" required>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">Transmission</label>
-                                        <select name="transmission" class="form-select">
-                                            <option value="Manual" {{ $vehicle->transmission == 'Manual' ? 'selected' : '' }}>Manual</option>
-                                            <option value="Automatic" {{ $vehicle->transmission == 'Automatic' ? 'selected' : '' }}>Automatic</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">AC</label>
-                                        <select name="ac" class="form-select">
-                                            <option value="1" {{ $vehicle->ac == 1 ? 'selected' : '' }}>Yes</option>
-                                            <option value="0" {{ $vehicle->ac == 0 ? 'selected' : '' }}>No</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">Fuel Type</label>
-                                        <input type="text" name="fuelType" class="form-control" value="{{ $vehicle->fuelType }}">
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">Fuel Level (%)</label>
-                                        <input type="number" min="0" max="100" name="fuelLevel" class="form-control" value="{{ $vehicle->fuelLevel }}">
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">Status</label>
-                                        <select name="status" class="form-select">
-                                            <option value="available" {{ $vehicle->status == 'available' ? 'selected' : '' }}>Available</option>
-                                            <option value="rented" {{ $vehicle->status == 'rented' ? 'selected' : '' }}>Rented</option>
-                                            <option value="maintenance" {{ $vehicle->status == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
-                                        </select>
-                                    </div>
-                                </div>
+                        @else
+                            <div class="mt-2">
+                                <small>No photo uploaded</small>
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                <button type="submit" class="btn btn-primary" style="background-color: #bc3737; border:none;">Save Changes</button>
-                            </div>
-                        </form>
+                        @endif
+                        <small class="text-muted">Leave empty to keep current photo</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Model Name</label>
+                        <input type="text" name="model" class="form-control" value="{{ $vehicle->model }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Plate Number</label>
+                        <input type="text" name="plateNumber" class="form-control" value="{{ $vehicle->plateNumber }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Vehicle Type</label>
+                        <input type="text" name="vehicleType" class="form-control" value="{{ $vehicle->vehicleType }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Daily Price (RM)</label>
+                        <input type="number" step="0.01" name="pricePerDay" class="form-control" value="{{ $vehicle->pricePerDay }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Seats</label>
+                        <input type="number" name="seat" class="form-control" value="{{ $vehicle->seat }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Transmission</label>
+                        <select name="transmission" class="form-select">
+                            <option value="Manual" {{ $vehicle->transmission == 'Manual' ? 'selected' : '' }}>Manual</option>
+                            <option value="Automatic" {{ $vehicle->transmission == 'Automatic' ? 'selected' : '' }}>Automatic</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">AC</label>
+                        <select name="ac" class="form-select">
+                            <option value="1" {{ $vehicle->ac == 1 ? 'selected' : '' }}>Yes</option>
+                            <option value="0" {{ $vehicle->ac == 0 ? 'selected' : '' }}>No</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Fuel Type</label>
+                        <input type="text" name="fuelType" class="form-control" value="{{ $vehicle->fuelType }}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Fuel Level (%)</label>
+                        <input type="number" min="0" max="100" name="fuelLevel" class="form-control" value="{{ $vehicle->fuelLevel }}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="available" {{ $vehicle->status == 'available' ? 'selected' : '' }}>Available</option>
+                            <option value="rented" {{ $vehicle->status == 'rented' ? 'selected' : '' }}>Rented</option>
+                            <option value="maintenance" {{ $vehicle->status == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
+                        </select>
                     </div>
                 </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="background-color: #bc3737; border:none;">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
             @endforeach
         @else
             <div class="text-center py-5">

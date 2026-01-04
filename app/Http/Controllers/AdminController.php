@@ -16,34 +16,47 @@ class AdminController extends Controller
 {
     // Dashboard
     public function index()
-    {
-        if (auth()->user()->userType !== 'admin') {
-            abort(403, 'Unauthorized. Admin access only.');
-        }
-
-        // Existing Stats
-        $totalVehicles = DB::table('vehicles')->count();
-        $availableCount = DB::table('vehicles')->where('status', 'available')->count();
-        $onRentCount = DB::table('vehicles')->where('status', 'rented')->count();
-        $maintenanceCount = DB::table('vehicles')->where('status', 'maintenance')->count();
-
-        // NEW: Get usage data for the Pie Chart (Top 5 most used models currently on rent)
-        $usageData = DB::table('vehicles')
-            ->select('model', DB::raw('count(*) as count'))
-            ->where('status', 'rented')
-            ->groupBy('model')
-            ->orderBy('count', 'desc')
-            ->take(5)
-            ->get();
-
-        return view('admin.dashboard', compact(
-            'totalVehicles', 
-            'availableCount', 
-            'onRentCount', 
-            'maintenanceCount',
-            'usageData'
-        ));
+{
+    if (auth()->user()->userType !== 'admin') {
+        abort(403, 'Unauthorized. Admin access only.');
     }
+
+    // 1. Existing Stats
+    $totalVehicles = DB::table('vehicles')->count();
+    $availableCount = DB::table('vehicles')->where('status', 'available')->count();
+    $onRentCount = DB::table('vehicles')->where('status', 'rented')->count();
+    $maintenanceCount = DB::table('vehicles')->where('status', 'maintenance')->count();
+
+    // 2. Pie Chart Data
+    $usageData = DB::table('vehicles')
+        ->select('model', DB::raw('count(*) as count'))
+        ->where('status', 'rented')
+        ->groupBy('model')
+        ->orderBy('count', 'desc')
+        ->take(5)
+        ->get();
+
+    // 3. NEW: Fetch Feedback with Customer Names
+    // Assuming 'return' table has 'userID' to link to 'users' table
+    $feedback = DB::table('return as r')
+    ->join('booking as b', 'r.bookingID', '=', 'b.bookingID')
+    ->join('users as u', 'b.customerID', '=', 'u.userID') // Assuming customerID is the foreign key in booking table
+    ->select('u.name', 'r.feedback', 'r.returnDate', 'r.returnID')
+    ->whereNotNull('r.feedback')
+    ->where('r.feedback', '!=', '')  // Fixed: Added empty string value
+    ->orderBy('r.returnDate', 'desc')
+    ->limit(10)
+    ->get();
+
+    return view('admin.dashboard', compact(
+        'totalVehicles', 
+        'availableCount', 
+        'onRentCount', 
+        'maintenanceCount',
+        'usageData',
+        'feedback'
+    ));
+}
 
     // Fleet Management
     public function fleet(Request $request)
@@ -77,62 +90,98 @@ class AdminController extends Controller
     }
 
     // Store new vehicle
-    public function storeVehicle(Request $request)
-    {
-        if (auth()->user()->userType !== 'admin') {
-            abort(403, 'Unauthorized. Admin access only.');
-        }
-        
-        $validated = $request->validate([
-            'model' => 'required|string|max:255',
-            'vehicleType' => 'required',
-            'plateNumber' => 'required|unique:vehicles',
-            'pricePerDay' => 'required|numeric',
-            'seat' => 'required|integer',
-            'transmission' => 'required|in:Manual,Automatic',
-            'ac' => 'required|in:1,0',
-            'fuelType' => 'nullable|string|max:50',
-            'fuelLevel' => 'nullable|integer|min:0|max:100',
-        ]);
-
-        Vehicles::create($validated + [
-            'status' => 'available',
-            'fuelType' => $request->fuelType ?? 'Petrol',
-            'fuelLevel' => $request->fuelLevel ?? 100,
-            'pricePerHour' => $request->pricePerDay / 10,
-            'ac' => $request->ac == '1' ? 1 : 0,
-        ]);
-
-        return redirect()->route('admin.fleet')->with('success', 'Vehicle added to fleet successfully!');
+   public function storeVehicle(Request $request)
+{
+    if (auth()->user()->userType !== 'admin') {
+        abort(403, 'Unauthorized. Admin access only.');
     }
+    
+    $validated = $request->validate([
+        'model' => 'required|string|max:255',
+        'vehicleType' => 'required',
+        'plateNumber' => 'required|unique:vehicles',
+        'pricePerDay' => 'required|numeric',
+        'seat' => 'required|integer',
+        'transmission' => 'required|in:Manual,Automatic',
+        'ac' => 'required|in:1,0',
+        'fuelType' => 'nullable|string|max:50',
+        'fuelLevel' => 'nullable|integer|min:0|max:100',
+        'vehiclePhoto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+    ]);
+
+    $data = [
+        'model' => $validated['model'],
+        'vehicleType' => $validated['vehicleType'],
+        'plateNumber' => $validated['plateNumber'],
+        'pricePerDay' => $validated['pricePerDay'],
+        'seat' => $validated['seat'],
+        'transmission' => $validated['transmission'],
+        'ac' => $validated['ac'] == '1' ? 1 : 0,
+        'fuelType' => $request->fuelType ?? 'Petrol',
+        'fuelLevel' => $request->fuelLevel ?? 100,
+        'pricePerHour' => $validated['pricePerDay'] / 10,
+        'status' => 'available',
+    ];
+
+    // Handle photo upload
+    if ($request->hasFile('vehiclePhoto')) {
+        $photo = $request->file('vehiclePhoto');
+        $filename = time() . '_' . $photo->getClientOriginalName();
+        $path = $photo->storeAs('vehicle_photos', $filename, 'public');
+        $data['vehiclePhoto'] = $path;
+    }
+
+    Vehicles::create($data);
+
+    return redirect()->route('admin.fleet')->with('success', 'Vehicle added to fleet successfully!');
+}
 
     // Update vehicle
     public function updateVehicle(Request $request, $vehicleID)
-    {
-        if (auth()->user()->userType !== 'admin') {
-            abort(403, 'Unauthorized. Admin access only.');
-        }
-        
-        $vehicle = Vehicles::findOrFail($vehicleID);
-        
-        $validated = $request->validate([
-            'model' => 'required|string',
-            'plateNumber' => 'required|unique:vehicles,plateNumber,' . $vehicleID . ',vehicleID',
-            'status' => 'required',
-            'pricePerDay' => 'required|numeric',
-            'transmission' => 'nullable|in:Manual,Automatic',
-            'ac' => 'nullable|in:1,0',
-            'fuelType' => 'nullable|string|max:50',
-            'fuelLevel' => 'nullable|integer|min:0|max:100',
-        ]);
-
-        if ($request->has('ac')) {
-            $validated['ac'] = $request->ac == '1' ? 1 : 0;
-        }
-
-        $vehicle->update($validated);
-        return redirect()->back()->with('success', 'Vehicle updated successfully!');
+{
+    if (auth()->user()->userType !== 'admin') {
+        abort(403, 'Unauthorized. Admin access only.');
     }
+    
+    $vehicle = Vehicles::findOrFail($vehicleID);
+    
+    $validated = $request->validate([
+        'model' => 'required|string',
+        'plateNumber' => 'required|unique:vehicles,plateNumber,' . $vehicleID . ',vehicleID',
+        'status' => 'required',
+        'pricePerDay' => 'required|numeric',
+        'transmission' => 'nullable|in:Manual,Automatic',
+        'ac' => 'nullable|in:1,0',
+        'fuelType' => 'nullable|string|max:50',
+        'fuelLevel' => 'nullable|integer|min:0|max:100',
+        'seat' => 'required|integer',
+        'vehicleType' => 'required|string',
+        'vehiclePhoto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // File validation
+    ]);
+
+    // Handle file upload
+    if ($request->hasFile('vehiclePhoto')) {
+        // Delete old photo if exists
+        if ($vehicle->vehiclePhoto) {
+            Storage::delete($vehicle->vehiclePhoto);
+        }
+        
+        // Store new photo
+        $path = $request->file('vehiclePhoto')->store('vehicle-photos', 'public');
+        $validated['vehiclePhoto'] = $path;
+    } else {
+        // Keep existing photo
+        $validated['vehiclePhoto'] = $vehicle->vehiclePhoto;
+    }
+
+    // Convert AC value to integer if provided
+    if ($request->has('ac')) {
+        $validated['ac'] = $request->ac == '1' ? 1 : 0;
+    }
+
+    $vehicle->update($validated);
+    return redirect()->back()->with('success', 'Vehicle updated successfully!');
+}
 
     // Delete vehicle
     public function destroyVehicle($vehicleID)

@@ -107,10 +107,23 @@
 
 
 <div id="body">
-    < <div class="car-grid">
+    <div class="car-grid"> <!-- Removed the extra < character -->
+        @php
+            // Ensure $vehicles is always defined
+            $vehicles = $vehicles ?? collect();
+        @endphp
+        
         @forelse($vehicles as $vehicle)
-            <div class="car-card">
-                <img src="{{ asset('img/vehicles/'.$vehicle->vehicleID.'.jpg') }}" alt="{{ $vehicle->model }}">
+            <div class="car-card"> <!-- ADD THIS OPENING DIV -->
+                @if($vehicle->vehiclePhoto)
+                    <img src="{{ Storage::url($vehicle->vehiclePhoto) }}" 
+                         alt="{{ $vehicle->model }}"
+                         onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.jpg') }}'">
+                @else
+                    <img src="{{ asset('img/vehicles/'.$vehicle->vehicleID.'.png') }}" 
+                         alt="{{ $vehicle->model }}"
+                         onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.jpg') }}'">
+                @endif   
                 
                 <h4>{{ $vehicle->model }}</h4>
                 
@@ -118,23 +131,29 @@
                     <h3 style="color: #bc3737; margin: 5px 0;">RM{{ number_format($vehicle->pricePerDay, 2) }}/day</h3>
                 </div>
                 
-                <div class="specs">
-                    <span title="Type"> Type: {{ $vehicle->vehicleType }}</span>
-                    <span title="Fuel">Fuel Level: {{ $vehicle->fuelLevel }}%</span>
-                    <span title="Seats">Seats: {{ $vehicle->seat }}</span>
+                <div class="specs-grid">
+                    <div class="spec-item" title="Seats">
+                        <i class="fas fa-users"></i>
+                        <span>{{ $vehicle->seat }}</span>
+                    </div>
+                    <div class="spec-item" title="Fuel Level">
+                        <i class="fas fa-gas-pump"></i>
+                        <span>{{ $vehicle->fuelType }}</span>
+                    </div>
+                    <div class="spec-item" title="Transmission">
+                        <i class="fas fa-cog"></i>
+                        <span>{{ str_contains(strtolower($vehicle->transmission), 'auto') ? 'Auto' : 'Manual' }}</span>
+                    </div>
+                    <div class="spec-item" title="AC">
+                        <i class="fas fa-snowflake"></i>
+                        <span>{{ $vehicle->ac ? 'Yes' : 'No' }}</span>
+                    </div>
                 </div>
-                
-                <div class="specs" style="margin-top: 5px;">
-                    <span title="Plate Number"> Plate Number: {{ $vehicle->plateNumber }}</span>
-                    <span title="AC">{{ $vehicle->ac ? ' AC' : ' No AC' }}</span>
-                </div>
-
                
-                    <a href="{{ route('selectVehicle', $vehicle->vehicleID) }}" class="btn">
-                        View Details & Book
-                    </a>
-                
-            </div>
+                <a href="{{ route('selectVehicle', $vehicle->vehicleID) }}" class="btn">
+                    View Details & Book
+                </a>
+            </div> <!-- ADD THIS CLOSING DIV -->
         @empty
             <div style="grid-column: 1 / -1; text-align: center; padding: 60px;">
                 <h3>No vehicles found</h3>
@@ -142,7 +161,6 @@
             </div>
         @endforelse
     </div>
-
 </div>
 
 </div>

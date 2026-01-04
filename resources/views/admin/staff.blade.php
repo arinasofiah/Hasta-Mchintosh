@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="{{ asset('css/header.css') }}" rel="stylesheet">
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         body { font-family: 'Poppins', sans-serif; background-color: #f8f9fa; }
         
@@ -196,24 +196,31 @@
                 <div class="staff-info">
                     <h4 class="mb-2">{{ $staff->name }}</h4>
                     <div class="text-muted small mt-3">
-                        <p class="mb-1">📧 {{ $staff->email }}</p>
-                        <p class="mb-0">📞 Phone: {{ $staff->phoneNumber ?? 'N/A' }}</p>
+                        <p class="mb-1">Email: {{ $staff->email }}</p>
+                        <p class="mb-0">Phone: {{ $staff->phoneNumber ?? 'N/A' }}</p>
                     </div>
                 </div>
 
-                <div class="d-flex">
-                    {{-- 👁️ VIEW PROFILE BUTTON --}}
-                    <button type="button" class="action-btn" data-bs-toggle="modal" data-bs-target="#profileModal{{ $staff->userID }}">👁️</button>
-                    
-                    {{-- 📝 EDIT BUTTON --}}
-                    <button type="button" class="action-btn" data-bs-toggle="modal" data-bs-target="#editModal{{ $staff->userID }}">📝</button>
+                <div class="d-flex gap-2">
+                        {{-- 👤 VIEW PROFILE BUTTON --}}
+                        <button type="button" class="action-btn view" data-bs-toggle="modal" data-bs-target="#profileModal{{ $staff->userID }}" title="View Profile">
+                            <i class="fas fa-user"></i>
+                        </button>
+                        
+                        {{-- 📝 EDIT BUTTON --}}
+                        <button type="button" class="action-btn edit" data-bs-toggle="modal" data-bs-target="#editModal{{ $staff->userID }}" title="Edit Staff">
+                            <i class="fas fa-edit"></i>
+                        </button>
 
-                    {{-- 🗑️ DELETE FORM --}}
-                    <form action="{{ route('admin.staff.destroy', $staff->userID) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this staff?')">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="action-btn delete">🗑️</button>
-                    </form>
+                        {{-- 🗑️ DELETE FORM --}}
+                        <form action="{{ route('admin.staff.destroy', $staff->userID) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this staff?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="action-btn delete" title="Delete Staff">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
 
