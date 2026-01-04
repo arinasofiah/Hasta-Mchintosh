@@ -62,7 +62,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#">
+                    <a href="{{ route('customer.loyaltycard') }}">
                         Loyalty Card
                     </a>
                 </li>

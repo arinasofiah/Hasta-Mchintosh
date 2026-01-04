@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Bookings;
 use App\Models\Vehicles;
+use App\Models\LoyaltyCard; 
+use App\Models\Promotion;
 
 class StaffController extends Controller
 {
@@ -114,5 +116,43 @@ class StaffController extends Controller
         }
 
         return back()->with('success', 'Redemption request sent to Admin!');
+    }
+
+    public function approvePayment($id)
+    {
+        $booking = Bookings::with(['customer', 'payment'])->findOrFail($id);
+
+        if ($booking->payment) {
+            $booking->payment->update(['paymentStatus' => 'completed']);
+        }
+        
+        $booking->update(['bookingStatus' => 'approved']);
+        $user = $booking->customer; 
+        
+        $customerProfile = \DB::table('customer')->where('userID', $user->userID)->first();
+
+        if ($customerProfile && $booking->bookingDuration > 9) {
+            
+            $matric = $customerProfile->matricNumber;
+
+            $card = LoyaltyCard::firstOrCreate(
+                ['matricNumber' => $matric],
+                ['stampCount' => 0]
+            );
+            $card->increment('stampCount');
+            if ($card->stampCount % 5 === 0) {
+                $reward = Promotion::where('discountType', 'fixed')->first();
+
+                if ($reward) {
+                    $card->promotions()->attach($reward->promoID, [
+                        'is_used' => false,
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+                }
+            }
+        }
+
+        return back()->with('success', 'Payment verified, Booking approved & Loyalty Stamp added!');
     }
 }
