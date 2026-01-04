@@ -15,12 +15,11 @@ class PromotionController extends Controller
     {
         $promotions = Promotion::all();
         $vehicleModels = Vehicles::select('model')->distinct()->get();
-
         $vouchers = Voucher::where('isUsed', 0)->orderBy('created_at', 'desc')->get();
 
         $staffMembers = User::where('userType', 'staff')
                             ->join('staff', 'users.userID', '=', 'staff.userID')
-                            ->select('users.name', 'users.email', 'staff.*') 
+                            ->select('users.name', 'users.email', 'staff.*')
                             ->get();
 
         return view('admin.promotions', compact('promotions', 'vehicleModels', 'vouchers', 'staffMembers'));
@@ -58,21 +57,20 @@ class PromotionController extends Controller
     public function storeVoucher(Request $request)
     {
         $request->validate([
+            'voucherType' => 'required|in:cash_reward,free_hour',
             'value' => 'required|numeric',
             'expiryDate' => 'required|date',
         ]);
 
         $voucher = new Voucher();
-        
-        $voucher->voucherType = 'cash_reward'; 
+        $voucher->voucherType = $request->voucherType; 
         $voucher->value = $request->value;
-        
         $voucher->expiryTime = strtotime($request->expiryDate); 
-        
-        $voucher->isUsed = 0; // 0 = false
+        $voucher->isUsed = 0;
         $voucher->save();
 
-        return back()->with('success', 'Voucher created! System ID: ' . $voucher->voucherCode);
+        $typeMsg = $request->voucherType == 'free_hour' ? 'Free Hours' : 'Cash Reward';
+        return back()->with('success', "Voucher ($typeMsg) created!");
     }
 
     public function destroyVoucher($id)
@@ -82,12 +80,21 @@ class PromotionController extends Controller
         return back()->with('success', 'Voucher deleted!');
     }
 
+
     public function resetCommission($staffUserID)
     {
+        DB::table('staff')->where('userID', $staffUserID)->update(['commissionCount' => 0]);
+        return back()->with('success', 'Commission marked as paid! Count reset to 0.');
+    }
+
+    public function updateCommission(Request $request, $staffUserID)
+    {
+        $request->validate(['commissionCount' => 'required|integer|min:0']);
+
         DB::table('staff')
             ->where('userID', $staffUserID)
-            ->update(['commissionCount' => 0]);
+            ->update(['commissionCount' => $request->commissionCount]);
 
-        return back()->with('success', 'Commission marked as paid! Count reset to 0.');
+        return back()->with('success', 'Commission count updated successfully!');
     }
 }

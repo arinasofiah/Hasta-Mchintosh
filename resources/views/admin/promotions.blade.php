@@ -6,6 +6,7 @@
     <title>Hasta - Campaign Manager</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link href="{{ asset('css/header.css') }}" rel="stylesheet">
     
     <style>
@@ -15,7 +16,6 @@
         .nav-item.active { background-color: #fff5f5; color: #bc3737; font-weight: 600; border-right: 4px solid #bc3737; }
         .main-content { margin-left: 250px; padding: 40px; }
 
-        /* Tabs & Cards */
         .nav-tabs { border-bottom: 2px solid #eee; margin-bottom: 30px; }
         .nav-tabs .nav-link { border: none; color: #999; font-weight: 500; padding: 15px 25px; font-size: 1.1rem; }
         .nav-tabs .nav-link.active { color: #bc3737; border-bottom: 3px solid #bc3737; background: transparent; }
@@ -29,10 +29,13 @@
         .badge-custom { padding: 5px 12px; border-radius: 15px; font-size: 0.8rem; font-weight: 500; }
         .badge-promo { background-color: #e3f2fd; color: #1565c0; }
         .badge-voucher { background-color: #fff3e0; color: #ef6c00; }
+        .badge-hour { background-color: #e8f5e9; color: #2e7d32; }
 
         .add-btn { background-color: #bc3737; color: white; border: none; padding: 10px 25px; border-radius: 30px; font-weight: 600; }
         .action-btn { border: none; background: #f1f1f1; color: #333; padding: 8px 20px; border-radius: 20px; font-size: 0.9rem; }
-        .btn-pay { background-color: #d4edda; color: #155724; }
+        
+        .btn-edit { background-color: #fff3cd; color: #856404; border:none; padding: 5px 15px; border-radius: 10px; margin-right: 5px;}
+        .btn-pay { background-color: #d4edda; color: #155724; border:none; padding: 5px 15px; border-radius: 10px;}
         
         .table-custom th { font-weight: 500; color: #666; border-bottom: 2px solid #eee; padding-bottom: 15px; }
         .table-custom td { padding: 20px 0; vertical-align: middle; border-bottom: 1px solid #f5f5f5; }
@@ -71,7 +74,6 @@
     </div>
 
     <div class="main-content">
-        
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 {{ session('success') }}
@@ -82,15 +84,9 @@
         <h3 class="fw-bold mb-4">Campaign Manager</h3>
 
         <ul class="nav nav-tabs" id="campaignTabs" role="tablist">
-            <li class="nav-item">
-                <button class="nav-link active" id="promo-tab" data-bs-toggle="tab" data-bs-target="#promo-pane">Promotions</button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link" id="voucher-tab" data-bs-toggle="tab" data-bs-target="#voucher-pane">Vouchers</button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link" id="commission-tab" data-bs-toggle="tab" data-bs-target="#commission-pane">Commissions</button>
-            </li>
+            <li class="nav-item"><button class="nav-link active" id="promo-tab" data-bs-toggle="tab" data-bs-target="#promo-pane">Promotions</button></li>
+            <li class="nav-item"><button class="nav-link" id="voucher-tab" data-bs-toggle="tab" data-bs-target="#voucher-pane">Vouchers</button></li>
+            <li class="nav-item"><button class="nav-link" id="commission-tab" data-bs-toggle="tab" data-bs-target="#commission-pane">Commissions</button></li>
         </ul>
 
         <div class="tab-content">
@@ -126,12 +122,16 @@
                     <div class="item-card">
                         <div>
                             <div class="fw-bold fs-5">
-                                Voucher RM{{ number_format($v->value, 0) }}
-                                <span class="badge badge-custom badge-voucher">ID: {{ $v->voucherCode }}</span>
+                                @if($v->voucherType == 'free_hour')
+                                    {{ intval($v->value) }} Hours Free
+                                    <span class="badge badge-custom badge-hour">Free Hour</span>
+                                @else
+                                    RM {{ number_format($v->value, 0) }}
+                                    <span class="badge badge-custom badge-voucher">Cash Reward</span>
+                                @endif
+                                <span class="text-muted small ms-2">#{{ $v->voucherCode }}</span>
                             </div>
-                            <div class="text-muted small">
-                                Expires: {{ date('d M Y', $v->expiryTime) }}
-                            </div>
+                            <div class="text-muted small">Expires: {{ date('d M Y', $v->expiryTime) }}</div>
                         </div>
                         <form action="{{ route('admin.vouchers.destroy', $v->voucherCode) }}" method="POST" onsubmit="return confirm('Delete?')">
                             @csrf @method('DELETE')
@@ -173,15 +173,39 @@
                                         <h4 class="mb-0 text-success fw-bold">{{ $s->commissionCount }}</h4>
                                     </td>
                                     <td class="text-end">
+                                        <button class="btn-edit" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editCommissionModal{{ $s->userID }}">
+                                            <i class="bi bi-pencil-fill"></i> Edit
+                                        </button>
+
                                         @if($s->commissionCount > 0)
-                                            <form action="{{ route('admin.commission.reset', $s->userID) }}" method="POST" onsubmit="return confirm('Confirm payment? Commission count will reset to 0.')">
+                                            <form action="{{ route('admin.commission.reset', $s->userID) }}" method="POST" style="display:inline;" onsubmit="return confirm('Reset to 0?')">
                                                 @csrf
-                                                <button class="action-btn btn-pay">Mark Paid</button>
+                                                <button class="btn-pay"><i class="bi bi-check-lg"></i> Pay</button>
                                             </form>
                                         @else
-                                            <button class="action-btn" disabled style="opacity:0.5;">No Due</button>
+                                            <button class="btn-pay" disabled style="opacity:0.5;">Paid</button>
                                         @endif
-                                    </td>
+
+                                        <div class="modal fade" id="editCommissionModal{{ $s->userID }}" tabindex="-1">
+                                            <div class="modal-dialog modal-sm" style="text-align: left;"> <form action="{{ route('admin.commission.update', $s->userID) }}" method="POST" class="modal-content">
+                                                    @csrf 
+                                                    @method('PUT') <div class="modal-header border-0">
+                                                        <h6 class="modal-title fw-bold">Edit Commission</h6>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <label class="form-label small">Count for {{ $s->name }}</label>
+                                                        <input type="number" name="commissionCount" class="form-control" value="{{ $s->commissionCount }}" min="0" required>
+                                                    </div>
+                                                    <div class="modal-footer border-0 p-2">
+                                                        <button type="submit" class="btn btn-primary btn-sm w-100">Update</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                        </td>
                                 </tr>
                             @empty
                                 <tr><td colspan="4" class="text-center">No staff found.</td></tr>
@@ -190,8 +214,8 @@
                     </table>
                 </div>
             </div>
-
-        </div> </div>
+        </div> 
+    </div>
 
     <div class="modal fade" id="addPromoModal" tabindex="-1">
         <div class="modal-dialog">
@@ -219,12 +243,16 @@
                 @csrf
                 <div class="modal-header border-0"><h5 class="modal-title fw-bold">Add Voucher</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
-                    <div class="alert alert-light border small text-muted">
-                        <i class="bi bi-info-circle"></i> Voucher ID will be generated automatically.
+                    <div class="mb-3">
+                        <label class="form-label">Voucher Type</label>
+                        <select name="voucherType" class="form-select">
+                            <option value="cash_reward">Cash Discount (RM)</option>
+                            <option value="free_hour">Free Hours (Time)</option>
+                        </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Value (RM)</label>
-                        <input type="number" name="value" class="form-control" placeholder="e.g. 50" required>
+                        <label class="form-label">Value (Amount or Hours)</label>
+                        <input type="number" name="value" class="form-control" placeholder="e.g. 50 or 2" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Expiry Date</label>
