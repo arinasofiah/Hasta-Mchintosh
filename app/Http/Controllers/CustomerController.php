@@ -16,39 +16,39 @@ class CustomerController extends Controller
     /**
      * Display customer dashboard.
      */
-   public function index(Request $request)
-{
-    // Check if user is customer
-    if (auth()->user()->userType !== 'customer') {
-        abort(403, 'Unauthorized. Customer access only.');
+    public function index(Request $request)
+    {
+        // Check if user is customer
+        if (auth()->user()->userType !== 'customer') {
+            abort(403, 'Unauthorized. Customer access only.');
+        }
+        
+        // Fetch available vehicles from database with filters
+        $query = DB::table('vehicles')
+            ->where('status', 'available');
+        
+        // Apply search filter
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function($q) use ($search) {
+                $q->where('model', 'LIKE', "%{$search}%")
+                  ->orWhere('vehicleType', 'LIKE', "%{$search}%")
+                  ->orWhere('plateNumber', 'LIKE', "%{$search}%");
+            });
+        }
+        
+        // Apply category filter
+        if ($request->filled('category') && $request->category !== 'All') {
+            $query->where('vehicleType', $request->category);
+        }
+        
+        $vehicles = $query->select('vehicleID', 'vehicleType', 'model', 'plateNumber', 'fuelLevel', 
+                         'fuelType', 'ac', 'seat', 'status', 'pricePerDay', 'pricePerHour', 'vehiclePhoto', 'transmission')
+                ->get();
+        
+        // Pass vehicles to the view
+        return view('customer.dashboard', compact('vehicles'));
     }
-    
-    // Fetch available vehicles from database with filters
-    $query = DB::table('vehicles')
-        ->where('status', 'available');
-    
-    // Apply search filter
-    if ($request->filled('search')) {
-        $search = $request->input('search');
-        $query->where(function($q) use ($search) {
-            $q->where('model', 'LIKE', "%{$search}%")
-              ->orWhere('vehicleType', 'LIKE', "%{$search}%")
-              ->orWhere('plateNumber', 'LIKE', "%{$search}%");
-        });
-    }
-    
-    // Apply category filter
-    if ($request->filled('category') && $request->category !== 'All') {
-        $query->where('vehicleType', $request->category);
-    }
-    
-    $vehicles = $query->select('vehicleID', 'vehicleType', 'model', 'plateNumber', 'fuelLevel', 
-                     'fuelType', 'ac', 'seat', 'status', 'pricePerDay', 'pricePerHour', 'vehiclePhoto', 'transmission')
-            ->get();
-    
-    // Pass vehicles to the view
-    return view('customer.dashboard', compact('vehicles'));
-}
     
     /**
      * Display customer profile.
@@ -203,24 +203,40 @@ class CustomerController extends Controller
         
         $userId = Auth::user()->userID;
         
-        // Get all bookings with vehicle details
+        // Get all bookings with vehicle details - FIXED: Changed customerID to userID
         $bookings = DB::table('booking')
-            ->where('customerID', $userId)
+            ->where('userID', $userId) // Changed from customerID to userID
             ->join('vehicles', 'booking.vehicleID', '=', 'vehicles.vehicleID')
-            ->select('booking.*', 'vehicles.model', 'vehicles.vehicleType', 'vehicles.plateNumber')
+            ->select(
+                'booking.bookingID',
+                'booking.userID', // Changed from customerID
+                'booking.vehicleID',
+                'booking.startDate',
+                'booking.endDate',
+                'booking.bookingStatus',
+                'booking.totalPrice',
+                'booking.depositAmount',
+                'booking.bankNum',
+                'booking.penamaBank',
+                'booking.bookingDuration',
+                'booking.rewardApplied',
+                'booking.created_at',
+                'vehicles.model',
+                'vehicles.vehicleType',
+                'vehicles.plateNumber'
+            )
             ->orderBy('booking.created_at', 'desc')
             ->get();
         
-        // Categorize by bookingStatus (based on your database schema)
-        // Active/Ongoing: approved status AND current date between pickup and return
+        // Categorize by bookingStatus
         $active = $bookings->filter(function($booking) {
             $now = Carbon::now();
             try {
-                $pickupDate = Carbon::parse($booking->pickupDate);
-                $returnDate = Carbon::parse($booking->returnDate);
+                $startDate = Carbon::parse($booking->startDate);
+                $endDate = Carbon::parse($booking->endDate);
                 
                 return $booking->bookingStatus === 'approved' && 
-                       $now->between($pickupDate, $returnDate);
+                       $now->between($startDate, $endDate);
             } catch (\Exception $e) {
                 return false;
             }
@@ -229,9 +245,9 @@ class CustomerController extends Controller
         // Upcoming: confirmed or approved with future pickup date
         $upcoming = $bookings->filter(function($booking) {
             try {
-                $pickupDate = Carbon::parse($booking->pickupDate);
+                $startDate = Carbon::parse($booking->startDate);
                 return ($booking->bookingStatus === 'confirmed' || $booking->bookingStatus === 'approved') && 
-                       $pickupDate->isFuture();
+                       $startDate->isFuture();
             } catch (\Exception $e) {
                 return false;
             }
@@ -280,6 +296,229 @@ class CustomerController extends Controller
         
         return view('customer.booking-form', compact('vehicle'));
     }
+    
+    /**
+     * Show pickup form for a booking.
+     */
+    public function showPickupForm($bookingId)
+    {
+        if (auth()->user()->userType !== 'customer') {
+            abort(403, 'Unauthorized. Customer access only.');
+        }
+        
+        $userId = Auth::user()->userID;
+        
+        $booking = DB::table('booking')
+            ->where('bookingID', $bookingId)
+            ->where('userID', $userId) // Changed from customerID to userID
+            ->where('bookingStatus', 'approved')
+            ->join('vehicles', 'booking.vehicleID', '=', 'vehicles.vehicleID')
+            ->select('booking.*', 'vehicles.model', 'vehicles.vehicleType', 'vehicles.plateNumber')
+            ->first();
+        
+        if (!$booking) {
+            return redirect()->route('bookingHistory')
+                ->with('error', 'Booking not found or not available for pickup.');
+        }
+        
+        // Check if pickup date is today or in the past
+        $startDate = Carbon::parse($booking->startDate);
+        $today = Carbon::today();
+        
+        if ($startDate->greaterThan($today)) {
+            return redirect()->route('bookingHistory')
+                ->with('error', 'Pickup is only allowed on or after the start date.');
+        }
+        
+        return view('customer.pickup-form', compact('booking'));
+    }
+    
+    /**
+     * Show return form for a booking.
+     */
+    public function showReturnForm($bookingId)
+    {
+        if (auth()->user()->userType !== 'customer') {
+            abort(403, 'Unauthorized. Customer access only.');
+        }
+        
+        $userId = Auth::user()->userID;
+        
+        $booking = DB::table('booking')
+            ->where('bookingID', $bookingId)
+            ->where('userID', $userId) // Changed from customerID to userID
+            ->where('bookingStatus', 'approved')
+            ->join('vehicles', 'booking.vehicleID', '=', 'vehicles.vehicleID')
+            ->select('booking.*', 'vehicles.model', 'vehicles.vehicleType', 'vehicles.plateNumber')
+            ->first();
+        
+        if (!$booking) {
+            return redirect()->route('bookingHistory')
+                ->with('error', 'Booking not found or not available for return.');
+        }
+        
+        // Check if end date is today or in the past
+        $endDate = Carbon::parse($booking->endDate);
+        $today = Carbon::today();
+        
+        if ($endDate->greaterThan($today)) {
+            return redirect()->route('bookingHistory')
+                ->with('error', 'Return is only allowed on or after the end date.');
+        }
+        
+        return view('customer.return-form', compact('booking'));
+    }
+    
+    /**
+     * Process pickup form submission.
+     */
+    public function processPickup(Request $request, $bookingId)
+    {
+        if (auth()->user()->userType !== 'customer') {
+            abort(403, 'Unauthorized. Customer access only.');
+        }
+        
+        $userId = Auth::user()->userID;
+        
+        $request->validate([
+            'pickup_notes' => 'nullable|string|max:500',
+            'pickup_condition' => 'required|string|in:good,fair,poor',
+            'fuel_level' => 'required|numeric|min:0|max:100',
+            'odometer_reading' => 'required|numeric|min:0',
+        ]);
+        
+        DB::table('booking')
+            ->where('bookingID', $bookingId)
+            ->where('userID', $userId) // Changed from customerID to userID
+            ->update([
+                'pickup_notes' => $request->pickup_notes,
+                'pickup_condition' => $request->pickup_condition,
+                'pickup_fuel_level' => $request->fuel_level,
+                'pickup_odometer' => $request->odometer_reading,
+                'pickup_completed_at' => now(),
+                'updated_at' => now(),
+            ]);
+        
+        // Update vehicle status to "in use"
+        $booking = DB::table('booking')->where('bookingID', $bookingId)->first();
+        if ($booking) {
+            DB::table('vehicles')
+                ->where('vehicleID', $booking->vehicleID)
+                ->update(['status' => 'in use']);
+        }
+        
+        return redirect()->route('bookingHistory')
+            ->with('success', 'Pickup completed successfully!');
+    }
+    
+    /**
+     * Process return form submission.
+     */
+    public function processReturn(Request $request, $bookingId)
+    {
+        if (auth()->user()->userType !== 'customer') {
+            abort(403, 'Unauthorized. Customer access only.');
+        }
+        
+        $userId = Auth::user()->userID;
+        
+        $request->validate([
+            'return_notes' => 'nullable|string|max:500',
+            'return_condition' => 'required|string|in:good,fair,poor',
+            'fuel_level' => 'required|numeric|min:0|max:100',
+            'odometer_reading' => 'required|numeric|min:0',
+            'damage_description' => 'nullable|string|max:500',
+            'damage_images' => 'nullable|array',
+            'damage_images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+        
+        DB::transaction(function () use ($request, $bookingId, $userId) {
+            // Update booking with return information
+            DB::table('booking')
+                ->where('bookingID', $bookingId)
+                ->where('userID', $userId) // Changed from customerID to userID
+                ->update([
+                    'return_notes' => $request->return_notes,
+                    'return_condition' => $request->return_condition,
+                    'return_fuel_level' => $request->fuel_level,
+                    'return_odometer' => $request->odometer_reading,
+                    'damage_description' => $request->damage_description,
+                    'return_completed_at' => now(),
+                    'bookingStatus' => 'completed',
+                    'updated_at' => now(),
+                ]);
+            
+            // Update vehicle status back to "available"
+            $booking = DB::table('booking')->where('bookingID', $bookingId)->first();
+            if ($booking) {
+                DB::table('vehicles')
+                    ->where('vehicleID', $booking->vehicleID)
+                    ->update(['status' => 'available']);
+            }
+            
+            // Handle damage images upload if any
+            if ($request->hasFile('damage_images')) {
+                foreach ($request->file('damage_images') as $image) {
+                    $path = $image->store('damage_images', 'public');
+                    DB::table('damage_reports')->insert([
+                        'bookingID' => $bookingId,
+                        'image_path' => $path,
+                        'description' => $request->damage_description,
+                        'created_at' => now(),
+                    ]);
+                }
+            }
+            
+            // Calculate any additional charges (fuel, damage, late return, etc.)
+            $this->calculateFinalCharges($bookingId);
+        });
+        
+        return redirect()->route('bookingHistory')
+            ->with('success', 'Vehicle returned successfully! Final charges have been calculated.');
+    }
+    
+    /**
+     * Calculate final charges for a booking.
+     */
+    private function calculateFinalCharges($bookingId)
+    {
+        $booking = DB::table('booking')->where('bookingID', $bookingId)->first();
+        
+        if (!$booking) return;
+        
+        $additionalCharges = 0;
+        
+        // Calculate fuel charge if return fuel is less than pickup fuel
+        if ($booking->pickup_fuel_level && $booking->return_fuel_level) {
+            $fuelDifference = $booking->pickup_fuel_level - $booking->return_fuel_level;
+            if ($fuelDifference > 10) { // If fuel level dropped more than 10%
+                $additionalCharges += ($fuelDifference / 100) * 50; // Example: RM50 per full tank
+            }
+        }
+        
+        // Calculate late return charge
+        $endDate = Carbon::parse($booking->endDate);
+        $returnDate = Carbon::parse($booking->return_completed_at);
+        
+        if ($returnDate->greaterThan($endDate)) {
+            $hoursLate = $returnDate->diffInHours($endDate);
+            $additionalCharges += $hoursLate * ($booking->totalPrice / 24); // Hourly rate
+        }
+        
+        // Add damage charges if condition is poor
+        if ($booking->return_condition === 'poor') {
+            $additionalCharges += 200; // Example damage charge
+        }
+        
+        // Update booking with additional charges
+        DB::table('booking')
+            ->where('bookingID', $bookingId)
+            ->update([
+                'additional_charges' => $additionalCharges,
+                'final_total' => $booking->totalPrice + $additionalCharges,
+                'updated_at' => now(),
+            ]);
+    }
 
     public function adminIndex(Request $request)
     {
@@ -322,7 +561,7 @@ class CustomerController extends Controller
         // 6. Calculate outstanding payments from bookings table
         foreach ($customers as $customer) {
             $customer->outstanding_payment = DB::table('booking')
-                ->where('customerID', $customer->userID)
+                ->where('userID', $customer->userID) // Changed from customerID to userID
                 ->where('paymentStatus', 'unpaid')
                 ->sum('totalPrice');
         }
@@ -359,10 +598,24 @@ class CustomerController extends Controller
         $userId = Auth::user()->userID;
         
         $booking = DB::table('booking')
-            ->where('id', $id)
-            ->where('customerID', $userId)
+            ->where('bookingID', $id)
+            ->where('userID', $userId) // Changed from customerID to userID
             ->join('vehicles', 'booking.vehicleID', '=', 'vehicles.vehicleID')
-            ->select('booking.*', 'vehicles.model', 'vehicles.vehicleType', 'vehicles.plateNumber')
+            ->select(
+                'booking.bookingID',
+                'booking.startDate',
+                'booking.endDate',
+                'booking.bookingStatus',
+                'booking.totalPrice',
+                'booking.depositAmount',
+                'booking.bankNum',
+                'booking.penamaBank',
+                'booking.bookingDuration',
+                'booking.rewardApplied',
+                'vehicles.model',
+                'vehicles.vehicleType',
+                'vehicles.plateNumber'
+            )
             ->first();
         
         if (!$booking) {

@@ -506,18 +506,26 @@ class BookingController extends Controller
     }*/
 
     public function bookingHistory()
-    {
-        $bookings = Bookings::with('vehicle')
-            ->where('customerID', auth()->id()) 
-            ->orderBy('created_at', 'desc')  
-            ->get();
+{
+    $bookings = Booking::where('customer_id', auth()->id())->get();
 
-        return view('booking-history', [
-            'completed' => $bookings->where('bookingStatus', 'confirmed'),
-            'upcoming'  => $bookings->where('bookingStatus', 'pending'),
-            'cancelled' => $bookings->where('bookingStatus', 'cancelled'),
-        ]);
-    }
+    $active = Booking::where('bookingStatus', 'approved')->get();
+
+    $pending = Booking::whereIn('bookingStatus', ['pending', 'confirmed'])->get();
+
+    $completed = Booking::where('bookingStatus', 'completed')->get();
+
+    $cancelled = Booking::where('bookingStatus', 'cancelled')->get();
+
+    return view('bookingHistory', compact(
+        'active',
+        'pending',
+        'completed',
+        'cancelled'
+    ));
+}
+
+
 
     private function checkBlacklist()
     {
@@ -527,4 +535,7 @@ class BookingController extends Controller
                 ->send();
         }
     }
+
+   
+
 }
