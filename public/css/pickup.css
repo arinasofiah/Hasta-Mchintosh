@@ -248,3 +248,27 @@ input[type="date"] {
     border-radius: 10px;
     margin-top: 5px;
 }
+.checkbox span a {
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+.modal-content {
+    border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.modal-body h3 {
+    color: #000;
+}
+.modal-body .btn-primary {
+    background: #CB3737;
+    color: white;
+    border: none;
+    font-weight: bold;
+    transition: background 0.3s ease;
+}
+
+.modal-body .btn-primary:hover {
+    background: #a32c2c;
+}
