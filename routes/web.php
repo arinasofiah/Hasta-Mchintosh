@@ -45,12 +45,12 @@ Route::get('/vehicles/available', [VehicleController::class, 'getAvailableVehicl
 
 // Admin vehicle management
 Route::middleware(['auth'])->prefix('admin')->group(function () {
-    Route::get('/dashboard', [VehicleController::class, 'adminDashboard'])->name('admin.dashboard');
-    Route::get('/fleet', [VehicleController::class, 'adminVehicles'])->name('admin.fleet');
-    Route::get('/vehicles/create', [VehicleController::class, 'create'])->name('admin.vehicles.create');
-    Route::post('/vehicles/store', [VehicleController::class, 'store'])->name('admin.vehicles.store');
-    Route::put('/vehicles/update/{id}', [VehicleController::class, 'update'])->name('admin.vehicles.update');
-    Route::delete('/vehicles/delete/{id}', [VehicleController::class, 'destroy'])->name('admin.vehicles.destroy');
+    //Route::get('/dashboard', [VehicleController::class, 'adminDashboard'])->name('admin.dashboard');
+   // Route::get('/fleet', [VehicleController::class, 'adminVehicles'])->name('admin.fleet');
+   // Route::get('/vehicles/create', [VehicleController::class, 'create'])->name('admin.vehicles.create');
+    //Route::post('/vehicles/store', [VehicleController::class, 'store'])->name('admin.vehicles.store');
+    //Route::put('/vehicles/update/{id}', [VehicleController::class, 'update'])->name('admin.vehicles.update');
+    //Route::delete('/vehicles/delete/{id}', [VehicleController::class, 'destroy'])->name('admin.vehicles.destroy');
 
     Route::get('/staff/create', [AdminController::class, 'createStaff'])->name('admin.staff.create');
 
