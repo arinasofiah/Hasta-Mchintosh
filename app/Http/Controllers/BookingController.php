@@ -432,15 +432,15 @@ class BookingController extends Controller
         ]);
 
         // Mark voucher as used
-        if ($request->voucher_id) {
-            Voucher::where('voucherID', $request->voucher_id)
-                ->where('customerID', auth()->id())
-                ->where('isUsed', false)
-                ->update([
-                    'isUsed' => true,
-                    'usedAt' => now()
-                ]);
-        }
+        // if ($request->voucher_id) {
+        //     Voucher::where('voucherID', $request->voucher_id)
+        //         ->where('customerID', auth()->id())
+        //         ->where('isUsed', false)
+        //         ->update([
+        //             'isUsed' => true,
+        //             'usedAt' => now()
+        //         ]);
+        // }
 
         // Update loyalty card (optional - uncomment if you want to use)
         /*$loyaltyCard = LoyaltyCard::firstOrNew(['userID' => auth()->id()]);
@@ -513,9 +513,9 @@ class BookingController extends Controller
             ->get();
 
         return view('booking-history', [
-            'completed' => $bookings->where('status', 'Completed'),
-            'upcoming'  => $bookings->where('status', 'Upcoming'),
-            'cancelled' => $bookings->where('status', 'Cancelled'),
+            'completed' => $bookings->where('bookingStatus', 'confirmed'),
+            'upcoming'  => $bookings->where('bookingStatus', 'pending'),
+            'cancelled' => $bookings->where('bookingStatus', 'cancelled'),
         ]);
     }
 

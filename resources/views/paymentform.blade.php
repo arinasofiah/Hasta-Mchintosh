@@ -818,6 +818,7 @@ document.getElementById('paymentForm').addEventListener('submit', function(e) {
         submitBtn.textContent = 'Submit';
     });
 });
+console.log('Route URL:', "{{ route('booking.confirm') }}");
 </script>
 
 </body>
