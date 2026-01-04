@@ -14,102 +14,69 @@ use App\Http\Controllers\StaffController;
 use App\Http\Controllers\CustomerController;
 use Illuminate\Support\Facades\Route;
 
+//guest
 Route::middleware('guest')->group(function () {
-    Route::get('register', [RegisteredUserController::class, 'create'])
-        ->name('register');
-
+    Route::get('register', [RegisteredUserController::class, 'create'])->name('register');
     Route::post('register', [RegisteredUserController::class, 'store']);
 
-    Route::get('login', [AuthenticatedSessionController::class, 'create'])
-        ->name('login');
-
+    Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
-    Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
-        ->name('password.request');
+    Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
+    Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])->name('password.email');
 
-    Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
-        ->name('password.email');
-
-    Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
-        ->name('password.reset');
-
-    Route::post('reset-password', [NewPasswordController::class, 'store'])
-        ->name('password.store');
+    Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
+    Route::post('reset-password', [NewPasswordController::class, 'store'])->name('password.store');
 });
 
-Route::middleware(['auth'])->group(function () {
-    // Admin routes
-    Route::get('/admin/dashboard', [AdminController::class, 'index'])
-        ->name('admin.dashboard');
-   Route::get('/admin/customers', [AdminController::class, 'customers'])
-        ->name('admin.customers');
+//auth
+Route::middleware('auth')->group(function () {
+    Route::get('verify-email', EmailVerificationPromptController::class)
+        ->name('verification.notice');
+    Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
+        ->middleware(['signed', 'throttle:6,1'])
+        ->name('verification.verify');
+    Route::post('email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
+        ->middleware('throttle:6,1')
+        ->name('verification.send');
+    Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])->name('password.confirm');
+    Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
+    Route::put('password', [PasswordController::class, 'update'])->name('password.update');
     
-    // Add this update route
-    Route::put('/admin/customers/{id}', [AdminController::class, 'updateCustomer'])
-        ->name('admin.customers.update');
-    Route::get('/fleet', [AdminController::class, 'fleet'])->name('admin.fleet');
-    Route::get('/vehicles/create', [AdminController::class, 'createVehicle'])->name('admin.vehicles.create');
-    Route::post('/vehicles', [AdminController::class, 'storeVehicle'])->name('admin.vehicles.store');
-    Route::put('/vehicles/{vehicleID}', [AdminController::class, 'updateVehicle'])->name('admin.vehicles.update');
-    Route::delete('/vehicles/{vehicleID}', [AdminController::class, 'destroyVehicle'])->name('admin.vehicles.destroy');
+
    
-    Route::get('/admin/staff', [AdminController::class, 'staff'])->name('admin.staff');
+    Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+
+    // Admin routes
+    Route::prefix('admin')->group(function () {
+        Route::get('/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
+        
+        Route::get('/customers', [AdminController::class, 'customers'])->name('admin.customers');
+        Route::put('/customers/{id}', [AdminController::class, 'updateCustomer'])->name('admin.customers.update');
+        
+        Route::get('/staff', [AdminController::class, 'staff'])->name('admin.staff');
+
         Route::get('/staff/create', [AdminController::class, 'createStaff'])->name('admin.staff.create');
-        Route::post('/staff', [AdminController::class, 'storeStaff'])->name('admin.staff.store'); // ← This one was missing
+        Route::post('/staff', [AdminController::class, 'storeStaff'])->name('admin.staff.store');
         Route::put('/staff/{id}', [AdminController::class, 'updateStaff'])->name('admin.staff.update');
         Route::delete('/staff/{id}', [AdminController::class, 'destroyStaff'])->name('admin.staff.destroy');
+    });
     
     // Staff routes
-    Route::get('/staff/dashboard', [StaffController::class, 'index'])
-        ->name('staff.dashboard');
+    Route::prefix('staff')->group(function () {
+        Route::get('/dashboard', [StaffController::class, 'index'])->name('staff.dashboard');
+    });
 
     
     // Customer routes
     Route::prefix('customer')->group(function () {
-        Route::get('/dashboard', [CustomerController::class, 'index'])
-            ->name('customer.dashboard');
+        Route::get('/dashboard', [CustomerController::class, 'index'])->name('customer.dashboard');
         
-        Route::get('/profile', [CustomerController::class, 'profile'])
-            ->name('customer.profile');
-        
+        Route::get('/profile', [CustomerController::class, 'profile'])->name('customer.profile');
         Route::get('/profile/edit', [CustomerController::class, 'edit'])->name('customer.profile.edit');
         Route::put('/profile/update', [CustomerController::class, 'update'])->name('customer.profile.update');
             
-        Route::get('/bookings', [CustomerController::class, 'bookings'])
-            ->name('bookingHistory');
-
-        Route::get('/customers', [CustomerController::class, 'adminIndex'])->name('customers.index');
-   
-        Route::put('/customers/{id}', [CustomerController::class, 'adminUpdate'])->name('customers.update');
+        Route::get('/bookings', [CustomerController::class, 'bookings'])->name('bookingHistory');
     });
     
-    // Common routes for all users
-    Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
-        ->name('logout');
-});
-
-
-
-Route::middleware('auth')->group(function () {
-    Route::get('verify-email', EmailVerificationPromptController::class)
-        ->name('verification.notice');
-
-    Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
-        ->middleware(['signed', 'throttle:6,1'])
-        ->name('verification.verify');
-
-    Route::post('email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
-        ->middleware('throttle:6,1')
-        ->name('verification.send');
-
-    Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])
-        ->name('password.confirm');
-
-    Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
-
-    Route::put('password', [PasswordController::class, 'update'])->name('password.update');
-
-    Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
-        ->name('logout');
 });
