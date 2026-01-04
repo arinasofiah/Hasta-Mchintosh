@@ -33,6 +33,7 @@ Route::get('/dashboard', function () {
 // Pickup & Return (public or auth? assuming auth later)
 Route::get('/pickup/{bookingID}', [PickUpController::class, 'show'])->name('pickup.show');
 Route::get('/pickup', [PickUpController::class, 'show']);
+Route::post('/pickup', [PickUpController::class, 'store'])->name('pickup.store');
 
 Route::get('/return/{bookingID}', [ReturnController::class, 'show'])->name('return.show');
 Route::post('/return', [ReturnController::class, 'store'])->name('return.store');

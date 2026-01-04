@@ -26,6 +26,7 @@ class ReturnController extends Controller
     {
         $request->validate([
             'returnID' => 'required|exists:return,returnID',
+            'bookingID' => 'required|exists:booking,bookingID',
             'isFined' =>  'required|in:yes,no',
             'returnPhoto' => 'required|image|mimes:jpeg,png,jpg|max:2048',
             'trafficTicketPhoto' => 'image|mimes:jpeg,png,jpg|max:2048',

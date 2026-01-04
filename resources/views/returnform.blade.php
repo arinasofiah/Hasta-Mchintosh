@@ -30,8 +30,7 @@
             <p class="sub_txt">Upload photos of the car before returning it</p>
  <form action="{{ route('return.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
-        <input type="hidden" name="returnID" value="{{ $returnCar->returnID }}">
-        <input type="hidden" name="returnID" value="{{ $returnCar->returnID }}">
+        <input type="hidden" name="returnID" value="{{ $returnCar->returnID ?? '' }}">
         <input type="hidden" name="vehicle_id" value="{{ $vehicle->id }}">
             <div id="drop-zone">
                 <p>Drop files to upload</p>
