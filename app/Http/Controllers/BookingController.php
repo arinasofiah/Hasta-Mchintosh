@@ -216,7 +216,6 @@ class BookingController extends Controller
                 'returnLocation' => 'required|string',
                 'bank_name' => 'required|string',
                 'bank_owner_name' => 'required|string',
-                'bankNum' => 'required|string', // ✅ Add validation for bank account number
                 'payAmount' => 'required|in:full,deposit',
                 'payment_receipt' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120',
             ]);
@@ -267,7 +266,6 @@ class BookingController extends Controller
             $booking->remark = $request->remark;
             $booking->bank_name = $request->bank_name;
             $booking->bank_owner_name = $request->bank_owner_name;
-            $booking->bankNum = $request->bankNum; // ✅ Add bank account number
             $booking->pay_amount_type = $request->payAmount;
             
             if ($request->filled('for_someone_else') && $request->for_someone_else == 1) {

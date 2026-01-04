@@ -5,25 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>HASTA – Booking Details</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="{{ asset('css/header.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/footer.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/vehicles.css') }}" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="{{ asset('css/header.css') }}" rel="stylesheet">
 
 <style>
 /* ====== Reset & Body ====== */
 * {margin:0;padding:0;box-sizing:border-box;}
 body {font-family:'Inter',sans-serif;background:#f5f5f5;color:#333;padding-bottom:120px;}
 
-/* ====== Header ====== */
-#header {background-color: #d94242; padding: 15px 50px; display:flex; justify-content:space-between; align-items:center;}
-#logo {height:45px;}
-#profile {display:flex; align-items:center; gap:15px;}
-#profile-container {width:45px; height:45px; background:white; border-radius:50%; overflow:hidden;}
-#pfp {width:100%; height:100%; object-fit:cover;}
 
 /* ====== Progress Steps ====== */
 .progress-container {max-width:1200px; margin:50px auto; padding:0 20px;}
@@ -157,16 +146,25 @@ textarea.input {resize:vertical; min-height:100px;}
 <!-- Progress Steps -->
 <div class="progress-container">
     <div class="steps">
-        <div class="step filled"><span class="step-icon">✓</span><span>Vehicle</span></div>
+        <div class="step filled">
+            <i class="fas fa-car"></i>
+            <span>Vehicle</span>
+        </div>
+        <div class="step active"></div>
+        <div class="step active">
+            <i class="fas fa-calendar-check"></i>
+            <span>Booking Details</span>
+        </div>
         <div class="step-connector"></div>
-        <div class="step active"><span class="step-icon">✓</span><span>Booking Details</span></div>
-        <div class="step-connector"></div>
-        <div class="step"><span class="step-icon">✓</span><span>Payment</span></div>
+        <div class="step">
+            <i class="fas fa-credit-card"></i>
+            <span>Payment</span>
+        </div>
     </div>
 </div>
 
 <!-- FORM START -->
-<form id="bookingForm" action="{{ route('booking.payment.form')}}" method="POST">
+<form id="bookingForm" action="{{ route('payment.form', $vehicle->vehicleID )}}" method="POST">
     @csrf
     <input type="hidden" name="vehicleID" value="{{ $vehicle->vehicleID }}">
     
