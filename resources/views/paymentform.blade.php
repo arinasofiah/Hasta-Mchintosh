@@ -413,15 +413,44 @@
 <body>
 
 <!-- HEADER -->
-<div class="header">
-    <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}" alt="HASTA Logo">
+<div id="header">
+    <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}">
+
+    <div id="menu">
+        <a href="{{ route('welcome') }}">
+        <button class="head_button">Home</button>
+    </a>
+
+    <a href="{{ route('fleet') }}">
+        <button class="head_button">Vehicles</button>
+    </a>
+    
+        <button class="head_button">Details</button>
+        <button class="head_button">About Us</button>
+        <button class="head_button">Contact Us</button>
+    </div>
+
     <div id="profile">
         <div id="profile-container">
-            <img id="pfp" src="{{ asset('img/racc_icon.png') }}" alt="Profile">
+            <img id="pfp" src="{{ asset('img/racc_icon.png') }}">
+
+            <div id="profile-dropdown">
+                @guest
+                    <a href="{{ route('login') }}" class="dropdown-item">Login</a>
+                    <a href="{{ route('register') }}" class="dropdown-item">Register</a>
+                   
+                @endguest
+
+               
+            </div>
         </div>
+
+        @guest
+            <a id="username" href="{{ route('login') }}">Log in</a>
+        @endguest
+
     </div>
 </div>
-
 <!-- Progress Steps -->
 <div class="progress-container">
     <div class="steps">
@@ -527,11 +556,7 @@
                     <button type="button" class="tab-btn active" data-tab="eligible">Eligible</button>
                     <button type="button" class="tab-btn" data-tab="enter">Enter Code</button>
                 </div>
-
-                
-
-
-                
+                         
             </div>
 
             <div class="form-group">
@@ -698,7 +723,7 @@
         });
     });
 
-    
+
         const fileInput = document.getElementById('fileInput');
         const browseBtn = document.getElementById('browseBtn');
         const uploadText = document.getElementById('uploadText');
@@ -856,7 +881,6 @@ document.getElementById('paymentForm').addEventListener('submit', function(e) {
     fetch("{{ route('booking.confirm') }}", {
         method: 'POST',
         body: formData,
-        // ⚠️ IMPORTANT: Do NOT set Content-Type header for FormData with files
         headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
         }
