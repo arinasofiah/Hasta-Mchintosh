@@ -76,6 +76,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
 
     // Commission
     Route::post('/commission/reset/{id}', [PromotionController::class, 'resetCommission'])->name('admin.commission.reset');
+    Route::put('/commission/update/{id}', [PromotionController::class, 'updateCommission'])->name('admin.commission.update');
 });
 
 //  Booking routes (customer)
