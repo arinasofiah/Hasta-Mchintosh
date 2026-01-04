@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Auth; 
+use Illuminate\Support\Facades\DB;
 use App\Models\Vehicles;
 use App\Models\Bookings;
 use App\Models\PickUp;
 use App\Models\ReturnCar;
+use App\Models\LoyaltyCard;
 use App\Models\Promotion;
-//use App\Models\Voucher;          // ✅ Uncommented
-//use App\Models\LoyaltyCard;      // ✅ Uncommented
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -24,6 +25,7 @@ class BookingController extends Controller
         $returnDate = $request->query('return_date', now()->addDay()->toDateString());
         $returnTime = $request->query('return_time', '08:00');
 
+        // Calculate duration and total price
         $start = Carbon::parse("$pickupDate $pickupTime");
         $end = Carbon::parse("$returnDate $returnTime");
         $durationHours = $end->diffInHours($start);
@@ -32,8 +34,28 @@ class BookingController extends Controller
         if ($durationDays < 1) {
             $durationDays = 1;
         }
-
+        
         $totalPrice = $durationDays * $vehicle->pricePerDay;
+
+        //voucher logic
+        $user = Auth::user();
+        $vouchers = [];
+
+        // Find customer profile using User ID
+        $customer = DB::table('customer')->where('userID', $user->userID)->first();
+
+        if ($customer) {
+            // Find Loyalty Card using Matric Number
+            $card = LoyaltyCard::where('matricNumber', $customer->matricNumber)->first();
+            
+            if ($card) {
+                // Get vouchers that are NOT used yet
+                $vouchers = $card->promotions()
+                                 ->wherePivot('is_used', false)
+                                 ->get();
+            }
+        }
+
 
         return view('bookingform', [
             'vehicle' => $vehicle,
@@ -43,11 +65,11 @@ class BookingController extends Controller
             'returnTime' => old('return_time', $returnTime),
             'durationDays' => $durationDays,
             'durationHours' => $durationHours,
-            'totalPrice' => $totalPrice
+            'totalPrice' => $totalPrice,
+            'vouchers' => $vouchers
         ]);
     }
 
-    // Start booking and store session data
     public function start($vehicleID, Request $request)
     {
         $pickupDate = $request->pickup_date;
@@ -84,6 +106,7 @@ class BookingController extends Controller
     {
         $vehicle = Vehicles::findOrFail($vehicleID);
 
+        // 1. Check if vehicle is still available
         if ($vehicle->status !== 'available') {
             return back()->with('error', 'Sorry, this vehicle is no longer available.');
         }
@@ -100,6 +123,7 @@ class BookingController extends Controller
         $start = Carbon::parse($request->pickup_date . ' ' . $request->pickup_time);
         $end = Carbon::parse($request->return_date . ' ' . $request->return_time);
 
+        // Calculate duration in days (rounded up)
         $durationDays = ceil($start->diffInHours($end) / 24);
         if ($durationDays < 1) {
             $durationDays = 1;
@@ -107,17 +131,50 @@ class BookingController extends Controller
         $hours = ceil($start->diffInMinutes($end) / 60);
         $totalPrice = $hours * $vehicle->pricePerHour;
 
+        /*$totalPrice = $durationDays * $vehicle->pricePerDay;*/
+
+        $discountAmount = 0;
+        
+        if ($request->filled('voucher_id')) {
+            $user = Auth::user();
+            $customer = DB::table('customer')->where('userID', $user->userID)->first();
+            $card = LoyaltyCard::where('matricNumber', $customer->matricNumber)->first();
+            
+            // Check if user actually owns this voucher and it is unused
+            $promo = $card->promotions()
+                          ->where('promotion.promoID', $request->voucher_id)
+                          ->wherePivot('is_used', false)
+                          ->first();
+
+            if ($promo) {
+                // Calculate Discount
+                if ($promo->discountType == 'percentage') {
+                    $discountAmount = $totalPrice * ($promo->discountValue / 100);
+                } else {
+                    $discountAmount = $promo->discountValue;
+                }
+
+                // Mark voucher as USED immediately
+                $card->promotions()->updateExistingPivot($promo->promoID, ['is_used' => true]);
+            }
+        }
+
+        // Calculate Final Price (Ensure it doesn't go below 0)
+        $finalPrice = max(0, $totalPrice - $discountAmount);
+
+        // Create the booking
         $booking = new Bookings();
         $booking->vehicleID = $vehicleID;
-        $booking->customerID = auth()->id(); // ✅ Standardized to auth()->id()
+        $booking->customerID = auth()->user()->userID; // Assumes User model has userID
         $booking->startDate = $request->pickup_date;
         $booking->endDate = $request->return_date;
         $booking->bookingDuration = $end->diffInHours($start);
         $booking->bookingStatus = 'pending';
         $booking->reservation_expires_at = now()->addMinutes(10);
-        $booking->totalPrice = $booking->bookingDuration * $vehicle->pricePerDay;
+        $booking->totalPrice = $finalPrice;
         $booking->save();
 
+        // Save pickup info
         PickUp::create([
             'bookingID' => $booking->bookingID,
             'pickupDate' => $request->pickup_date,
@@ -132,6 +189,7 @@ class BookingController extends Controller
             'location' => $request->return_location,
         ]);
 
+        // Lock vehicle during payment window
         $vehicle->status = 'unavailable';
         $vehicle->save();
 
@@ -360,7 +418,7 @@ class BookingController extends Controller
         return response()->json(['success' => true]);
     }
 
-   /* public function validateVoucher(Request $request)
+/* public function validateVoucher(Request $request)
     {
         $request->validate(['code' => 'required|string']);
 
