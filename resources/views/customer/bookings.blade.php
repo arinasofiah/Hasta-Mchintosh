@@ -62,15 +62,11 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#">
+                    <a href="{{ route('customer.loyaltycard') }}">
                         Loyalty Card
                     </a>
                 </li>
-                <li>
-                    <a href="#">
-                        Settings
-                    </a>
-                </li>
+                <li> <a href="{{ route('customer.profile.edit') }}">Edit Profile </a></li>
             </ul>
         </div>
 

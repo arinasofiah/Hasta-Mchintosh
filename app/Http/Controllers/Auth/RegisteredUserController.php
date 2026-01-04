@@ -37,6 +37,7 @@ class RegisteredUserController extends Controller
         'icNumber' => ['required', 'string', 'unique:users,icNumber'],
         'matricNumber' => ['required', 'string', 'unique:customer,matricNumber'],
         'phone' => ['required', 'string', 'unique:telephone,phoneNumber'],
+        'licenseNumber' => ['nullable', 'string', 'max:50'],
     ]);
 
     DB::transaction(function () use ($request) {
@@ -59,6 +60,7 @@ class RegisteredUserController extends Controller
         DB::table('customer')->insert([
             'userID' => $user->userID,
             'matricNumber' => $request->matricNumber,
+            'licenseNumber' => $request->licenseNumber,
             'depoBalance' => 0.00,
             'created_at' => now(),
             'updated_at' => now(),

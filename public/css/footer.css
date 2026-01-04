@@ -1,77 +1,146 @@
-/* footer.css - Normal (non-fixed) version */
-
 .footer {
-    background-color: #bc3737;
+    background-color: #bc3737; /* Matches your brand red */
     color: white;
-    padding: 40px 20px;
-    text-align: center;
-    margin-top: 80px;
+    padding: 60px 40px;
+    font-family: 'Poppins', sans-serif;
 }
 
-.footer-content {
+.footer-container {
     display: flex;
+    justify-content: space-between;
     flex-wrap: wrap;
-    justify-content: space-around;
-    align-items: flex-start;
-    max-width: 1200px;
+    max-width: 1300px;
     margin: 0 auto;
-    gap: 30px;
+    gap: 20px;
 }
 
-.logo img {
-    height: 60px;
-    margin-bottom: 20px;
-}
-
-.footer-item {
+.footer-section {
     flex: 1;
-    min-width: 250px;
-    margin-bottom: 20px;
-    text-align: center;
+    min-width: 200px;
 }
 
-.footer-icon {
-    font-size: 28px;
-    margin-bottom: 10px;
+/* Logo & Social Media */
+.footer-logo img {
+    height: 45px; /* Adjust this value to make it even smaller if needed */
+    width: auto;
+    margin-bottom: 25px;
+    border-radius: 4px;
 }
 
-.footer-item .title {
-    font-weight: bold;
-    font-size: 16px;
-    display: block;
-    margin-bottom: 5px;
+.social-icons {
+    display: flex;
+    gap: 15px;
 }
 
-.footer-item a {
+.social-icons a {
     color: white;
+    font-size: 20px;
     text-decoration: none;
-    transition: color 0.3s;
+    background: rgba(0,0,0,0.1);
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: 0.3s;
 }
 
-.footer-item a:hover {
-    color: #ffd700;
-    text-decoration: underline;
+.social-icons a:hover {
+    background: white;
+    color: #bc3737;
 }
 
-.copyright {
-    margin-top: 30px;
-    padding-top: 20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
+/* Contact Items */
+.contact-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.contact-icon {
+    background: #ff9800; /* Orange circle from picture */
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 18px;
+}
+
+.contact-text .label {
+    display: block;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.contact-text p {
+    margin: 0;
     font-size: 14px;
     opacity: 0.9;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .footer-content {
-        flex-direction: column;
-        align-items: center;
-        gap: 25px;
+.contact-text a {
+    color: white;
+    text-decoration: none;
+}
+
+/* Column Lists */
+.footer-section h5 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.footer-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-section ul li {
+    margin-bottom: 10px;
+}
+
+.footer-section ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    opacity: 0.8;
+    transition: 0.3s;
+}
+
+.footer-section ul li a:hover {
+    opacity: 1;
+    padding-left: 5px;
+}
+
+.copyright {
+    text-align: center;
+    margin-top: 50px; /* Space between the columns and the copyright */
+    padding-top: 25px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1); /* Subtle white line */
+    font-size: 13px;
+    opacity: 0.7;
+    width: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .footer-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
     }
-    
-    .footer-item {
-        min-width: 100%;
+}
+
+@media (max-width: 576px) {
+    .footer-container {
+        grid-template-columns: 1fr;
     }
+
 
 }   /* body {
         margin: 0;

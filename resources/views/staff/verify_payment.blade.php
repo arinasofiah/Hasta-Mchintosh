@@ -5,7 +5,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* CSS 代码同上 ... */
         body { font-family: 'Poppins', sans-serif; background-color: #f8f9fa; padding: 20px; }
         .page-header { display: flex; align-items: center; margin-bottom: 30px; }
         .back-btn { font-size: 24px; color: #000; text-decoration: none; margin-right: 20px; font-weight: bold; }
@@ -18,8 +17,22 @@
         .custom-table td { padding: 15px; border-bottom: 1px solid #ccc; border-right: 1px solid #ccc; font-size: 14px; }
         .custom-table td:last-child { border-right: none; }
         .view-link { color: #0066cc; font-weight: 700; text-decoration: none; }
-        .status-badge { padding: 5px 20px; border-radius: 20px; color: black; font-weight: 600; display: inline-block; min-width: 100px; text-align: center; }
-        .bg-yellow { background-color: #F1C40F; }
+
+        .btn-approve {
+            background-color: #28a745; 
+            color: white;
+            border: none; 
+            border-radius: 20px; 
+            padding: 5px 20px;
+            font-weight: 600;
+            font-size: 13px;
+            transition: 0.3s;
+        }
+        .btn-approve:hover {
+            background-color: #218838;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
@@ -30,6 +43,13 @@
         <h1 class="page-title">Verify Payment</h1>
     </div>
 
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
     <div class="table-responsive">
         <table class="custom-table">
             <thead>
@@ -37,7 +57,7 @@
                     <th>Booking ID</th>
                     <th>Expected Amount</th>
                     <th class="text-center">Proof Of Payment</th>
-                    <th class="text-center">Status</th>
+                    <th class="text-center">Action</th> 
                 </tr>
             </thead>
             <tbody>
@@ -47,13 +67,18 @@
                     <td>RM {{ number_format($booking->totalPrice, 2) }}</td>
                     <td class="text-center">
                         @if($booking->payment && $booking->payment->receiptImage)
-                            <a href="#" class="view-link">View</a>
+                            <a href="#" class="view-link" onclick="alert('Ideally this opens the receipt image modal!')">View</a>
                         @else
                             <span class="text-muted">No Proof</span>
                         @endif
                     </td>
                     <td class="text-center">
-                        <span class="status-badge bg-yellow">Pending</span>
+                        <form action="{{ route('staff.payment.approve', $booking->bookingID) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn-approve" onclick="return confirm('Confirm payment verified? This will verify the booking and calculate loyalty points.')">
+                                Verify & Approve
+                            </button>
+                        </form>
                     </td>
                 </tr>
                 @empty

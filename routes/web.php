@@ -12,6 +12,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\PromotionController;
+use App\Http\Controllers\LoyaltyController;
 
 // Public routes
 Route::view('/signup', 'signup');
@@ -82,6 +83,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('/my-loyalty', [LoyaltyController::class, 'index'])->name('customer.loyaltycard');
 });
 
 // Staff routes
@@ -96,6 +99,7 @@ Route::middleware(['auth'])->prefix('staff')->name('staff.')->group(function () 
     Route::get('/commission', [StaffController::class, 'commission'])->name('commission');
     Route::put('/commission/update', [StaffController::class, 'updateBank'])->name('commission.update');
     Route::post('/commission/redeem', [StaffController::class, 'redeem'])->name('commission.redeem');
+    Route::post('/payment/approve/{id}', [StaffController::class, 'approvePayment'])->name('payment.approve');
 });
 
 
