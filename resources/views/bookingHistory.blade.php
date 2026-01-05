@@ -984,20 +984,23 @@
 
     <!-- Cancel Modal -->
     <div id="cancelModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Cancel Booking</h2>
-                <button class="close-btn" onclick="closeModal('cancelModal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="cancelBookingId">
-                
-                <div class="info-message">
-                    <strong>Current Booking Details:</strong>
-                    <div id="cancel-booking-details">
-                        <!-- Will be populated by JavaScript -->
-                    </div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Cancel Booking</h2>
+            <button class="close-btn" onclick="closeModal('cancelModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <!-- Add this hidden input -->
+            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+            <input type="hidden" id="cancelBookingId">
+            
+            <div class="info-message">
+                <strong>Current Booking Details:</strong>
+                <div id="cancel-booking-details">
+                    <!-- Will be populated by JavaScript -->
                 </div>
+            </div>
+
 
                 <div class="warning-message">
                     <strong>Cancellation Policy:</strong><br>
@@ -1010,13 +1013,13 @@
                     <label for="cancellationReason">Reason for Cancellation (Optional)</label>
                     <textarea id="cancellationReason" placeholder="Please provide reason for cancellation..."></textarea>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('cancelModal')">Close</button>
-                <button class="btn btn-danger" onclick="confirmCancel()">Confirm Cancellation</button>
-            </div>
+             </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('cancelModal')">Close</button>
+            <button class="btn btn-danger" onclick="confirmCancel()">Confirm Cancellation</button>
         </div>
     </div>
+</div>
 
    <script>
     // Merge all booking collections safely

@@ -561,15 +561,14 @@ function calculateDurationAndPrice() {
     
     console.log('Duration Hours:', diffHours);
     console.log('Base Grand Total:', baseGrandTotal);
-    
-    // Check promotion
-    checkPromotion(baseGrandTotal);
+
+    checkPromotion();
 }
 
-function checkPromotion(amount) {
+function checkPromotion() {
     const today = new Date();
     const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
-    
+
     fetch('/check-promotion', {
         method: 'POST',
         headers: {
@@ -578,7 +577,7 @@ function checkPromotion(amount) {
         },
         body: JSON.stringify({
             day: dayName,
-            amount: amount
+            amount: baseGrandTotal
         })
     })
     .then(response => response.json())

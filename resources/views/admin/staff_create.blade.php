@@ -83,7 +83,6 @@
         <a href="{{ route('admin.customers') }}" class="nav-item">Customer</a>
         <a href="{{ route('admin.staff') }}" class="nav-item active">Staff</a>
         <a href="{{ route('admin.promotions') }}" class="nav-item">Promotions</a>
-        <a href="#" class="nav-item">Settings</a>
     </div>
 
     <div class="main-content">
