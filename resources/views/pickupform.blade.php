@@ -138,10 +138,10 @@ document.addEventListener('DOMContentLoaded', function () {
     @endif
     const understoodBtn = document.getElementById('confirmSave');
     if (understoodBtn) {
-        understoodBtn.addEventListener('click', function() {
-            window.location.href = "{{ route('dashboard') }}";
-        });
-    }
+    understoodBtn.addEventListener('click', function() {
+        window.location.href = "{{ url('/') }}";
+    });
+}
 
     const fileInput = document.getElementById('fileInput');
     const browseBtn = document.getElementById('browseBtn');

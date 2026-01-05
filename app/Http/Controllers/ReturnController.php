@@ -69,6 +69,6 @@ class ReturnController extends Controller
         $returnCar->lateHours = $hoursLate;
         $returnCar->save();
 
-        return redirect()->route('dashboard')->with('success', 'Return completed!');
+        return redirect('/')->with('success', 'Return completed!');
     }
 }
