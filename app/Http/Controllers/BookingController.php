@@ -288,7 +288,7 @@ class BookingController extends Controller
             $booking->save(); // Just a placeholder, ensure you copy your exact saving logic back
             
             // Update vehicle status
-            $vehicle->status = 'unavailable';
+            $vehicle->status = 'rented';
             $vehicle->save();
 
             return response()->json([
