@@ -647,23 +647,51 @@ const pickupTimeInput = document.getElementById('pickup_time');
 const returnInput = document.getElementById('return_date');
 const returnTimeInput = document.getElementById('return_time');
 
+let userEditedReturnDate = false;
+let userEditedReturnTime = false;
+
 // Defaults
 if (!pickupInput.value) pickupInput.value = new Date().toISOString().split('T')[0];
 if (!pickupTimeInput.value) pickupTimeInput.value = '08:00';
 
-// Always sync return = pickup + 24 hours
-function syncReturnDateTime() {
+function suggestReturnDateTime() {
+
+    // Stop overwriting if user already changed it manually
+    if (userEditedReturnDate || userEditedReturnTime) return;
+
     const pickupDT = new Date(`${pickupInput.value}T${pickupTimeInput.value}`);
     if (isNaN(pickupDT)) return;
 
     pickupDT.setHours(pickupDT.getHours() + 24);
 
-    returnInput.value = pickupDT.toISOString().split('T')[0];
-    returnTimeInput.value = pickupDT.toTimeString().slice(0, 5);
+    const returnDate = pickupDT.toISOString().split('T')[0];
+    const returnTime = pickupDT.toTimeString().slice(0, 5);
+
+    // Set min to prevent earlier selection
+    returnInput.min = returnDate;
+
+    // Auto-fill suggested values
+    returnInput.value = returnDate;
+    returnTimeInput.value = returnTime;
 }
 
-// Initial sync
-syncReturnDateTime();
+// Detect manual overrides
+returnInput.addEventListener('input', () => userEditedReturnDate = true);
+returnTimeInput.addEventListener('input', () => userEditedReturnTime = true);
+
+// Re-suggest when pickup changes
+pickupInput.addEventListener('change', () => {
+    userEditedReturnDate = false;
+    suggestReturnDateTime();
+});
+
+pickupTimeInput.addEventListener('change', () => {
+    userEditedReturnTime = false;
+    suggestReturnDateTime();
+});
+
+// Initial suggestion
+suggestReturnDateTime();
 
 // When pickup date OR time changes → auto update return
 [pickupInput, pickupTimeInput].forEach(el => {
