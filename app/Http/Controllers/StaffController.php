@@ -167,7 +167,7 @@ class StaffController extends Controller
     {
         $booking = \App\Models\Bookings::where('bookingID', $id)->firstOrFail();
         
-        $booking->bookingStatus = 'Confirmed'; 
+        $booking->bookingStatus = 'approved'; 
         $booking->save();
         
         return redirect()->route('staff.dashboard')->with('success', 'Booking has been approved successfully!');
@@ -177,7 +177,7 @@ class StaffController extends Controller
     {
         $booking = \App\Models\Bookings::where('bookingID', $id)->firstOrFail();
         
-        $booking->bookingStatus = 'Rejected'; 
+        $booking->bookingStatus = 'cancelled'; 
         $booking->save();
         
         return redirect()->route('staff.dashboard')
