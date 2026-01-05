@@ -80,20 +80,31 @@
             </div>
 
             <p class="main_txt">Pick Up Information</p>
-            <p class="sub_txt">Confirm pick up details</p>
+<p class="sub_txt">Confirm pick up details</p>
 
-    <input type="hidden" name="vehicle_id" value="{{ $vehicle->id }}">
+<input type="hidden" name="vehicle_id" value="{{ $vehicle->id }}">
 
-                <div class="form-row">
-                    <div>
-                    <label for="loc">Location:</label>
-                   <p class="static-data">{{ $pickup->pickupLocation }}</p>
-                    </div>
-                    <div>
-                    <label for="date_pickup">Pickup date:</label>
-                    <p class="static-data">{{ $pickup->pickupDate }}</p>
-                    </div>
-                </div>
+<div class="form-row">
+    <div>
+        <label for="pickupLocation">Location:</label>
+        <input type="text" 
+               name="pickupLocation" 
+               id="pickupLocation" 
+               class="form-control" 
+               placeholder="Enter pick-up location" 
+               value="{{ old('pickupLocation', $pickup->pickupLocation) }}" 
+               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; margin-top: 5px;"
+               required>
+        @error('pickupLocation')
+            <span style="color: #bc3737; font-size: 12px;">{{ $message }}</span>
+        @enderror
+    </div>
+
+    <div>
+        <label for="date_pickup">Pickup date:</label>
+        <p class="static-data">{{ $booking->startDate }}</p>
+    </div>
+</div>
 
                 <label class="checkbox">
                      <input type="checkbox" name="agreementForm" value="yes" required> 

@@ -2,67 +2,61 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Vehicles;
 use Illuminate\Http\Request;
 use App\Models\PickUp;
 use App\Models\Bookings;
 
 class PickUpController extends Controller
 {
-    public function show($bookingID)
+    public function form($bookingID)
     {
         $booking = Bookings::with('vehicle')->findOrFail($bookingID);
-        
         $onlyDepositPaid = ($booking->pay_amount_type === 'deposit');
 
-        $pickup = PickUp::where('bookingID', $bookingID)->first();
+        // Initial creation with placeholders
+        $pickup = PickUp::firstOrCreate(
+            ['bookingID' => $bookingID], 
+            [
+                'pickupDate'     => $booking->startDate,
+                'pickupLocation' => '', // Start empty, user will fill this in
+                'pickupPhoto'    => '', 
+                'agreementForm'  => 0,
+                'status'         => 'pending'
+            ]
+        );
 
         return view('pickupform', [
-        'booking' => $booking,
-        'vehicle' => $booking->vehicle,
-        'pickup' => $pickup,
-        'onlyDepositPaid' => $onlyDepositPaid
-    ]);
-    }
-    
-    public function store(Request $request)
-    {
-        $request->validate([
-            'pickupPhoto' => 'required|image|mimes:jpeg,png,jpg|max:2048',
-            'agreementForm' => 'required|in:yes'
+            'booking' => $booking,
+            'vehicle' => $booking->vehicle,
+            'pickup' => $pickup,
+            'onlyDepositPaid' => $onlyDepositPaid
         ]);
-        
-        $pickup = PickUp::findOrFail($request->pickupID);
+    }
 
-        if ($request->hasFile('pickupPhoto')) {
+    public function store(Request $request)
+{
+    $request->validate([
+        'bookingID'      => 'required',
+        'pickupLocation' => 'required|string|max:255',
+        'pickupPhoto'    => 'required|image|mimes:jpeg,png,jpg|max:2048',
+        'agreementForm'  => 'required|in:yes'
+    ]);
+    
+    $pickup = PickUp::where('bookingID', $request->bookingID)->firstOrFail();
+
+    $pickup->pickupLocation = $request->pickupLocation;
+
+    if ($request->hasFile('pickupPhoto')) {
         $file = $request->file('pickupPhoto');
-        $fileName = time() . '_vehicle.' . $file->getClientOriginalExtension();
+        $fileName = time() . '_pickup_' . $request->bookingID . '.' . $file->getClientOriginalExtension();
         $file->move(public_path('uploads/pickups'), $fileName);
         $pickup->pickupPhoto = 'uploads/pickups/' . $fileName;
     }
 
-        $pickup->bookingID = $request->bookingID;
-        $pickup->agreementForm = $request->agreementForm === 'yes' ? 1 : 0;
-        $pickup->save();
+    $pickup->agreementForm = 1;
+    // REMOVED: $pickup->status = 'completed'; <-- This was causing your error
+    $pickup->save();
 
-        return redirect()->back()->with('showModal', true);
-    }
-
-    public function form($bookingID)
-{
-    $booking = Bookings::with('vehicle')->findOrFail($bookingID);
-    
-    $onlyDepositPaid = ($booking->pay_amount_type === 'deposit');
-
-    $pickup = PickUp::where('bookingID', $bookingID)->first();
-
-    return view('pickupform', [
-        'booking' => $booking,
-        'vehicle' => $booking->vehicle,
-        'pickup' => $pickup,
-        'onlyDepositPaid' => $onlyDepositPaid
-    ]);
-
-    return redirect()->route('pickup.form', ['bookingID' => $booking->bookingID]);
+    return redirect()->back()->with('showModal', true);
 }
 }
