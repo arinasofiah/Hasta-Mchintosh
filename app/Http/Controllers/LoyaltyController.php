@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\LoyaltyCard;
 use App\Models\Promotion;
+use App\Models\Voucher; 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -27,9 +28,8 @@ class LoyaltyController extends Controller
             ['stampCount' => 0]
         );
 
-        $vouchers = $card->promotions()
-                         ->withPivot('created_at', 'is_used') 
-                         ->orderByPivot('created_at', 'desc')
+        $vouchers = Voucher::where('userID', $user->userID)
+                         ->orderBy('created_at', 'desc') 
                          ->get();
 
         return view('customer.loyaltycard', compact('card', 'vouchers', 'user'));

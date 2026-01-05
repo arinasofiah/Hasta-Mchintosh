@@ -176,27 +176,36 @@
 
             <h3 class="mt-5 mb-3">My Vouchers</h3>
 
-            @forelse($vouchers as $promo)
-                <div class="voucher-item {{ $promo->pivot->is_used ? 'used' : '' }}">
+            <div class="voucher-list-container">
+            @forelse($vouchers as $voucher)
+                <div class="voucher-item {{ $voucher->isUsed ? 'used' : '' }}">
                     <div>
-                        <h5 class="mb-1" style="font-weight: 600;">{{ $promo->title }}</h5>
-                        <div class="text-muted small">
-                            {{ $promo->description }} • 
-                            @if($promo->discountType == 'percentage')
-                                {{ intval($promo->discountValue) }}% OFF
+                        <h5 class="mb-1" style="font-weight: 600;">
+                            @if($voucher->voucherType == 'cash_reward')
+                                💰 Cash Reward
                             @else
-                                RM{{ intval($promo->discountValue) }} OFF
+                                ⏳ Free Hour
+                            @endif
+                        </h5>
+                        
+                        <div class="text-muted small">
+                            @if($voucher->voucherType == 'cash_reward')
+                                Save RM{{ number_format($voucher->value, 0) }} on your next booking!
+                            @else
+                                Enjoy {{ intval($voucher->value) }} hour(s) free ride!
                             @endif
                         </div>
+
                         <div class="text-muted small mt-1">
-                            Received: {{ $promo->pivot->created_at->format('d M Y') }}
+                            Expires: {{ \Carbon\Carbon::createFromTimestamp($voucher->expiryTime)->format('d M Y') }}
                         </div>
                     </div>
 
                     <div class="text-end">
-                        <div class="code-box">{{ $promo->code }}</div>
-                        <div style="font-size: 12px; margin-top: 5px; font-weight: 600; color: {{ $promo->pivot->is_used ? '#6c757d' : '#28a745' }}">
-                            {{ $promo->pivot->is_used ? 'REDEEMED' : 'ACTIVE' }}
+                        <div class="code-box">{{ $voucher->voucherCode }}</div>
+                        
+                        <div style="font-size: 12px; margin-top: 5px; font-weight: 600; color: {{ $voucher->isUsed ? '#6c757d' : '#28a745' }}">
+                            {{ $voucher->isUsed ? 'REDEEMED' : 'ACTIVE' }}
                         </div>
                     </div>
                 </div>
@@ -206,8 +215,7 @@
                     <p>Rent for 9+ hours to get your first <strong>RM10 Voucher</strong> instantly!</p>
                 </div>
             @endforelse
-
-        </div>
+            </div>
     </div>
 
 </body>
