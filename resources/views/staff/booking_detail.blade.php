@@ -28,7 +28,7 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span>Booking Details #{{ $booking->bookingID }}</span>
-                    <span class="badge bg-light text-dark">{{ $booking->bookingStatus ?? 'Pending' }}</span>
+                    <span class="badge bg-light text-dark">{{ $bookings->bookingStatus ?? 'Pending' }}</span>
                 </div>
                 <div class="card-body p-4">
                     
@@ -64,17 +64,21 @@
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-end mt-4">
-                        @if($booking->bookingStatus == 'Pending')
+                    <div class="d-flex justify-content-end mt-4 gap-2">
+
+                            <form action="{{ route('staff.bookings.reject', $booking->bookingID) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to REJECT this booking?')">
+                                    Reject
+                                </button>
+                            </form>
+
                             <form action="{{ route('staff.bookings.approve', $booking->bookingID) }}" method="POST">
                                 @csrf
                                 <button type="submit" class="btn btn-approve" onclick="return confirm('Are you sure you want to approve this booking?')">
                                     Approve Booking
                                 </button>
                             </form>
-                        @else
-                            <button class="btn btn-secondary" disabled>Already Processed</button>
-                        @endif
                     </div>
 
                 </div>

@@ -158,18 +158,29 @@ class StaffController extends Controller
 
     public function showBooking($id)
     {
-        $booking = \App\Models\Booking::with('customer')->where('bookingID', $id)->firstOrFail();
+        $booking = \App\Models\Bookings::with('customer')->where('bookingID', $id)->firstOrFail();
         
         return view('staff.booking_detail', compact('booking'));
     }
 
     public function approveBooking($id)
     {
-        $booking = \App\Models\Booking::where('bookingID', $id)->firstOrFail();
+        $booking = \App\Models\Bookings::where('bookingID', $id)->firstOrFail();
         
-        $booking->bookingStatus = 'Confirmed'; 
+        $booking->bookingStatus = 'approved'; 
         $booking->save();
         
         return redirect()->route('staff.dashboard')->with('success', 'Booking has been approved successfully!');
+    }
+
+    public function rejectBooking($id)
+    {
+        $booking = \App\Models\Bookings::where('bookingID', $id)->firstOrFail();
+        
+        $booking->bookingStatus = 'cancelled'; 
+        $booking->save();
+        
+        return redirect()->route('staff.dashboard')
+            ->with('success', 'Booking has been rejected.');
     }
 }
