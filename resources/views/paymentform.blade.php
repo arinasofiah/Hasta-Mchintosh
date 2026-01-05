@@ -1014,12 +1014,12 @@ document.getElementById('paymentForm').addEventListener('submit', function(e) {
 });
 
 // Success modal button handlers
-document.getElementById('viewBookings').addEventListener('click', () => {
+document.getElementById('viewBookings').addEventListener('click', function() {
     window.location.href = "{{ route('booking.history') }}";
 });
 
-document.getElementById('closeSuccess').addEventListener('click', () => {
-    successModal.style.display = 'none';
+document.getElementById('closeSuccess').addEventListener('click', function() {
+    window.location.href = "/";
 });
 
 // Voucher Handling
