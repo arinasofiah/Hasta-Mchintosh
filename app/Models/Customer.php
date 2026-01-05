@@ -80,5 +80,16 @@ class CustomerController extends Controller
                 'message' => 'Registration failed: ' . $e->getMessage()
             ], 500);
         }
+
     }
-}
+    
+    
+
+    // Relationship to Bookings
+    public function bookings()
+    {
+        return $this->hasMany(Bookings::class, 'customerID', 'userID');
+    }
+
+    }
+

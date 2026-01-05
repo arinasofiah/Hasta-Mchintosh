@@ -297,7 +297,7 @@ class CustomerController extends Controller
                 ->with('error', 'Vehicle not available for booking.');
         }
         
-        return view('customer.booking-form', compact('vehicle'));
+        return view('bookingform', compact('vehicle'));
     }
     
     /**

@@ -48,7 +48,7 @@
                 @forelse($bookings as $booking)
                 <tr>
                     <td>{{ $booking->bookingID }}</td>
-                    <td>{{ $booking->customer->name ?? 'Unknown' }}</td>
+                    <td>{{ $booking->user->name ?? 'Unknown' }}</td>
                     <td class="text-center"><a href="#" class="view-link">View</a></td>
                     <td class="text-center">
                         <span class="status-badge bg-yellow">Pending</span>

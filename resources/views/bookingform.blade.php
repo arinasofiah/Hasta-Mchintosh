@@ -205,29 +205,29 @@ textarea.input {resize:vertical; min-height:100px;}
     <div class="container">
         <!-- Booking Details Card -->
         <div class="card">
-            <div class="section-title">Pickup</div>
-            <div class="row2">
-                <div>
-                    <p><b>Date:</b> {{ $pickupDate }}</p>
-                    <input type="hidden" name="pickup_date" value="{{ $pickupDate }}">
-                </div>
-                <div>
-                    <p><b>Time:</b> {{ $pickupTime }}</p>
-                    <input type="hidden" name="pickup_time" value="{{ $pickupTime }}">
-                </div>
-            </div>
+           <div class="section-title">Pickup</div>
+<div class="row2">
+    <div>
+        <p><b>Date:</b> {{ $pickupDate ?? '' }}</p>
+        <input type="hidden" name="pickup_date" value="{{ $pickupDate ?? '' }}">
+    </div>
+    <div>
+        <p><b>Time:</b> {{ $pickupTime ?? '' }}</p>
+        <input type="hidden" name="pickup_time" value="{{ $pickupTime ?? '' }}">
+    </div>
+</div>
 
-            <div class="section-title">Return</div>
-            <div class="row2">
-                <div>
-                    <p><b>Date:</b> {{ $returnDate }}</p>
-                    <input type="hidden" name="return_date" value="{{ $returnDate }}">
-                </div>
-                <div>
-                    <p><b>Time:</b> {{ $returnTime }}</p>
-                    <input type="hidden" name="return_time" value="{{ $returnTime }}">
-                </div>
-            </div>
+<div class="section-title">Return</div>
+<div class="row2">
+    <div>
+        <p><b>Date:</b> {{ $returnDate ?? '' }}</p>
+        <input type="hidden" name="return_date" value="{{ $returnDate ?? '' }}">
+    </div>
+    <div>
+        <p><b>Time:</b> {{ $returnTime ?? '' }}</p>
+        <input type="hidden" name="return_time" value="{{ $returnTime ?? '' }}">
+    </div>
+</div>
 
             <div class="row2">
                 <div>

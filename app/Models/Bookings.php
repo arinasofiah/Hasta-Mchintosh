@@ -10,18 +10,34 @@ class Bookings extends Model
 
     protected $table = 'booking';
     protected $primaryKey = 'bookingID';
-    protected $fillable = [
-        'vehicleID',
-        'startDate',
-        'endDate',
-        'bookingDuration',
-        'bookingStatus',
-        'totalPrice',
-        'depositAmount',
-        'rewardApplied',
-        'reservation_expires_at',
-        'voucher_id'
-    ];
+   // app/Models/Bookings.php
+protected $fillable = [
+    'userID',
+    'customerID',
+    'vehicleID',
+    'startDate',
+    'endDate',
+    'pickupTime',
+    'returnTime',
+    'pickupLocation',
+    'returnLocation',
+    'destination',
+    'remark',
+    'forSomeoneElse',
+    'matricNumber',
+    'licenseNumber',
+    'college',
+    'faculty',
+    'depoBalance',
+    'bankName',
+    'bankOwnerName',
+    'bankNum', // Add if exists
+    'payAmount',
+    'paymentReceipt',
+    'promo_id',
+    'voucher_id',
+    'bookingStatus'
+];
 
     protected $dates = [
         'reservation_expires_at',
@@ -54,4 +70,27 @@ public function voucher()
     {
         return $this->belongsTo(Voucher::class, 'voucher_id', 'voucherCode');
     }
+
+// Bookings.php model - Remove customer() method and use:
+ public function customer()
+    {
+        // Since your customer table doesn't have customerID,
+        // and booking has customerID field, we need to figure out what it references
+        
+        // Option 1: If booking.customerID = customer.userID
+        // return $this->belongsTo(Customer::class, 'customerID', 'userID');
+        
+        // Option 2: If booking.customerID = users.userID (customer info in users table)
+        return $this->belongsTo(User::class, 'customerID', 'userID');
+        
+        // Option 3: If booking.customerID should actually reference users.id
+        // return $this->belongsTo(User::class, 'customerID', 'id');
+    }
+    
+    // Also add user relationship for userID field
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'userID', 'userID');
+    }
+
 }
