@@ -106,6 +106,7 @@
 
                 <div id="btn_div"> 
                     <button class="btn-primary" {{ $onlyDepositPaid ? 'disabled style=opacity:0.5;cursor:not-allowed;' : '' }}>Save</button>
+                   <!-- <button class="btn-primary">Save</button>-->
                 </div>
             </form>
         </div>
