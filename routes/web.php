@@ -85,7 +85,7 @@ Route::middleware(['auth'])->prefix('booking')->name('booking.')->group(function
     Route::post('/{vehicleID}', [BookingController::class, 'store'])->name('store');
     Route::post('/start/{vehicleID}', [BookingController::class, 'start'])->name('start');
     Route::post('/booking/confirm', [BookingController::class, 'confirmBooking'])->name('confirm');
-    Route::get('/history', [BookingController::class, 'bookingHistory'])->name('history'); // ✅
+    Route::get('/history', [BookingController::class, 'bookingHistory'])->name('history');
     Route::post('/payment-form', [BookingController::class, 'showPaymentForm'])->name('payment.form');
 });
 
@@ -137,5 +137,7 @@ Route::get('/payment-form', function () {
 Route::post('/customer/booking/{id}/cancel', [CustomerController::class, 'cancelBooking'])
     ->name('customer.booking.cancel')
     ->middleware('auth');
-    
+   
+Route::get('/booking-history', [BookingController::class, 'history'])->name('booking.history');
+
 require __DIR__.'/auth.php';
