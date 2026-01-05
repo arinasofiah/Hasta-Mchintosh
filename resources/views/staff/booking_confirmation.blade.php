@@ -47,8 +47,8 @@
             <tbody>
                 @forelse($bookings as $booking)
                 <tr>
-                    <td>{{ $bookings->bookingID }}</td>
-                    <td>{{ $bookings->customer->name ?? 'Unknown' }}</td>
+                    <td>{{ $booking->bookingID }}</td>
+                    <td>{{ $booking->customer->name ?? 'Unknown' }}</td>
                     <td class="text-center">
                         <a href="{{ route('staff.bookings.show', $booking->bookingID) }}" class="view-link">View</a>
                     </td>
