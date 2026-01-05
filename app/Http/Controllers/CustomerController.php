@@ -659,7 +659,7 @@ class CustomerController extends Controller
         return response()->json($booking);
     }
 
-   /**
+  /**
  * Cancel a booking
  */
 public function cancelBooking(Request $request, $bookingId)
@@ -695,15 +695,14 @@ public function cancelBooking(Request $request, $bookingId)
             'updated_at' => now(),
         ]);
     
-    // If booking was approved, update vehicle status back to available
-    if ($booking->bookingStatus === 'approved') {
-        DB::table('vehicles')
-            ->where('vehicleID', $booking->vehicleID)
-            ->update(['status' => 'available']);
-    }
+    // ALWAYS update vehicle status back to available when cancelled
+    // This ensures the vehicle can be booked by other customers immediately
+    DB::table('vehicles')
+        ->where('vehicleID', $booking->vehicleID)
+        ->update(['status' => 'available']);
     
     return redirect()->route('bookingHistory')
-        ->with('success', 'Booking cancelled successfully.');
+        ->with('success', 'Booking cancelled successfully. Vehicle is now available for booking.');
 }
 
 }
