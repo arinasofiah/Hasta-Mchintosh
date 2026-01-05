@@ -140,7 +140,8 @@ Route::post('/customer/booking/{id}/cancel', [CustomerController::class, 'cancel
    
 Route::get('/booking-history', [BookingController::class, 'history'])->name('booking.history');
 
-Route::get('/pickup/form/{bookingID}', [PickupController::class, 'form'])->name('pickup.form');
-Route::get('/return/form/{bookingID}', [ReturnController::class, 'showForm'])->name('return.form');
+
+Route::get('/staff/booking/{id}', [StaffController::class, 'showBooking'])->name('staff.bookings.show');
+Route::post('/staff/booking/{id}/approve', [StaffController::class, 'approveBooking'])->name('staff.bookings.approve');
 
 require __DIR__.'/auth.php';
