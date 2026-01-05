@@ -226,7 +226,8 @@ class CustomerController extends Controller
                 'booking.created_at',
                 'vehicles.model',
                 'vehicles.vehicleType',
-                'vehicles.plateNumber'
+                'vehicles.plateNumber',
+                'vehicles.vehiclePhoto'
             )
             ->orderBy('booking.created_at', 'desc')
             ->get();
