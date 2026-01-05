@@ -25,14 +25,15 @@
 </head>
 
 <body>
-    
+    @include('profile.partials.header') <main>
+        </main>
 @if(session('error'))
     <div class="alert alert-danger text-center" style="margin: 0; padding: 12px; font-weight: 500;">
         {{ session('error') }}
     </div>
 @endif
 
-<div id="header">
+<!--<div id="header">
     <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}">
 
     <div id="menu">
@@ -58,7 +59,7 @@
             <a id="username" href="{{ route('login') }}">Log in</a>
         @endguest
     </div>
-</div>
+</div>-->
 
 <div class="browse-header">
     <h1>Our Car Models</h1>
