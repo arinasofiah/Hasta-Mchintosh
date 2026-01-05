@@ -155,4 +155,21 @@ class StaffController extends Controller
 
         return back()->with('success', 'Payment verified, Booking approved & Loyalty Stamp added!');
     }
+
+    public function showBooking($id)
+    {
+        $booking = \App\Models\Booking::with('customer')->where('bookingID', $id)->firstOrFail();
+        
+        return view('staff.booking_detail', compact('booking'));
+    }
+
+    public function approveBooking($id)
+    {
+        $booking = \App\Models\Booking::where('bookingID', $id)->firstOrFail();
+        
+        $booking->bookingStatus = 'Confirmed'; 
+        $booking->save();
+        
+        return redirect()->route('staff.dashboard')->with('success', 'Booking has been approved successfully!');
+    }
 }
