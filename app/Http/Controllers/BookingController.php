@@ -157,12 +157,13 @@ class BookingController extends Controller
 
         // ✅ NEW: Fetch Eligible Vouchers for the view
         // Logic: Vouchers that are NOT used and NOT expired
-        $eligibleVouchers = Voucher::where('isUsed', 0)
+        $eligibleVouchers = Voucher::where('userID', Auth::id()) // <--- ADD THIS LINE
+                                   ->where('isUsed', 0)
                                    ->where('expiryTime', '>', time()) // Check timestamp
                                    ->get()
                                    ->map(function($v) {
                                         return (object)[
-                                            'promoID' => $v->voucherCode, // Mapping ID to promoID for JS compatibility
+                                            'promoID' => $v->voucherCode,
                                             'title' => ($v->voucherType == 'free_hour' ? 'Free Hour' : 'Cash Voucher'),
                                             'code' => $v->voucherCode,
                                             'discountValue' => $v->value
@@ -203,7 +204,9 @@ class BookingController extends Controller
         $code = $request->code; // User enters the ID (e.g., 105)
         
         // Find voucher in DB
-        $voucher = Voucher::where('voucherCode', $code)->first();
+        $voucher = Voucher::where('voucherCode', $code)
+                          ->where('userID', Auth::id())
+                          ->first();
 
         if (!$voucher) {
             return response()->json([
@@ -257,7 +260,6 @@ class BookingController extends Controller
 
             $vehicle = Vehicles::findOrFail($request->vehicleID);
             
-            // ... (Your calculation logic) ...
             
             // Save Booking
             $booking = new Bookings();
@@ -270,23 +272,23 @@ class BookingController extends Controller
             $booking->promo_id = $request->promo_id;
             
             if ($request->voucher_id) {
-                // You might need a column 'voucher_id' in bookings table
-                 $booking->voucher_id = $request->voucher_id; 
-                 
-                 // Mark voucher as used
-                 $voucher = Voucher::find($request->voucher_id);
-                 if($voucher) {
-                     $voucher->isUsed = 1;
-                     $voucher->save();
-                 }
+                $voucher = Voucher::where('voucherCode', $request->voucher_id)
+                                ->where('userID', Auth::id()) 
+                                ->first();
+                                
+                if($voucher) {
+                    $booking->voucher_id = $request->voucher_id; 
+                    
+                    $voucher->isUsed = 1;
+                    $voucher->save();
+                }
             }
 
-            // ... (rest of your saving logic) ...
             
             $booking->save(); // Just a placeholder, ensure you copy your exact saving logic back
             
             // Update vehicle status
-            $vehicle->status = 'rented';
+            $vehicle->status = 'unavailable';
             $vehicle->save();
 
             return response()->json([

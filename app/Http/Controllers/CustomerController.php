@@ -451,6 +451,7 @@ class CustomerController extends Controller
                     'updated_at' => now(),
                 ]);
             
+            
             // Update vehicle status back to "available"
             $booking = DB::table('booking')->where('bookingID', $bookingId)->first();
             if ($booking) {
@@ -459,6 +460,36 @@ class CustomerController extends Controller
                     ->update(['status' => 'available']);
             }
             
+            $booking = DB::table('booking')->where('bookingID', $bookingId)->first();
+                        $startTime = Carbon::parse($booking->startDate);
+            $returnTime = Carbon::parse($request->return_completed_at ?? now());
+            $hoursRented = $returnTime->diffInHours($startTime);
+
+            if ($hoursRented >= 9) {
+                $customerProfile = DB::table('customer')->where('userID', $userId)->first();
+                
+                if ($customerProfile && $customerProfile->matricNumber) {
+                    $card = LoyaltyCard::firstOrCreate(
+                        ['matricNumber' => $customerProfile->matricNumber],
+                        ['stampCount' => 0]
+                    );
+
+                    $card->stampCount += 1;
+                    $card->save();
+
+                    $newVoucherCode = 'LOYAL-' . strtoupper(Str::random(6));
+
+                    Voucher::create([
+                        'voucherCode' => $newVoucherCode,
+                        'voucherType' => 'cash_reward', 
+                        'value' => 10.00, 
+                        'expiryTime' => now()->addMonths(1)->timestamp, // Valid for 1 month
+                        'isUsed' => 0,
+                        'userID' => $userId // Bind to this specific user
+                    ]);
+                }
+            }
+
             // Handle damage images upload if any
             if ($request->hasFile('damage_images')) {
                 foreach ($request->file('damage_images') as $image) {
