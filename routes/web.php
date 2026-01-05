@@ -134,4 +134,8 @@ Route::get('/payment-form', function () {
     return view('paymentform');
 })->name('payment.form');
 
+Route::post('/customer/booking/{id}/cancel', [CustomerController::class, 'cancelBooking'])
+    ->name('customer.booking.cancel')
+    ->middleware('auth');
+    
 require __DIR__.'/auth.php';
