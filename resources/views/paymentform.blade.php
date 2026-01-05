@@ -576,7 +576,7 @@
     <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}">
 
     <div id="menu">
-        <button class="head_button">Home</button>
+        <a href="{{ url('/') }}"><button class="head_button">Home</button></a>
         <button class="head_button">Vehicles</button>
         <button class="head_button">Details</button>
         <button class="head_button">About Us</button>

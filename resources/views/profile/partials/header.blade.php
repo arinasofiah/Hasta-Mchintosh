@@ -1,13 +1,14 @@
-<!DOCTYPE html>
 <div id="header">
-    <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}">
+    <a href="{{ url('/') }}">
+        <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}" alt="Logo">
+    </a>
 
     <div id="menu">
-        <button class="head_button">Home</button>
-        <button class="head_button">Vehicles</button>
-        <button class="head_button">Details</button>
-        <button class="head_button">About Us</button>
-        <button class="head_button">Contact Us</button>
+        <a href="{{ url('/') }}"><button class="head_button">Home</button></a>
+        <a href="{{ route('vehicles.index') }}"><button class="head_button">Vehicles</button></a>
+        <a href="{{ url('/details') }}"><button class="head_button">Details</button></a>
+        <!--<a href="{{ url('/about') }}"><button class="head_button">About Us</button></a>
+        <a href="{{ url('/contact') }}"><button class="head_button">Contact Us</button></a>-->
     </div>
 
     <div id="profile">
@@ -21,9 +22,13 @@
                 @endguest
 
                 @auth
+                    <a href="{{ route('customer.profile') }}" class="dropdown-item">My Profile</a>
+                    
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="dropdown-item">Logout</button>
+                        <button type="submit" class="dropdown-item" style="width: 100%; text-align: left; border: none; background: none; cursor: pointer;">
+                            Logout
+                        </button>
                     </form>
                 @endauth
             </div>
@@ -38,4 +43,3 @@
         @endauth
     </div>
 </div>
-</html>
