@@ -65,7 +65,7 @@
                     </div>
 
                     <div class="d-flex justify-content-end mt-4 gap-2">
-                        @if($booking->bookingStatus == 'Pending')
+                        @if($bookings->bookingStatus == 'Pending')
                             
                             <form action="{{ route('staff.bookings.reject', $bookings->bookingID) }}" method="POST">
                                 @csrf
@@ -83,7 +83,7 @@
 
                         @else
                             <button class="btn btn-secondary" disabled>
-                                Action Taken: {{ $booking->bookingStatus }}
+                                Action Taken: {{ $bookings->bookingStatus }}
                             </button>
                         @endif
                     </div>
