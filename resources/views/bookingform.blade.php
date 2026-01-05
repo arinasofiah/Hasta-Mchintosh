@@ -611,7 +611,7 @@ function checkPromotion() {
             }
         }
         
-        const finalTotal = amount - promotionDiscount;
+        const finalTotal = window.baseGrandTotal - promotionDiscount;
         const grandTotalEl = document.getElementById('grandTotal');
         const bottomBarTotalEl = document.getElementById('bottomBarTotal');
         
@@ -626,7 +626,7 @@ function checkPromotion() {
     })
     .catch(error => {
         console.error('Error checking promotion:', error);
-        const finalTotal = amount;
+        const finalTotal = window.baseGrandTotal;
         const grandTotalEl = document.getElementById('grandTotal');
         const bottomBarTotalEl = document.getElementById('bottomBarTotal');
         
