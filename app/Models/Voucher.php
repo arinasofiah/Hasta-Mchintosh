@@ -14,6 +14,7 @@ class Voucher extends Model
     public $timestamps = true;
 
     protected $fillable = [
+        'userID',
         'voucherType',
         'value',
         'expiryTime',
