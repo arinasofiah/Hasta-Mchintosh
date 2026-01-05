@@ -64,16 +64,27 @@
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-end mt-4">
+                    <div class="d-flex justify-content-end mt-4 gap-2">
                         @if($booking->bookingStatus == 'Pending')
+                            
+                            <form action="{{ route('staff.bookings.reject', $booking->bookingID) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to REJECT this booking?')">
+                                    Reject
+                                </button>
+                            </form>
+
                             <form action="{{ route('staff.bookings.approve', $booking->bookingID) }}" method="POST">
                                 @csrf
                                 <button type="submit" class="btn btn-approve" onclick="return confirm('Are you sure you want to approve this booking?')">
                                     Approve Booking
                                 </button>
                             </form>
+
                         @else
-                            <button class="btn btn-secondary" disabled>Already Processed</button>
+                            <button class="btn btn-secondary" disabled>
+                                Action Taken: {{ $booking->bookingStatus }}
+                            </button>
                         @endif
                     </div>
 
