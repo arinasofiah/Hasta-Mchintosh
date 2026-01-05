@@ -172,4 +172,15 @@ class StaffController extends Controller
         
         return redirect()->route('staff.dashboard')->with('success', 'Booking has been approved successfully!');
     }
+
+    public function rejectBooking($id)
+    {
+        $booking = \App\Models\Booking::where('bookingID', $id)->firstOrFail();
+        
+        $booking->bookingStatus = 'Rejected'; 
+        $booking->save();
+        
+        return redirect()->route('staff.dashboard')
+            ->with('success', 'Booking has been rejected.');
+    }
 }
