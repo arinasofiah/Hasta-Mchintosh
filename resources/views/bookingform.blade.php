@@ -7,6 +7,7 @@
 <title>HASTA – Booking Details</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="{{ asset('css/header.css') }}" rel="stylesheet">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
 /* ====== Reset & Body ====== */
@@ -14,13 +15,46 @@
 body {font-family:'Inter',sans-serif;background:#f5f5f5;color:#333;padding-bottom:120px;}
 
 
-/* ====== Progress Steps ====== */
-.progress-container {max-width:1200px; margin:50px auto; padding:0 20px;}
-.steps {display:flex; justify-content:center; align-items:center; margin-bottom:50px;}
-.step {display:flex; align-items:center; gap:10px; padding:15px 40px; border:2px solid #ddd; border-radius:50px; background:white; color:#999; font-weight:600;}
-.step.filled {border-color:#d94242; background:#d94242; color:white;}
-.step.active {border-color:#d94242; color:#d94242;}
-.step-connector {width:100px; height:2px; background-color:#ddd;}
+.progress-container { 
+            max-width: 1200px; 
+            margin: 40px auto; 
+            padding: 0 20px; 
+        }
+        .steps { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px; 
+            margin-bottom: 40px; 
+            flex-wrap: wrap;
+        }
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            min-width: 140px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .step.filled { 
+            background: #d94444; 
+            color: white; 
+            border: none;
+        }
+        .step.active { 
+            border: 2px solid #d94444; 
+            color: #d94444; 
+            background: white;
+        }
+        .step-connector { 
+            width: 80px; 
+            height: 2px; 
+            background: #ddd;
+        }
 
 /* ====== Container ====== */
 .container {max-width:1200px; margin:0 auto; padding:0 20px; display:grid; grid-template-columns:1fr; gap:20px;}
@@ -150,7 +184,7 @@ textarea.input {resize:vertical; min-height:100px;}
             <i class="fas fa-car"></i>
             <span>Vehicle</span>
         </div>
-        <div class="step active"></div>
+        <div class="step-connector"></div>
         <div class="step active">
             <i class="fas fa-calendar-check"></i>
             <span>Booking Details</span>

@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/selectVehicle.css') }}">
     <link href="{{ asset('css/header.css') }}" rel="stylesheet">
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         * {
@@ -70,86 +71,79 @@
             fill: #d94242;
         }
 
-        /* Progress Steps */
-        .progress-container {
-            max-width: 1200px;
-            margin: 50px auto;
-            padding: 0 20px;
+        .progress-container { 
+            max-width: 1200px; 
+            margin: 40px auto; 
+            padding: 0 20px; 
         }
-
-        .steps {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 50px;
+        .steps { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px; 
+            margin-bottom: 40px; 
+            flex-wrap: wrap;
         }
-
         .step {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 15px 40px;
-            border: 2px solid #ddd;
+            gap: 8px;
+            padding: 12px 25px;
             border-radius: 50px;
-            background-color: white;
-            color: #999;
+            font-size: 14px;
             font-weight: 600;
-            cursor: default;
-            pointer-events: none;
-            opacity: 0.6;
+            min-width: 140px;
+            text-align: center;
+            transition: all 0.3s ease;
         }
-
-        .step.active {
-            border-color: #d94242;
-            color: #d94242;
+        .step.filled { 
+            background: #d94444; 
+            color: white; 
+            border: none;
         }
-
-        .step-icon {
-            width: 24px;
-            height: 24px;
+        .step.active { 
+            border: 2px solid #d94444; 
+            color: #d94444; 
+            background: white;
         }
-
-        .step-connector {
-            width: 100px;
-            height: 2px;
-            background-color: #ddd;
-        }
-
-        .step.enabled{
-            border-color: #d94242;
-            color: #d94242;
-            cursor: pointer;          
-            pointer-events: auto;
-            opacity: 1;
+        .step-connector { 
+            width: 80px; 
+            height: 2px; 
+            background: #ddd;
         }
 
         /* Booking Form */
-        .booking-form {
-            max-width: 1200px;
-            margin: 0 auto 50px;
-            padding: 0 20px;
-            display: flex;
-            justify-content: center;
-        }
+        /* Update this container to allow items to fill the width */
+.date-time-group {
+    display: flex;
+    gap: 15px;
+    width: 100%;
+    max-width: 1200px; /* Limits the stretch on very large monitors */
+    margin: 0 auto;    /* Centers the entire container */
+    justify-content: space-between;
+    align-items: flex-end;
+}
 
-        .booking-form form {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-        }
+/* Allow each input wrapper to grow and take up equal space */
+.input-wrapper {
+    position: relative;
+    flex: 1;           /* This is the key change: it forces items to grow */
+    min-width: 120px;  /* Prevents them from getting too squashed */
+}
 
-        .date-time-row {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            align-items: flex-end;
-        }
+/* Updated Booking Form container */
+.booking-form {
+    width: 100%;
+    margin: 0 auto 50px;
+    padding: 0 50px;   /* Adds side padding so it's not touching screen edges */
+    display: flex;
+    justify-content: center;
+}
 
-        .input-wrapper {
-            position: relative;
-            flex: 0 1 auto;
-            min-width: 150px;
-        }
+.booking-form form {
+    width: 100%;
+    display: flex;
+}
 
         .input-label {
             font-size: 12px;
@@ -465,24 +459,24 @@
     </div>
     
     <!-- Progress Steps -->
-    <div class="progress-container">
-        <div class="steps">
-            <div class="step active">
-                <i class="fas fa-car"></i>
-                <span>Vehicle</span>
-            </div>
-            <div class="step-connector"></div>
-            <div class="step">
-                <i class="fas fa-calendar-check"></i>
-                <span>Booking Details</span>
-            </div>
-            <div class="step-connector"></div>
-            <div class="step">
-                <i class="fas fa-credit-card"></i>
-                <span>Payment</span>
-            </div>
+<div class="progress-container">
+    <div class="steps">
+        <div class="step active">
+            <i class="fas fa-car"></i>
+            <span>Vehicle</span>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step">
+            <i class="fas fa-calendar-check"></i>
+            <span>Booking Details</span>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step">
+            <i class="fas fa-credit-card"></i>
+            <span>Payment</span>
         </div>
     </div>
+</div>
 
     <!-- Booking Form -->
     <div class="booking-form">
