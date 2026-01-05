@@ -239,12 +239,54 @@
             background-color: white;
             color: #bc3737;
             border: 2px solid #bc3737;
+            margin-right: 10px;
         }
 
         .action-btn:hover {
             background-color: #bc3737;
             color: white;
             border-color: #bc3737;
+        }
+
+        .action-btn-secondary {
+            padding: 10px 25px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            background-color: white;
+            color: #666;
+            border: 2px solid #666;
+            margin-right: 10px;
+        }
+
+        .action-btn-secondary:hover {
+            background-color: #666;
+            color: white;
+            border-color: #666;
+        }
+
+        .action-btn-danger {
+            padding: 10px 25px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            background-color: white;
+            color: #e74c3c;
+            border: 2px solid #e74c3c;
+        }
+
+        .action-btn-danger:hover {
+            background-color: #e74c3c;
+            color: white;
+            border-color: #e74c3c;
         }
 
         .action-btn-link {
@@ -616,9 +658,10 @@
                 padding: 8px;
             }
             
-            .action-btn {
+            .action-btn, .action-btn-secondary, .action-btn-danger {
                 width: 100%;
                 text-align: center;
+                margin-bottom: 10px;
             }
             
             .modal-content {
@@ -779,10 +822,12 @@
 
                             <div class="status active">Active</div>
 
-                            <button class="action-btn" 
-                                    onclick="showDetailsModal({{ $booking->bookingID }})">
-                                View Details
-                            </button>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="action-btn" 
+                                        onclick="showDetailsModal({{ $booking->bookingID }})">
+                                    View Details
+                                </button>
+                            </div>
                         </div>
                     </div>
                 @empty
@@ -817,10 +862,16 @@
 
                             <div class="status pending">Pending</div>
 
-                            <button class="action-btn" 
-                                    onclick="showCancelModal({{ $booking->bookingID }})">
-                                Cancel Booking
-                            </button>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="action-btn-secondary" 
+                                        onclick="showDetailsModal({{ $booking->bookingID }})">
+                                    View Details
+                                </button>
+                                <button class="action-btn-danger" 
+                                        onclick="showCancelModal({{ $booking->bookingID }})">
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
                     </div>
                 @empty
@@ -887,11 +938,18 @@
                                         </div>
                                     </div>
                                     
-                                    <a href="{{ route('customer.booking.form', ['vehicleId' => $booking->vehicleID]) }}" 
-                                       class="action-btn-link"
-                                       style="padding: 5px 10px; font-size: 12px;">
-                                        Rebook
-                                    </a>
+                                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                                        <button class="action-btn" 
+                                                onclick="showDetailsModal({{ $booking->bookingID }})"
+                                                style="padding: 5px 10px; font-size: 12px;">
+                                            View
+                                        </button>
+                                        <a href="{{ route('customer.booking.form', ['vehicleId' => $booking->vehicleID]) }}" 
+                                           class="action-btn-link"
+                                           style="padding: 5px 10px; font-size: 12px;">
+                                            Rebook
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         @empty
@@ -977,30 +1035,31 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal('detailsModal')">Close</button>
-                <button class="btn btn-primary" onclick="downloadReceipt()">Download Receipt</button>
             </div>
         </div>
     </div>
 
     <!-- Cancel Modal -->
-    <div id="cancelModal" class="modal">
+   <!-- Cancel Modal -->
+<div id="cancelModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
             <h2>Cancel Booking</h2>
             <button class="close-btn" onclick="closeModal('cancelModal')">&times;</button>
         </div>
-        <div class="modal-body">
-            <!-- Add this hidden input -->
-            <input type="hidden" name="_token" value="{{ csrf_token() }}">
-            <input type="hidden" id="cancelBookingId">
-            
-            <div class="info-message">
-                <strong>Current Booking Details:</strong>
-                <div id="cancel-booking-details">
-                    <!-- Will be populated by JavaScript -->
+        <form id="cancelForm" method="POST">
+            @csrf
+            @method('POST')
+            <div class="modal-body">
+                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                <input type="hidden" id="cancelBookingId" name="booking_id">
+                
+                <div class="info-message">
+                    <strong>Current Booking Details:</strong>
+                    <div id="cancel-booking-details">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
                 </div>
-            </div>
-
 
                 <div class="warning-message">
                     <strong>Cancellation Policy:</strong><br>
@@ -1009,15 +1068,13 @@
                     • Refund will make in 2 weeks of working days
                 </div>
 
-                <div class="form-group">
-                    <label for="cancellationReason">Reason for Cancellation (Optional)</label>
-                    <textarea id="cancellationReason" placeholder="Please provide reason for cancellation..."></textarea>
-                </div>
-             </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeModal('cancelModal')">Close</button>
-            <button class="btn btn-danger" onclick="confirmCancel()">Confirm Cancellation</button>
-        </div>
+                <!-- Removed cancellation reason textarea -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('cancelModal')">Close</button>
+                <button type="button" class="btn btn-danger" onclick="submitCancelForm()">Confirm Cancellation</button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -1036,7 +1093,10 @@
 
     function showDetailsModal(bookingId) {
         const booking = findBookingById(bookingId);
-        if (!booking) return;
+        if (!booking) {
+            alert('Booking not found');
+            return;
+        }
 
         document.getElementById('detail-model').textContent = booking.model ?? '-';
         document.getElementById('detail-type').textContent = booking.vehicleType ?? '-';
@@ -1057,61 +1117,70 @@
         document.getElementById('detail-bank').textContent = booking.bankNum ?? '-';
         document.getElementById('detail-bank-name').textContent = booking.penamaBank ?? '-';
 
+        // Store booking ID for receipt download
         document.getElementById('cancelBookingId').value = booking.bookingID;
         document.getElementById('detailsModal').classList.add('active');
     }
 
     function showCancelModal(bookingId) {
-        const booking = findBookingById(bookingId);
-        if (!booking) return;
-
-        document.getElementById('cancelBookingId').value = booking.bookingID;
-        document.getElementById('cancel-booking-details').innerHTML = `
-            <strong>Vehicle:</strong> ${booking.model ?? '-'}<br>
-            <strong>Dates:</strong> ${formatDate(booking.startDate)} - ${formatDate(booking.endDate)}<br>
-            <strong>Total:</strong> RM${Number(booking.totalPrice ?? 0).toFixed(2)}
-        `;
-
-        document.getElementById('cancelModal').classList.add('active');
+    const booking = findBookingById(bookingId);
+    if (!booking) {
+        alert('Booking not found');
+        return;
     }
+
+    // Set form action dynamically
+    const cancelForm = document.getElementById('cancelForm');
+    cancelForm.action = `/customer/booking/${bookingId}/cancel`;
+    
+    // Set booking ID in form
+    document.getElementById('cancelBookingId').value = bookingId;
+    
+    // Populate booking details
+    document.getElementById('cancel-booking-details').innerHTML = `
+        <strong>Vehicle:</strong> ${booking.model ?? '-'}<br>
+        <strong>Dates:</strong> ${formatDate(booking.startDate)} - ${formatDate(booking.endDate)}<br>
+        <strong>Total:</strong> RM${Number(booking.totalPrice ?? 0).toFixed(2)}<br>
+        <strong>Status:</strong> ${booking.bookingStatus ?? 'Pending'}
+    `;
+    
+    // Show modal
+    document.getElementById('cancelModal').classList.add('active');
+}
 
     function closeModal(id) {
         document.getElementById(id).classList.remove('active');
     }
 
-    function confirmCancel() {
-        const bookingId = document.getElementById('cancelBookingId').value;
-        const reason = document.getElementById('cancellationReason').value;
-
-        if (!confirm('Are you sure you want to cancel this booking?')) return;
-
-        fetch(`/customer/booking/${bookingId}/cancel`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ reason })
-        })
-        .then(res => res.json())
-        .then(data => {
-            alert(data.message || 'Booking cancelled successfully');
-            location.reload();
-        });
+    function submitCancelForm() {
+    const bookingId = document.getElementById('cancelBookingId').value;
+    
+    if (!confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
+        return;
     }
 
-    function downloadReceipt() {
-        const bookingId = document.getElementById('cancelBookingId').value;
-        window.open(`/customer/booking/${bookingId}/receipt`, '_blank');
-    }
+    // Show loading state
+    const cancelBtn = document.querySelector('#cancelModal .btn-danger');
+    const originalText = cancelBtn.textContent;
+    cancelBtn.textContent = 'Processing...';
+    cancelBtn.disabled = true;
+
+    // Submit the form
+    document.getElementById('cancelForm').submit();
+}
+
 
     function formatDate(date) {
         if (!date) return '-';
-        return new Date(date).toLocaleDateString('en-GB', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric'
-        });
+        try {
+            return new Date(date).toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+        } catch (e) {
+            return date;
+        }
     }
 
     window.onclick = function(e) {
@@ -1119,6 +1188,12 @@
             e.target.classList.remove('active');
         }
     };
+
+    // Add error handling for fetch requests
+    document.addEventListener('DOMContentLoaded', function() {
+        // Console log for debugging
+        console.log('Bookings data loaded:', bookingsData.length, 'bookings');
+    });
 </script>
 
 
