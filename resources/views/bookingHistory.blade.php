@@ -800,7 +800,7 @@
                             <div class="dates">
                                 @if($booking->bookingStatus === 'approved')
                                     <div class="date-link">
-                                        <a href="{{ route('customer.pickup.form', ['bookingId' => $booking->bookingID]) }}" 
+                                        <a href="{{ route('pickup.form', ['bookingID' => $booking->bookingID]) }}" 
                                            class="date-link-text"
                                            title="Click to go to pickup form">
                                             {{ date('d M Y', strtotime($booking->startDate)) }}
@@ -808,7 +808,7 @@
                                     </div>
                                     <span style="margin: 0 5px;">-</span>
                                     <div class="date-link">
-                                        <a href="{{ route('customer.return.form', ['bookingId' => $booking->bookingID]) }}" 
+                                        <a href="{{ route('return.form', ['bookingID' => $booking->bookingID]) }}" 
                                            class="date-link-text"
                                            title="Click to go to return form">
                                             {{ date('d M Y', strtotime($booking->endDate)) }}

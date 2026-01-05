@@ -47,4 +47,22 @@ class PickUpController extends Controller
 
         return redirect()->back()->with('showModal', true);
     }
+
+    public function form($bookingID)
+{
+    $booking = Bookings::with('vehicle')->findOrFail($bookingID);
+    
+    $onlyDepositPaid = ($booking->pay_amount_type === 'deposit');
+
+    $pickup = PickUp::where('bookingID', $bookingID)->first();
+
+    return view('pickupform', [
+        'booking' => $booking,
+        'vehicle' => $booking->vehicle,
+        'pickup' => $pickup,
+        'onlyDepositPaid' => $onlyDepositPaid
+    ]);
+
+    return redirect()->route('pickup.form', ['bookingID' => $booking->bookingID]);
+}
 }
