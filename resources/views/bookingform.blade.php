@@ -489,55 +489,87 @@ function showMessage(text, type) {
 
 // Calculate duration and prices
 function calculateDurationAndPrice() {
-    const pickupDate = '{{ $pickupDate }}';
-    const pickupTime = '{{ $pickupTime }}';
-    const returnDate = '{{ $returnDate }}';
-    const returnTime = '{{ $returnTime }}';
-
-    if (!pickupDate || !pickupTime || !returnDate || !returnTime) {
-        console.log('Missing date/time values');
+    // Get values from hidden inputs (more reliable than PHP variables)
+    const pickupDateInput = document.querySelector('input[name="pickup_date"]');
+    const pickupTimeInput = document.querySelector('input[name="pickup_time"]');
+    const returnDateInput = document.querySelector('input[name="return_date"]');
+    const returnTimeInput = document.querySelector('input[name="return_time"]');
+    
+    if (!pickupDateInput || !pickupTimeInput || !returnDateInput || !returnTimeInput) {
+        console.error('Missing date/time inputs');
         return;
     }
-
+    
+    const pickupDate = pickupDateInput.value;
+    const pickupTime = pickupTimeInput.value;
+    const returnDate = returnDateInput.value;
+    const returnTime = returnTimeInput.value;
+    
+    // Validate inputs
+    if (!pickupDate || !pickupTime || !returnDate || !returnTime) {
+        console.error('Missing date/time values');
+        return;
+    }
+    
+    // Parse dates properly
     const pickup = new Date(`${pickupDate}T${pickupTime}`);
     const returnDT = new Date(`${returnDate}T${returnTime}`);
-
-    console.log('Pickup:', pickup);
-    console.log('Return:', returnDT);
-
-    if (returnDT <= pickup) {
-        console.error('Invalid date range');
+    
+    // Check if dates are valid
+    if (isNaN(pickup.getTime()) || isNaN(returnDT.getTime())) {
+        console.error('Invalid date format');
         return;
     }
-
+    
+    // Check if return is after pickup
+    if (returnDT <= pickup) {
+        console.error('Return date must be after pickup date');
+        return;
+    }
+    
+    // Calculate duration
     const diffMs = returnDT - pickup;
     const diffHours = Math.ceil(diffMs / (1000 * 60 * 60));
-
+    
     const days = Math.floor(diffHours / 24);
     const remainingHours = diffHours % 24;
-
+    
+    // Format duration text
     const durationText = days > 0
         ? `${days} day${days > 1 ? 's' : ''} ${remainingHours} hour${remainingHours !== 1 ? 's' : ''}`
         : `${diffHours} hour${diffHours !== 1 ? 's' : ''}`;
-
-    document.getElementById('durationInput').value = durationText;
-    document.getElementById('durationDisplay').textContent = durationText;
-
-    const totalByHour = diffHours * pricePerHour;
-    baseGrandTotal = (days * pricePerDay) + (remainingHours * pricePerHour);
-
-    document.getElementById('totalByHour').textContent = `MYR ${totalByHour.toFixed(2)}`;
-
+    
+    // Update duration fields
+    const durationInput = document.getElementById('durationInput');
+    const durationDisplay = document.getElementById('durationDisplay');
+    
+    if (durationInput) durationInput.value = durationText;
+    if (durationDisplay) durationDisplay.textContent = durationText;
+    
+    // Calculate pricing
+    const totalByHour = diffHours * {{ $vehicle->pricePerHour }};
+    const baseGrandTotal = (days * {{ $vehicle->pricePerDay }}) + (remainingHours * {{ $vehicle->pricePerHour }});
+    
+    // Update UI
+    const totalByHourEl = document.getElementById('totalByHour');
+    if (totalByHourEl) {
+        totalByHourEl.textContent = `MYR ${totalByHour.toFixed(2)}`;
+    }
+    
+    // Store in global variable for later use
+    window.baseGrandTotal = baseGrandTotal;
+    
     console.log('Duration Hours:', diffHours);
     console.log('Base Grand Total:', baseGrandTotal);
-
-    checkPromotion();
+    
+    // Check promotion
+    checkPromotion(baseGrandTotal);
 }
 
-function checkPromotion() {
+function checkPromotion(amount) {
     const today = new Date();
     const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
-
+    
     fetch('/check-promotion', {
         method: 'POST',
         headers: {
@@ -546,18 +578,23 @@ function checkPromotion() {
         },
         body: JSON.stringify({
             day: dayName,
-            amount: baseGrandTotal
+            amount: amount
         })
     })
     .then(response => response.json())
     .then(data => {
         console.log('Promotion response:', data);
         
+        let promotionDiscount = 0;
         if (data.hasPromotion) {
             promotionDiscount = data.discount;
-            document.getElementById('promotionDiscount').textContent = `- MYR ${promotionDiscount.toFixed(2)}`;
-            document.getElementById('promotionDiscount').style.color = '#28a745';
+            const promoDiscountEl = document.getElementById('promotionDiscount');
+            if (promoDiscountEl) {
+                promoDiscountEl.textContent = `- MYR ${promotionDiscount.toFixed(2)}`;
+                promoDiscountEl.style.color = '#28a745';
+            }
             
+            // Add promo ID to form
             let promoInput = document.getElementById('appliedPromoId');
             if (!promoInput) {
                 promoInput = document.createElement('input');
@@ -568,24 +605,37 @@ function checkPromotion() {
             }
             promoInput.value = data.promoID;
         } else {
-            promotionDiscount = 0;
-            document.getElementById('promotionDiscount').textContent = '- MYR 0.00';
-            document.getElementById('promotionDiscount').style.color = '#333';
+            const promoDiscountEl = document.getElementById('promotionDiscount');
+            if (promoDiscountEl) {
+                promoDiscountEl.textContent = '- MYR 0.00';
+                promoDiscountEl.style.color = '#333';
+            }
         }
-
-        const finalTotal = baseGrandTotal - promotionDiscount;
-        document.getElementById('grandTotal').textContent = `MYR ${finalTotal.toFixed(2)}`;
-        document.getElementById('bottomBarTotal').textContent = `MYR ${finalTotal.toFixed(2)}`;
+        
+        const finalTotal = amount - promotionDiscount;
+        const grandTotalEl = document.getElementById('grandTotal');
+        const bottomBarTotalEl = document.getElementById('bottomBarTotal');
+        
+        if (grandTotalEl) grandTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
+        if (bottomBarTotalEl) bottomBarTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
+        
+        // Store for form submission
+        window.promotionDiscount = promotionDiscount;
+        window.finalTotal = finalTotal;
         
         console.log('Final Total:', finalTotal);
     })
     .catch(error => {
         console.error('Error checking promotion:', error);
-        promotionDiscount = 0;
-        document.getElementById('promotionDiscount').textContent = '- MYR 0.00';
-        const finalTotal = baseGrandTotal;
-        document.getElementById('grandTotal').textContent = `MYR ${finalTotal.toFixed(2)}`;
-        document.getElementById('bottomBarTotal').textContent = `MYR ${finalTotal.toFixed(2)}`;
+        const finalTotal = amount;
+        const grandTotalEl = document.getElementById('grandTotal');
+        const bottomBarTotalEl = document.getElementById('bottomBarTotal');
+        
+        if (grandTotalEl) grandTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
+        if (bottomBarTotalEl) bottomBarTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
+        
+        window.promotionDiscount = 0;
+        window.finalTotal = finalTotal;
     });
 }
 
@@ -604,13 +654,19 @@ function goToPayment() {
         return;
     }
     
+    // Check if calculations were done
+    if (typeof window.finalTotal === 'undefined') {
+        alert('Please wait for pricing calculation to complete');
+        return;
+    }
+    
     // Remove any existing dynamic fields
     document.querySelectorAll('input.dynamic-field').forEach(el => el.remove());
     
     const hiddenFields = [
-        { name: 'subtotal', value: baseGrandTotal },
-        { name: 'promotionDiscount', value: promotionDiscount },
-        { name: 'total', value: (baseGrandTotal - promotionDiscount) },
+        { name: 'subtotal', value: window.baseGrandTotal || 0 },
+        { name: 'promotionDiscount', value: window.promotionDiscount || 0 },
+        { name: 'total', value: window.finalTotal || 0 },
         { name: 'duration', value: document.getElementById('durationInput').value },
         { name: 'promo_id', value: document.getElementById('appliedPromoId')?.value || '' }
     ];
@@ -624,13 +680,7 @@ function goToPayment() {
         form.appendChild(input);
     });
     
-    console.log('Submitting form with data:', {
-        subtotal: baseGrandTotal,
-        promotionDiscount: promotionDiscount,
-        total: (baseGrandTotal - promotionDiscount)
-    });
-    
-    // Submit form
+    console.log('Submitting form with calculated data');
     form.submit();
 }
 
