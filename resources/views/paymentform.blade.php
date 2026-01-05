@@ -685,30 +685,23 @@
                 <span class="info-label">Rental Price</span>
                 <span class="info-value">MYR {{ number_format($finalSubtotal, 2) }}</span>
             </div>
-            <div class="info-row discount-row">
-                <span class="info-label">Promotion Discount</span>
-                <span class="info-value">- MYR {{ number_format($promotionDiscount, 2) }}</span>
-            </div>
-
             @if($promotionDiscount > 0)
             <div class="info-row discount-row">
                 <span class="info-label">Promotion Discount</span>
                 <span class="info-value">- MYR {{ number_format($promotionDiscount, 2) }}</span>
             </div>
             @endif
-
-            <div class="info-row" id="voucher_discount_row" style="display:none;">
+            <div class="info-row" id="voucher_discount_row" style="display:none; color: #d94444;">
                 <span class="info-label">Voucher Discount</span>
                 <span class="info-value" id="voucher_discount_display">- MYR 0.00</span>
             </div>
-
             <div class="info-row">
-                <span class="info-label">Deposit Payable</span>
-                <span class="info-value">MYR {{ number_format($deposit, 2) }}</span>
+                <span class="info-label">Deposit Payable (30%)</span>
+                <span class="info-value" id="deposit_display">MYR {{ number_format($deposit, 2) }}</span>
             </div>
             <div class="total-row">
                 <span class="info-label">Total Payable</span>
-                <span class="info-value">MYR {{ number_format($finalTotal, 2) }}</span>
+                <span class="info-value" id="final_total_display">MYR {{ number_format($finalTotal, 2) }}</span>
             </div>
         </div>
 
@@ -1146,9 +1139,11 @@ function applyVoucherCode() {
 }
 
 function applyVoucherMath(id, amount) {
+    // 1. Set the hidden input value
     document.getElementById('selected_voucher_id').value = id;
     currentVoucherValue = amount;
     
+    // 2. Show the voucher discount row
     const discountRow = document.getElementById('voucher_discount_row');
     const discountDisplay = document.getElementById('voucher_discount_display');
     
@@ -1157,7 +1152,36 @@ function applyVoucherMath(id, amount) {
         discountDisplay.textContent = '- MYR ' + amount.toFixed(2);
     }
     
+    // 3. Recalculate Totals
     updateGrandTotal();
+}
+
+function resetVoucher() {
+    document.getElementById('selected_voucher_id').value = '';
+    currentVoucherValue = 0;
+    const discountRow = document.getElementById('voucher_discount_row');
+    if (discountRow) discountRow.style.display = 'none';
+    updateGrandTotal();
+}
+
+function updateGrandTotal() {
+    // Calculate new total (Original Total from Controller - Voucher Value)
+    let newTotal = Math.max(0, originalTotal - currentVoucherValue);
+    
+    // Calculate new deposit (30% of the new total)
+    let deposit = newTotal * 0.3; 
+    
+    // Update the Total Display
+    const totalEl = document.getElementById('final_total_display');
+    if (totalEl) {
+        totalEl.textContent = 'MYR ' + newTotal.toFixed(2);
+    }
+
+    // Update the Deposit Display
+    const depositEl = document.getElementById('deposit_display');
+    if (depositEl) {
+        depositEl.textContent = 'MYR ' + deposit.toFixed(2);
+    }
 }
 
 function resetVoucher() {

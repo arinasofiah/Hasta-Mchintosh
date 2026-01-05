@@ -658,4 +658,51 @@ class CustomerController extends Controller
         
         return response()->json($booking);
     }
+
+  /**
+ * Cancel a booking
+ */
+public function cancelBooking(Request $request, $bookingId)
+{
+    if (auth()->user()->userType !== 'customer') {
+        abort(403, 'Unauthorized. Customer access only.');
+    }
+    
+    $userId = Auth::user()->userID;
+    
+    // Find the booking
+    $booking = DB::table('booking')
+        ->where('bookingID', $bookingId)
+        ->where('userID', $userId)
+        ->first();
+    
+    if (!$booking) {
+        return redirect()->route('bookingHistory')
+            ->with('error', 'Booking not found.');
+    }
+    
+    // Check if booking can be cancelled
+    if (!in_array($booking->bookingStatus, ['pending', 'confirmed'])) {
+        return redirect()->route('bookingHistory')
+            ->with('error', 'Only pending or confirmed bookings can be cancelled.');
+    }
+    
+    // Update booking status
+    DB::table('booking')
+        ->where('bookingID', $bookingId)
+        ->update([
+            'bookingStatus' => 'cancelled',
+            'updated_at' => now(),
+        ]);
+    
+    // ALWAYS update vehicle status back to available when cancelled
+    // This ensures the vehicle can be booked by other customers immediately
+    DB::table('vehicles')
+        ->where('vehicleID', $booking->vehicleID)
+        ->update(['status' => 'available']);
+    
+    return redirect()->route('bookingHistory')
+        ->with('success', 'Booking cancelled successfully. Vehicle is now available for booking.');
+}
+
 }
