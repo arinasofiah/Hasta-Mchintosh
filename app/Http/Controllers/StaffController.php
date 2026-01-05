@@ -158,14 +158,14 @@ class StaffController extends Controller
 
     public function showBooking($id)
     {
-        $booking = \App\Models\Booking::with('customer')->where('bookingID', $id)->firstOrFail();
+        $booking = \App\Models\Bookings::with('customer')->where('bookingID', $id)->firstOrFail();
         
         return view('staff.booking_detail', compact('booking'));
     }
 
     public function approveBooking($id)
     {
-        $booking = \App\Models\Booking::where('bookingID', $id)->firstOrFail();
+        $booking = \App\Models\Bookings::where('bookingID', $id)->firstOrFail();
         
         $booking->bookingStatus = 'Confirmed'; 
         $booking->save();
@@ -175,7 +175,7 @@ class StaffController extends Controller
 
     public function rejectBooking($id)
     {
-        $booking = \App\Models\Booking::where('bookingID', $id)->firstOrFail();
+        $booking = \App\Models\Bookings::where('bookingID', $id)->firstOrFail();
         
         $booking->bookingStatus = 'Rejected'; 
         $booking->save();
