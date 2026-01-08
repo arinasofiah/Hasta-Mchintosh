@@ -74,40 +74,29 @@
                 </div>
 
         </div>
-<div class="return_form">
-    <p class="main_txt">Return Details</p>
-    <p class="sub_txt">Fill in return details</p>
+         <div class="return_form">
+            <p class="main_txt">Return Details</p>
+            <p class="sub_txt">Fill in return details</p>
 
-    <div class="form-row">
-        <div class="input-group">
-            <label for="returnLocation">Return location:</label>
-            <input type="text" 
-                   name="returnLocation" 
-                   id="returnLocation" 
-                   class="form-control" 
-                   placeholder="Enter return location" 
-                   value="{{ old('returnLocation', $returnCar->returnLocation) }}" 
-                   style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; margin-top: 5px;"
-                   required>
-        </div>
-
-        <div class="input-group">
-            <label for="date_return">Return date:</label>
-            <p class="static-data" style="margin-top: 5px;">{{ $booking->endDate }}</p>
-        </div>
-    </div>
-
-    <div class="fuel_gr" style="margin-top: 15px;">
-        @error('fuelAmount')
-            <div style="color: #bc3737; font-size: 0.875rem; margin-bottom: 5px; font-weight: 500;">
+                <div class="form-row">
+                    <div class="input-group">
+                        <label for="loc">Return location:</label>
+                        <p class="static-data">{{ $returnCar->returnLocation }}</p>
+                    </div>
+                    <div class="input-group">
+                        <label for="date_return">Return date date:</label>
+                        <p class="static-data">{{ $returnCar->returnDate }}</p>
+                    </div>
+                </div>
+                 <div class="fuel_gr">
+             @error('fuelAmount')
+            <div style="color: #bc3737; font-size: 0.875rem; margin-top: 5px; font-weight: 500;">
                 <i class="fas fa-exclamation-circle"></i> {{ $message }}
             </div>
-        @enderror
-        <label for="fuel">Fuel amount:</label>
-        <input type="text" id="fuel" name="fuelAmount" placeholder="e.g. 50%" 
-               value="{{ old('fuelAmount', $returnCar->fuelAmount) }}" 
-               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
-    </div>
+            @enderror
+            <label for="fuel">Fuel amount:</label>
+            <input type="text" id="fuel" name="fuelAmount" placeholder="e.g. 0">
+            </div>
                     <div class="radio-section">
                         <span>Were any traffic tickets received?</span>
                         <label class="radio-label"><input type="radio" name="isFined" value="yes"> <span>Yes</span></label>
