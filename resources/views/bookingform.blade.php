@@ -232,16 +232,52 @@ textarea.input {resize:vertical; min-height:100px;}
             <div class="row2">
                 <div>
                     <div class="field-label">Pickup Location</div>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="text" id="pickupLocation" name="pickupLocation" class="input" placeholder="Enter pickup location" required>
+                    <select id="pickupLocationType" class="input" required onchange="handleLocationChange('pickup')">
+                        <option value="">-- Select --</option>
+                        <option value="hasta">HASTA Office</option>
+                        <option value="student_mall">Student Mall</option>
+                        <option value="others">Others (within UTM)</option>
+                    </select>
+                    <input type="hidden" id="pickupLocation" name="pickupLocation">
+                    <div id="pickupDeliveryNotice" style="color: #d9534f; font-size: 0.9em; margin-top: 5px; display: none;">
+                        ⚠️ Delivery charge of RM15 applies.
+                    </div>
+
+                    <div id="pickupOthersFields" style="display: none; margin-top: 10px;">
+                        <select id="pickupCategory" class="input" required>
+                            <option value="">-- Faculty / College / Office --</option>
+                            <option value="faculty">Faculty</option>
+                            <option value="college">College</option>
+                            <option value="office">Office</option>
+                        </select>
+                        <input type="text" id="pickupDetails" class="input" placeholder="e.g., K01, Kolej Tun Razak" style="margin-top: 5px;" required>
                     </div>
                 </div>
 
                 <div>
                     <div class="field-label">Return Location</div>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="text" id="returnLocation" name="returnLocation" class="input" placeholder="Enter return location" required>
-                    </div>
+                        <select id="returnLocationType" class="input" required onchange="handleLocationChange('return')">
+                            <option value="">-- Select --</option>
+                            <option value="hasta">HASTA Office</option>
+                            <option value="student_mall">Student Mall</option>
+                            <option value="others">Others (within UTM)</option>
+                        </select>
+
+                        <input type="hidden" id="returnLocation" name="returnLocation">
+
+                        <div id="returnDeliveryNotice" style="color: #d9534f; font-size: 0.9em; margin-top: 5px; display: none;">
+                            ⚠️ Delivery charge of RM15 applies.
+                        </div>
+
+                        <div id="returnOthersFields" style="display: none; margin-top: 10px;">
+                            <select id="returnCategory" class="input" required>
+                                <option value="">-- Faculty / College / Office --</option>
+                                <option value="faculty">Faculty</option>
+                                <option value="college">College</option>
+                                <option value="office">Office</option>
+                            </select>
+                            <input type="text" id="returnDetails" class="input" placeholder="e.g., DK, FKE" style="margin-top: 5px;" required>
+                        </div>
                 </div>
             </div>
 
@@ -348,6 +384,10 @@ textarea.input {resize:vertical; min-height:100px;}
                 <span id="durationDisplay">-</span>
             </div>
             <div class="charge-row">
+                <span>Delivery Charge</span>
+                <span id="deliveryCharge">MYR 0.00</span>
+            </div>
+            <div class="charge-row">
                 <span>Total Price (by hour)</span>
                 <span id="totalByHour">MYR 0.00</span>
             </div>
@@ -386,13 +426,215 @@ textarea.input {resize:vertical; min-height:100px;}
 </form>
 
 <script>
-// Global variables
+// ===== GLOBAL VARIABLES =====
 let baseGrandTotal = 0;
 let promotionDiscount = 0;
+let deliveryCharge = 0; // ← Now global
+
 const pricePerHour = {{ $vehicle->pricePerHour }};
 const pricePerDay = {{ $vehicle->pricePerDay }};
 
-// Toggle driver info section
+// ===== LOCATION HANDLING =====
+function handleLocationChange(type) {
+    const locType = document.getElementById(`${type}LocationType`).value;
+    const notice = document.getElementById(`${type}DeliveryNotice`);
+    const othersFields = document.getElementById(`${type}OthersFields`);
+    const hiddenInput = document.getElementById(`${type}Location`);
+
+    hiddenInput.value = '';
+
+    if (locType === 'hasta') {
+        hiddenInput.value = 'HASTA Office';
+        notice.style.display = 'none';
+        othersFields.style.display = 'none';
+    } else if (locType === 'student_mall') {
+        hiddenInput.value = 'Student Mall';
+        notice.style.display = 'none';
+        othersFields.style.display = 'none';
+    } else if (locType === 'others') {
+        notice.style.display = 'block';
+        othersFields.style.display = 'block';
+    } else {
+        notice.style.display = 'none';
+        othersFields.style.display = 'none';
+    }
+
+    updateDeliveryCharge();
+}
+
+function updateDeliveryCharge() {
+    let charge = 0;
+    const pickupType = document.getElementById('pickupLocationType').value;
+    const returnType = document.getElementById('returnLocationType').value;
+
+    if (pickupType === 'others') charge += 15;
+    if (returnType === 'others') charge += 15;
+
+    deliveryCharge = charge;
+    recalculateTotal(); // Update total whenever delivery changes
+}
+
+// Update hidden location input when user types details
+document.addEventListener('DOMContentLoaded', () => {
+    ['pickup', 'return'].forEach(type => {
+        const detailsInput = document.getElementById(`${type}Details`);
+        const categorySelect = document.getElementById(`${type}Category`);
+
+        if (detailsInput && categorySelect) {
+            const updateLocation = () => {
+                const details = detailsInput.value.trim();
+                const category = categorySelect.value;
+                let fullLocation = '';
+
+                if (category && details) {
+                    const labels = { faculty: 'Faculty', college: 'College', office: 'Office' };
+                    fullLocation = `${labels[category]}: ${details}`;
+                }
+                document.getElementById(`${type}Location`).value = fullLocation;
+            };
+
+            detailsInput.addEventListener('input', updateLocation);
+            categorySelect.addEventListener('change', updateLocation);
+        }
+    });
+});
+
+// ===== PRICING & TOTAL CALCULATION =====
+function calculateDurationAndPrice() {
+    const pickupDateInput = document.querySelector('input[name="pickup_date"]');
+    const pickupTimeInput = document.querySelector('input[name="pickup_time"]');
+    const returnDateInput = document.querySelector('input[name="return_date"]');
+    const returnTimeInput = document.querySelector('input[name="return_time"]');
+
+    if (!pickupDateInput || !pickupTimeInput || !returnDateInput || !returnTimeInput) {
+        console.error('Missing date/time inputs');
+        return;
+    }
+
+    const pickupDate = pickupDateInput.value;
+    const pickupTime = pickupTimeInput.value;
+    const returnDate = returnDateInput.value;
+    const returnTime = returnTimeInput.value;
+
+    if (!pickupDate || !pickupTime || !returnDate || !returnTime) {
+        console.error('Missing date/time values');
+        return;
+    }
+
+    const pickup = new Date(`${pickupDate}T${pickupTime}`);
+    const returnDT = new Date(`${returnDate}T${returnTime}`);
+
+    if (isNaN(pickup.getTime()) || isNaN(returnDT.getTime())) {
+        console.error('Invalid date format');
+        return;
+    }
+
+    if (returnDT <= pickup) {
+        console.error('Return date must be after pickup date');
+        return;
+    }
+
+    const diffMs = returnDT - pickup;
+    const diffHours = Math.ceil(diffMs / (1000 * 60 * 60));
+    const days = Math.floor(diffHours / 24);
+    const remainingHours = diffHours % 24;
+
+    const durationText = days > 0
+        ? `${days} day${days > 1 ? 's' : ''} ${remainingHours} hour${remainingHours !== 1 ? 's' : ''}`
+        : `${diffHours} hour${diffHours !== 1 ? 's' : ''}`;
+
+    const durationInput = document.getElementById('durationInput');
+    const durationDisplay = document.getElementById('durationDisplay');
+    if (durationInput) durationInput.value = durationText;
+    if (durationDisplay) durationDisplay.textContent = durationText;
+
+    // Calculate base rental cost
+    const totalByHour = diffHours * {{ $vehicle->pricePerHour }};
+    baseGrandTotal = (days * {{ $vehicle->pricePerDay }}) + (remainingHours * {{ $vehicle->pricePerHour }});
+
+    const totalByHourEl = document.getElementById('totalByHour');
+    if (totalByHourEl) {
+        totalByHourEl.textContent = `MYR ${totalByHour.toFixed(2)}`;
+    }
+
+    console.log('Duration Hours:', diffHours);
+    console.log('Base Grand Total:', baseGrandTotal);
+
+    // Trigger promotion check AFTER base total is set
+    checkPromotion();
+}
+
+function checkPromotion() {
+    const today = new Date();
+    const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
+
+    fetch('/check-promotion', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({
+            day: dayName,
+            amount: baseGrandTotal
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        promotionDiscount = data.hasPromotion ? data.discount : 0;
+
+        const promoDiscountEl = document.getElementById('promotionDiscount');
+        if (promoDiscountEl) {
+            promoDiscountEl.textContent = data.hasPromotion 
+                ? `- MYR ${promotionDiscount.toFixed(2)}` 
+                : '- MYR 0.00';
+            promoDiscountEl.style.color = data.hasPromotion ? '#28a745' : '#333';
+        }
+
+        // Set promo ID if exists
+        let promoInput = document.getElementById('appliedPromoId');
+        if (data.hasPromotion) {
+            if (!promoInput) {
+                promoInput = document.createElement('input');
+                promoInput.type = 'hidden';
+                promoInput.id = 'appliedPromoId';
+                promoInput.name = 'promo_id';
+                document.querySelector('form').appendChild(promoInput);
+            }
+            promoInput.value = data.promoID;
+        } else if (promoInput) {
+            promoInput.remove();
+        }
+
+        recalculateTotal();
+    })
+    .catch(error => {
+        console.error('Error checking promotion:', error);
+        promotionDiscount = 0;
+        recalculateTotal();
+    });
+}
+
+function recalculateTotal() {
+    const finalTotal = baseGrandTotal + deliveryCharge - promotionDiscount;
+
+    // Update delivery charge display
+    const deliveryChargeEl = document.getElementById('deliveryCharge');
+    if (deliveryChargeEl) {
+        deliveryChargeEl.textContent = `MYR ${deliveryCharge.toFixed(2)}`;
+    }
+
+    // Update grand total
+    const grandTotalEl = document.getElementById('grandTotal');
+    const bottomBarTotalEl = document.getElementById('bottomBarTotal');
+    if (grandTotalEl) grandTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
+    if (bottomBarTotalEl) bottomBarTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
+
+    window.finalTotal = finalTotal;
+    console.log('Final Total (with delivery & promo):', finalTotal);
+}
+
+// ===== OTHER FUNCTIONS (toggleDriverInfo, registerDriver, goToPayment) =====
 function toggleDriverInfo() {
     const checkbox = document.getElementById('forSomeoneElse');
     const section = document.getElementById('driverInfoSection');
@@ -415,7 +657,6 @@ function toggleDriverInfo() {
     }
 }
 
-// Register driver via AJAX
 document.getElementById('registerDriverBtn')?.addEventListener('click', function() {
     const button = this;
     const message = document.getElementById('driverMessage');
@@ -480,188 +721,29 @@ function showMessage(text, type) {
     message.style.border = type === 'success' ? '1px solid #c3e6cb' : '1px solid #f5c6cb';
 }
 
-// Calculate duration and prices
-function calculateDurationAndPrice() {
-    // Get values from hidden inputs (more reliable than PHP variables)
-    const pickupDateInput = document.querySelector('input[name="pickup_date"]');
-    const pickupTimeInput = document.querySelector('input[name="pickup_time"]');
-    const returnDateInput = document.querySelector('input[name="return_date"]');
-    const returnTimeInput = document.querySelector('input[name="return_time"]');
-    
-    if (!pickupDateInput || !pickupTimeInput || !returnDateInput || !returnTimeInput) {
-        console.error('Missing date/time inputs');
-        return;
-    }
-    
-    const pickupDate = pickupDateInput.value;
-    const pickupTime = pickupTimeInput.value;
-    const returnDate = returnDateInput.value;
-    const returnTime = returnTimeInput.value;
-    
-    // Validate inputs
-    if (!pickupDate || !pickupTime || !returnDate || !returnTime) {
-        console.error('Missing date/time values');
-        return;
-    }
-    
-    // Parse dates properly
-    const pickup = new Date(`${pickupDate}T${pickupTime}`);
-    const returnDT = new Date(`${returnDate}T${returnTime}`);
-    
-    // Check if dates are valid
-    if (isNaN(pickup.getTime()) || isNaN(returnDT.getTime())) {
-        console.error('Invalid date format');
-        return;
-    }
-    
-    // Check if return is after pickup
-    if (returnDT <= pickup) {
-        console.error('Return date must be after pickup date');
-        return;
-    }
-    
-    // Calculate duration
-    const diffMs = returnDT - pickup;
-    const diffHours = Math.ceil(diffMs / (1000 * 60 * 60));
-    
-    const days = Math.floor(diffHours / 24);
-    const remainingHours = diffHours % 24;
-    
-    // Format duration text
-    const durationText = days > 0
-        ? `${days} day${days > 1 ? 's' : ''} ${remainingHours} hour${remainingHours !== 1 ? 's' : ''}`
-        : `${diffHours} hour${diffHours !== 1 ? 's' : ''}`;
-    
-    // Update duration fields
-    const durationInput = document.getElementById('durationInput');
-    const durationDisplay = document.getElementById('durationDisplay');
-    
-    if (durationInput) durationInput.value = durationText;
-    if (durationDisplay) durationDisplay.textContent = durationText;
-    
-    // Calculate pricing
-    const totalByHour = diffHours * {{ $vehicle->pricePerHour }};
-    const baseGrandTotal = (days * {{ $vehicle->pricePerDay }}) + (remainingHours * {{ $vehicle->pricePerHour }});
-    
-    // Update UI
-    const totalByHourEl = document.getElementById('totalByHour');
-    if (totalByHourEl) {
-        totalByHourEl.textContent = `MYR ${totalByHour.toFixed(2)}`;
-    }
-    
-    window.baseGrandTotal = baseGrandTotal;
-    
-    console.log('Duration Hours:', diffHours);
-    console.log('Base Grand Total:', baseGrandTotal);
-
-    checkPromotion();
-}
-
-function checkPromotion() {
-    const today = new Date();
-    const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
-
-    fetch('/check-promotion', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: JSON.stringify({
-            day: dayName,
-            amount: baseGrandTotal
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Promotion response:', data);
-        
-        let promotionDiscount = 0;
-        if (data.hasPromotion) {
-            promotionDiscount = data.discount;
-            const promoDiscountEl = document.getElementById('promotionDiscount');
-            if (promoDiscountEl) {
-                promoDiscountEl.textContent = `- MYR ${promotionDiscount.toFixed(2)}`;
-                promoDiscountEl.style.color = '#28a745';
-            }
-            
-            // Add promo ID to form
-            let promoInput = document.getElementById('appliedPromoId');
-            if (!promoInput) {
-                promoInput = document.createElement('input');
-                promoInput.type = 'hidden';
-                promoInput.id = 'appliedPromoId';
-                promoInput.name = 'promo_id';
-                document.querySelector('form').appendChild(promoInput);
-            }
-            promoInput.value = data.promoID;
-        } else {
-            const promoDiscountEl = document.getElementById('promotionDiscount');
-            if (promoDiscountEl) {
-                promoDiscountEl.textContent = '- MYR 0.00';
-                promoDiscountEl.style.color = '#333';
-            }
-        }
-        
-        const finalTotal = window.baseGrandTotal - promotionDiscount;
-        const grandTotalEl = document.getElementById('grandTotal');
-        const bottomBarTotalEl = document.getElementById('bottomBarTotal');
-        
-        if (grandTotalEl) grandTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
-        if (bottomBarTotalEl) bottomBarTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
-        
-        // Store for form submission
-        window.promotionDiscount = promotionDiscount;
-        window.finalTotal = finalTotal;
-        
-        console.log('Final Total:', finalTotal);
-    })
-    .catch(error => {
-        console.error('Error checking promotion:', error);
-        const finalTotal = window.baseGrandTotal;
-        const grandTotalEl = document.getElementById('grandTotal');
-        const bottomBarTotalEl = document.getElementById('bottomBarTotal');
-        
-        if (grandTotalEl) grandTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
-        if (bottomBarTotalEl) bottomBarTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
-        
-        window.promotionDiscount = 0;
-        window.finalTotal = finalTotal;
-    });
-}
-
 function goToPayment() {
     const form = document.getElementById('bookingForm');
-    
-    // Validate form
     if (!form.checkValidity()) {
         form.reportValidity();
         return;
     }
-    
-    // Check if locations are filled
     if (!document.getElementById('pickupLocation').value || !document.getElementById('returnLocation').value) {
         alert('Please fill in both pickup and return locations');
         return;
     }
-    
-    // Check if calculations were done
     if (typeof window.finalTotal === 'undefined') {
         alert('Please wait for pricing calculation to complete');
         return;
     }
-    
-    // Remove any existing dynamic fields
     document.querySelectorAll('input.dynamic-field').forEach(el => el.remove());
-    
     const hiddenFields = [
-        { name: 'subtotal', value: window.baseGrandTotal || 0 },
-        { name: 'promotionDiscount', value: window.promotionDiscount || 0 },
+        { name: 'subtotal', value: baseGrandTotal || 0 },
+        { name: 'promotionDiscount', value: promotionDiscount || 0 },
+        { name: 'deliveryCharge', value: deliveryCharge || 0 },
         { name: 'total', value: window.finalTotal || 0 },
         { name: 'duration', value: document.getElementById('durationInput').value },
         { name: 'promo_id', value: document.getElementById('appliedPromoId')?.value || '' }
     ];
-    
     hiddenFields.forEach(field => {
         let input = document.createElement('input');
         input.type = 'hidden';
@@ -670,14 +752,12 @@ function goToPayment() {
         input.classList.add('dynamic-field');
         form.appendChild(input);
     });
-    
     console.log('Submitting form with calculated data');
     form.submit();
 }
 
-// Initialize on page load
+// ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Page loaded, calculating prices...');
     calculateDurationAndPrice();
 });
 </script>
