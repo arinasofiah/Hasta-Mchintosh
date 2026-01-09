@@ -1167,9 +1167,7 @@ function resetVoucher() {
 function updateGrandTotal() {
     // Calculate new total (Original Total from Controller - Voucher Value)
     let newTotal = Math.max(0, originalTotal - currentVoucherValue);
-    
-    // Calculate new deposit (30% of the new total)
-    let deposit = newTotal * 0.3; 
+    let deposit = 50; 
     
     // Update the Total Display
     const totalEl = document.getElementById('final_total_display');
@@ -1194,7 +1192,7 @@ function resetVoucher() {
 
 function updateGrandTotal() {
     let newTotal = Math.max(0, originalTotal - currentVoucherValue);
-    let deposit = newTotal * 0.3; // 30% deposit
+    let deposit = 50; 
     
     const totalRows = document.querySelectorAll('.info-row .info-value, .total-row .info-value');
     

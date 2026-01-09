@@ -590,7 +590,6 @@ function calculateDurationAndPrice() {
         totalByHourEl.textContent = `MYR ${totalByHour.toFixed(2)}`;
     }
     
-    // Store in global variable for later use
     window.baseGrandTotal = baseGrandTotal;
     
     console.log('Duration Hours:', diffHours);
