@@ -9,7 +9,7 @@
     <link href="{{ asset('css/header.css') }}" rel="stylesheet">
      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-
+ <style>
 /* General Styles */
 * {
     margin: 0;
@@ -392,6 +392,7 @@ input[type="time"]:hover {
         grid-template-columns: 1fr;
     }
 }
+</style>
 
 <body>
 

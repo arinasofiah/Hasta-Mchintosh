@@ -234,13 +234,6 @@ textarea.input {resize:vertical; min-height:100px;}
                     <div class="field-label">Pickup Location</div>
                     <div style="display: flex; gap: 10px;">
                         <input type="text" id="pickupLocation" name="pickupLocation" class="input" placeholder="Enter pickup location" required>
-                        <input type="hidden" id="pickupMapLink" name="pickupMapLink">
-                        <button type="button" onclick="openMap('pickup')" class="map-btn">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                                <circle cx="12" cy="10" r="3"></circle>
-                            </svg>
-                        </button>
                     </div>
                 </div>
 
@@ -248,13 +241,6 @@ textarea.input {resize:vertical; min-height:100px;}
                     <div class="field-label">Return Location</div>
                     <div style="display: flex; gap: 10px;">
                         <input type="text" id="returnLocation" name="returnLocation" class="input" placeholder="Enter return location" required>
-                        <input type="hidden" id="returnMapLink" name="returnMapLink">
-                        <button type="button" onclick="openMap('return')" class="map-btn">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                                <circle cx="12" cy="10" r="3"></circle>
-                            </svg>
-                        </button>
                     </div>
                 </div>
             </div>
