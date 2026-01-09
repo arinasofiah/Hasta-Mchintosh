@@ -39,6 +39,14 @@
                 <li><i class="fas fa-gas-pump"></i><span>{{$vehicle->fuelLevel}}%</span></li>
             </ul>
 
+            <p id="car_det">Full Return Details</p>
+            <ul class="features">
+                <li><i class="fas fa-map-marker-alt"></i><span>{{$return->returnLocation}}</span></li>
+                <li><i class="fas fa-calendar-alt"></i><span>{{$booking->endDate}}</span></li>
+                <li><i class="fas fa-clock"></i><span>{{$return->returnTime}}</span></li>
+                <li><i class="fas fa-gas-pump"></i><span>{{$vehicle->fuelLevel}}%</span></li>
+            </ul>
+
             <p id="day_pr">{{$vehicle->pricePerDay}} / Day</p>
             <p id="all_pr">Total MYR 530</p>
         </div>
@@ -48,6 +56,7 @@
                 @csrf
                 <input type="hidden" name="pickupID" value="{{ $pickup->pickupID }}">
                 <input type="hidden" name="bookingID" value="{{ $booking->bookingID }}">
+                <input type="hidden" name="returnID" value="{{ $return->returnID }}">
                 
                 @if($onlyDepositPaid)
                     <div class="no-pay"><p>Before confirming Pick Up details, Please pay.</p></div>

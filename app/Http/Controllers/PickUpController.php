@@ -10,7 +10,8 @@ class PickUpController extends Controller
 {
     public function form($bookingID)
     {
-        $booking = Bookings::with('vehicle')->findOrFail($bookingID);
+        $booking = Bookings::with(['vehicle', 'returnCar'])->findOrFail($bookingID);
+        $return = $booking->returnCar;
         $onlyDepositPaid = ($booking->pay_amount_type === 'deposit');
 
         // We pull the location from the booking or existing record
@@ -27,6 +28,7 @@ class PickUpController extends Controller
             'booking' => $booking,
             'vehicle' => $booking->vehicle,
             'pickup' => $pickup,
+            'return' => $return,
             'onlyDepositPaid' => $onlyDepositPaid
         ]);
     }
