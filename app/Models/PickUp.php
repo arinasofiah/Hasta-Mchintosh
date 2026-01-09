@@ -13,9 +13,12 @@ class PickUp extends Model
         'bookingID',
         'pickupDate',
         'pickupLocation',
-        'pickupPhoto',
-        'agreementForm',
-        'pickupTime'
+        'photo_front',  // New column
+        'photo_back',   // New column
+        'photo_left',   // New column
+        'photo_right',
+        'pickupTime',
+        'signature_path'
     ];
 
     public function booking() {

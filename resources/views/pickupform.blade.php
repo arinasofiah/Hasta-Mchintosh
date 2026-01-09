@@ -4,19 +4,11 @@
     <title>Hasta Travel & Tour</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    {{-- Bootstrap --}}
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    {{-- Bootstrap --}}
-    <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-    {{-- Custom CSS --}}
     <link href="{{ asset('css/header.css') }}" rel="stylesheet">
     <link href="{{ asset('css/pickup.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
 </head>
 
 <body>
@@ -26,194 +18,194 @@
     <div class="pickup-layout">
         <div class="vehicle-card">
             <p id="res_txt">Reserved Vehicle</p>
-            <p id="car_name">{{$vehicle->model}}<p>
+            <p id="car_name">{{$vehicle->model}}</p>
             <p id="car_type">{{$vehicle->vehicleType}}</p>
 
-            <img src="{{ asset('img/redcar.png') }}">
+            <img src="{{ asset('img/redcar.png') }}" style="width: 100%; margin-bottom: 15px;">
 
-            <p id="car_det">Full Vehicle Details<p>
+            <p id="car_det">Full Vehicle Details</p>
             <ul class="features">
-                 <li><i class="fas fa-car"></i><span>{{$vehicle->vehicleType}}</span></li>
+                <li><i class="fas fa-car"></i><span>{{$vehicle->vehicleType}}</span></li>
                 <li><i class="fas fa-gas-pump"></i><span>{{$vehicle->fuelType}}</span></li>
                 <li><i class="fas fa-snowflake"></i><span>{{ $vehicle->ac ? 'AC' : 'No AC' }}</span></li>
-                <li> <i class="fas fa-users"></i><span>{{$vehicle->seat}} Seat</span></li>
+                <li><i class="fas fa-users"></i><span>{{$vehicle->seat}} Seat</span></li>
             </ul>
+
+            <p id="car_det">Full Pickup Details</p>
+            <ul class="features">
+                <li><i class="fas fa-map-marker-alt"></i><span>{{$pickup->pickupLocation}}</span></li>
+                <li><i class="fas fa-calendar-alt"></i><span>{{$booking->startDate}}</span></li>
+                <li><i class="fas fa-clock"></i><span>{{$pickup->pickupTime}}</span></li>
+                <li><i class="fas fa-gas-pump"></i><span>{{$vehicle->fuelLevel}}%</span></li>
+            </ul>
+
+            <p id="car_det">Full Return Details</p>
+            <ul class="features">
+                <li><i class="fas fa-map-marker-alt"></i><span>{{$return->returnLocation}}</span></li>
+                <li><i class="fas fa-calendar-alt"></i><span>{{$booking->endDate}}</span></li>
+                <li><i class="fas fa-clock"></i><span>{{$return->returnTime}}</span></li>
+                <li><i class="fas fa-gas-pump"></i><span>{{$vehicle->fuelLevel}}%</span></li>
+            </ul>
+
             <p id="day_pr">{{$vehicle->pricePerDay}} / Day</p>
             <p id="all_pr">Total MYR 530</p>
-</div>
-         <div class="pickup_form">
-        <form action="{{ route('pickup.store') }}" method="POST" enctype="multipart/form-data">
-        @csrf
-        <input type="hidden" name="pickupID" value="{{ $pickup->pickupID }}">
-        <input type="hidden" name="bookingID" value="{{ $booking->bookingID }}">
-        @if($onlyDepositPaid)
-            <div class="no-pay">
-                <p>Before confirming Pick Up details, Please pay.</p>
-            </div>
-        @endif
-            <p id="form_name">Pick Up Details</p>
-            <p class="main_txt">Upload Photos</p>
-            <p class="sub_txt">Upload photos of the car before pick up</p>
-             @error('pickupPhoto')
-            <div style="color: #bc3737; font-size: 0.875rem; margin-top: 5px; font-weight: 500;">
-                <i class="fas fa-exclamation-circle"></i> {{ $message }}
-            </div>
-            @enderror
-            <div id="drop-zone">
-            <div id="upload-prompt">
-                <p>Drop files to upload</p>
-                <p>or</p>
-                <p><button type="button" id="browseBtn" class="browse-btn">Browse</button></p>
-            </div>
+        </div>
 
-                <div id="file-info" style="display: none; padding: 20px;">
-                    <i class="fas fa-file-image" style="color: #bc3737; font-size: 24px; margin-bottom: 10px;"></i>
-                    <p><strong id="fileNameDisplay" style="font-size: 16px; color: #333;"></strong></p>
-                    <p style="margin-top: 10px;">
-                        <a href="javascript:void(0)" id="removeImage" style="color: #bc3737; font-size: 12px; text-decoration: underline;">
-                            Remove and choose another
-                        </a>
-                    </p>
-                </div>
+        <div class="pickup_form">
+            <form action="{{ route('pickup.store') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <input type="hidden" name="pickupID" value="{{ $pickup->pickupID }}">
+                <input type="hidden" name="bookingID" value="{{ $booking->bookingID }}">
+                <input type="hidden" name="returnID" value="{{ $return->returnID }}">
                 
-                <input type="file" id="fileInput" name="pickupPhoto" accept="image/*" style="display: none;" required/>
-            </div>
+                @if($onlyDepositPaid)
+                    <div class="no-pay"><p>Before confirming Pick Up details, Please pay.</p></div>
+                @endif
 
-            <p class="main_txt">Pick Up Information</p>
-            <p class="sub_txt">Confirm pick up details</p>
+                <p id="form_name">Pick up vehicle Inspection</p>
+                <p class="main_txt">Upload 4 Angle Photos</p>
+                <p class="sub_txt">Please provide clear photos of all sides of the vehicle.</p>
 
-    <input type="hidden" name="vehicle_id" value="{{ $vehicle->id }}">
-
-                <div class="form-row">
-                    <div>
-                    <label for="loc">Location:</label>
-                   <p class="static-data">{{ $pickup->pickupLocation }}</p>
+                <div class="photo-grid">
+                    <div class="mini-drop-zone" onclick="document.getElementById('imgFront').click()">
+                        <p><strong>Front View</strong></p>
+                        <img src="{{ asset('img/car_sides/front.png') }}" class="placeholder-img" id="iconFront">
+                        <input type="file" id="imgFront" name="photo_front" accept="image/*" hidden onchange="preview(this, 'pFront', 'iconFront')">
+                        <img id="pFront" class="preview-img">
                     </div>
-                    <div>
-                    <label for="date_pickup">Pickup date:</label>
-                    <p class="static-data">{{ $pickup->pickupDate }}</p>
+                    <div class="mini-drop-zone" onclick="document.getElementById('imgBack').click()">
+                        <p><strong>Back View</strong></p>
+                        <img src="{{ asset('img/car_sides/back.png') }}" class="placeholder-img" id="iconBack">
+                        <input type="file" id="imgBack" name="photo_back" accept="image/*" hidden onchange="preview(this, 'pBack','iconBack')">
+                        <img id="pBack" class="preview-img">
+                    </div>
+                    <div class="mini-drop-zone" onclick="document.getElementById('imgLeft').click()">
+                        <p><strong>Left Side</strong></p>
+                        <img src="{{ asset('img/car_sides/left.png') }}" class="placeholder-img" id="iconLeft">
+                        <input type="file" id="imgLeft" name="photo_left" accept="image/*" hidden onchange="preview(this, 'pLeft','iconLeft')">
+                        <img id="pLeft" class="preview-img">
+                    </div>
+                    <div class="mini-drop-zone" onclick="document.getElementById('imgRight').click()">
+                        <p><strong>Right Side</strong></p>
+                        <img src="{{ asset('img/car_sides/right.png') }}" class="placeholder-img" id="iconRight">
+                        <input type="file" id="imgRight" name="photo_right" accept="image/*" hidden onchange="preview(this, 'pRight','iconRight')">
+                        <img id="pRight" class="preview-img">
                     </div>
                 </div>
 
-                <label class="checkbox">
-                     <input type="checkbox" name="agreementForm" value="yes" required> 
-                    <span>I have read and accepted the 
-                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#termsModal" style="color: #CB3737; text-decoration: underline; cursor: pointer;">
-                            Terms and Conditions
-                        </a>
-                        </span>
-                </label>
+                <p class="sub_txt">Please provide your signature below to confirm you agree with Terms and Conditions</p>
+                <div class="signature-container">
+                    <canvas id="signature-pad">  </canvas>
+                    <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+                        <button type="button" id="clear-signature" style="background: none; border: none; color: #CB3737; text-decoration: underline; cursor: pointer;">Clear Signature</button>
+                    </div>
+                    <input type="hidden" name="signature" id="signature-input" required>
+                </div>
+
 
                 <div id="btn_div"> 
-                    <button class="btn-primary" {{ $onlyDepositPaid ? 'disabled style=opacity:0.5;cursor:not-allowed;' : '' }}>Save</button>
+                    <button class="btn-primary" {{ $onlyDepositPaid ? 'disabled style=opacity:0.5;' : '' }}>Save Pick Up</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
-
-</div>
-
-<div class="modal fade" id="emergencyModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content text-center p-4" style="border-radius: 20px;">
-      <div class="modal-body">
-        <h3 class="fw-bold mb-4">Important</h3>
-        <p class="mb-4">In case of an emergency, such as an accident or mechanical problems, please contact our hotline:</p>
-        <h2 class="fw-bold mb-5">+60 12-326 1234</h2>
-        
-        <button type="button" class="btn btn-danger w-100 py-2" id="confirmSave" style="border-radius: 10px; background-color: #CB3737;">
-          Understood
-        </button>
-      </div>
-    </div>
-  </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    @if(session('showModal'))
-        var myModal = new bootstrap.Modal(document.getElementById('emergencyModal'));
-        myModal.show();
-    @endif
-    const understoodBtn = document.getElementById('confirmSave');
-    if (understoodBtn) {
-    understoodBtn.addEventListener('click', function() {
-        window.location.href = "{{ url('/') }}";
-    });
+    function preview(input, previewId, placeholderId) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            // Show the actual photo
+            let img = document.getElementById(previewId);
+            img.src = e.target.result;
+            img.style.display = 'block';
+            
+            // Hide the placeholder outline
+            document.getElementById(placeholderId).style.display = 'none';
+            
+            // Optional: Change text color to show success
+            input.parentElement.querySelector('p').style.color = '#CB3737';
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
 }
 
-    const fileInput = document.getElementById('fileInput');
-    const browseBtn = document.getElementById('browseBtn');
-    const dropZone = document.getElementById('drop-zone');
-    
-    const uploadPrompt = document.getElementById('upload-prompt');
-    const fileInfo = document.getElementById('file-info');
-    const fileNameDisplay = document.getElementById('fileNameDisplay');
-    const removeImage = document.getElementById('removeImage');
+    document.addEventListener('DOMContentLoaded', function () {
+    const canvas = document.getElementById('signature-pad');
+    const input = document.getElementById('signature-input');
+    const clearBtn = document.getElementById('clear-signature');
+    const ctx = canvas.getContext('2d');
 
-    if (browseBtn && fileInput) {
-        browseBtn.addEventListener('click', () => fileInput.click());
-
-        fileInput.addEventListener('change', function() {
-            if (this.files.length > 0) handleFile(this.files[0]);
-        });
-
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = '#bc3737';
-        });
-
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.style.borderColor = '#ddd';
-        });
-
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = '#ddd';
-            if (e.dataTransfer.files.length > 0) {
-                fileInput.files = e.dataTransfer.files; 
-                handleFile(e.dataTransfer.files[0]);
-            }
-        });
+    // 1. Match canvas resolution to its display size
+    function resizeCanvas() {
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        ctx.scale(ratio, ratio);
+        ctx.strokeStyle = "#333"; // Ink color
+        ctx.lineWidth = 2;
+        ctx.lineCap = "round";
     }
 
-    function handleFile(file) {
-        if (fileNameDisplay && uploadPrompt && fileInfo) {
-            fileNameDisplay.textContent = file.name;
-            uploadPrompt.style.display = 'none';
-            fileInfo.style.display = 'block';
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    let drawing = false;
+
+    // 2. Coordinate calculation helper
+    function getXY(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+            x: clientX - rect.left,
+            y: clientY - rect.top
+        };
+    }
+
+    // 3. Drawing Events
+    function start(e) {
+        drawing = true;
+        const pos = getXY(e);
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+        e.preventDefault();
+    }
+
+    function move(e) {
+        if (!drawing) return;
+        const pos = getXY(e);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        e.preventDefault();
+    }
+
+    function stop() {
+        if (drawing) {
+            drawing = false;
+            // Transfer canvas data to hidden input
+            input.value = canvas.toDataURL("image/png");
         }
     }
 
-    if (removeImage) {
-        removeImage.addEventListener('click', () => {
-            fileInput.value = ''; 
-            uploadPrompt.style.display = 'block';
-            fileInfo.style.display = 'none';
-            fileNameDisplay.textContent = '';
-        });
-    }
+    // Mouse listeners
+    canvas.addEventListener('mousedown', start);
+    canvas.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', stop);
+
+    // Touch listeners (for Mobile/iPad)
+    canvas.addEventListener('touchstart', start, { passive: false });
+    canvas.addEventListener('touchmove', move, { passive: false });
+    canvas.addEventListener('touchend', stop);
+
+    // Clear function
+    clearBtn.addEventListener('click', function() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        input.value = "";
+    });
 });
 </script>
-
-<div class="modal fade" id="termsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content text-center p-4" style="border-radius: 20px;">
-            <div class="modal-body">
-                <h3 class="fw-bold mb-3">Terms and Conditions</h3>
-                <p style="text-align: left; margin: 20px 0; line-height: 1.5; color: #333;">
-                    By proceeding with this {{ Request::is('*pickup*') ? 'pick up' : 'return' }}, you agree to the following terms:<br><br>
-                    • Vehicle must be returned in the same condition as received.<br>
-                    • Full liability applies for damages or late return.<br>
-                    • HASTA Travel reserves the right to cancel bookings for suspicious activity.
-                </p>
-                <button type="button" class="btn-primary" data-bs-dismiss="modal" style="width: 100%; border-radius: 12px; height: 45px;">
-                    Close
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 </body>
 </html>

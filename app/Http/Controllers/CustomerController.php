@@ -226,7 +226,8 @@ class CustomerController extends Controller
                 'booking.created_at',
                 'vehicles.model',
                 'vehicles.vehicleType',
-                'vehicles.plateNumber'
+                'vehicles.plateNumber',
+                'vehicles.vehiclePhoto'
             )
             ->orderBy('booking.created_at', 'desc')
             ->get();
@@ -297,7 +298,7 @@ class CustomerController extends Controller
                 ->with('error', 'Vehicle not available for booking.');
         }
         
-        return view('customer.booking-form', compact('vehicle'));
+        return view('bookingform', compact('vehicle'));
     }
     
     /**

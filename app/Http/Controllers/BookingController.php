@@ -241,69 +241,93 @@ class BookingController extends Controller
     }
 
     public function confirmBooking(Request $request)
-    {
-        // ... (Keep your existing confirmBooking logic exactly as it was) ...
-        // Ensure you handle the 'voucher_id' saving if you added that column to bookings table
+{
+    \Log::info('Booking request received', $request->all());
+
+    try {
+        $request->validate([
+            'vehicleID' => 'required|exists:vehicles,vehicleID',
+            'pickup_date' => 'required|date',
+            'pickup_time' => 'required',
+            'return_date' => 'required|date|after:pickup_date',
+            'return_time' => 'required',
+            'pickupLocation' => 'required',
+            'returnLocation' => 'required',
+            'bank_name' => 'required',
+            'bank_owner_name' => 'required',
+            'payAmount' => 'required|in:full,deposit',
+            'payment_receipt' => 'required|image|max:5120',
+        ]);
+
+        DB::beginTransaction();
+
+        $vehicle = Vehicles::findOrFail($request->vehicleID);
         
-        \Log::info('Booking request received', $request->all());
-
-        try {
-            $request->validate([
-                'vehicleID' => 'required|exists:vehicles,vehicleID',
-                'pickup_date' => 'required|date',
-                'pickup_time' => 'required',
-                'return_date' => 'required|date|after:pickup_date',
-                'return_time' => 'required',
-                'payAmount' => 'required',
-                'payment_receipt' => 'required|image',
-            ]);
-
-            $vehicle = Vehicles::findOrFail($request->vehicleID);
-            
-            
-            // Save Booking
-            $booking = new Bookings();
-            $booking->userID = auth()->id();
-            $booking->customerID = auth()->id();
-            $booking->vehicleID = $vehicle->vehicleID;
-            $booking->startDate = $request->pickup_date;
-            $booking->endDate = $request->return_date;
-            // ... set other fields ...
-            $booking->promo_id = $request->promo_id;
-            
-            if ($request->voucher_id) {
-                $voucher = Voucher::where('voucherCode', $request->voucher_id)
-                                ->where('userID', Auth::id()) 
-                                ->first();
-                                
-                if($voucher) {
-                    $booking->voucher_id = $request->voucher_id; 
-                    
-                    $voucher->isUsed = 1;
-                    $voucher->save();
-                }
-            }
-
-            
-            $booking->save(); // Just a placeholder, ensure you copy your exact saving logic back
-            
-            // Update vehicle status
-            $vehicle->status = 'rented';
-            $vehicle->save();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Booking submitted successfully!',
-                'booking_id' => $booking->bookingID
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Booking failed: ' . $e->getMessage()
-            ], 500);
+        // Calculate duration
+        $start = Carbon::parse($request->pickup_date . ' ' . $request->pickup_time);
+        $end = Carbon::parse($request->return_date . ' ' . $request->return_time);
+        $durationDays = $end->diffInDays($start);
+        if ($durationDays < 1) $durationDays = 1;
+        
+        // Calculate total price
+        $totalPrice = $durationDays * $vehicle->pricePerDay;
+        
+        // Handle file upload
+        $receiptPath = null;
+        if ($request->hasFile('payment_receipt')) {
+            $receiptPath = $request->file('payment_receipt')->store('receipts', 'public');
         }
+        
+        // Save Booking
+        $booking = new Bookings();
+        
+        // If your table has userID column:
+        $booking->userID = auth()->id();
+        
+        // If your table doesn't have userID, only set customerID:
+        $booking->customerID = auth()->id();
+        $booking->vehicleID = $vehicle->vehicleID;
+        $booking->bankNum = $request->bank_owner_name ?? '';
+        $booking->penamaBank = $request->bank_name;
+        $booking->startDate = $request->pickup_date;
+        $booking->endDate = $request->return_date;
+        $booking->bookingDuration = $durationDays;
+        $booking->totalPrice = $totalPrice;
+        
+        // Determine deposit
+        if ($request->payAmount == 'deposit') {
+            $booking->depositAmount = $totalPrice * 0.5;
+        } else {
+            $booking->depositAmount = $totalPrice; // Full payment
+        }
+        
+        $booking->bookingStatus = 'pending';
+        
+        // Save WITHOUT using mass assignment to avoid userID issue
+        $booking->save();
+        
+        // Update vehicle status
+        $vehicle->status = 'rented';
+        $vehicle->save();
+
+        DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Booking submitted successfully!',
+            'booking_id' => $booking->bookingID
+        ]);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        \Log::error('Booking error: ' . $e->getMessage());
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Booking failed: ' . $e->getMessage()
+        ], 500);
     }
+}
 
     public function bookingHistory()
     {

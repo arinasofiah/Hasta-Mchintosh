@@ -876,9 +876,14 @@
             Kindly trace your booking below.
         </p>
         <div class="modal-actions">
-            <button class="modal-btn btn-primary" id="viewBookings">View My Bookings</button>
-            <button class="modal-btn btn-secondary" id="closeSuccess">Close</button>
-        </div>
+    <button type="button" class="modal-btn btn-primary" id="viewBookings">
+        View My Bookings
+    </button>
+
+    <button type="button" class="modal-btn btn-secondary" id="closeSuccess">
+        Close
+    </button>
+</div>
     </div>
 </div>
 
@@ -1013,13 +1018,18 @@ document.getElementById('paymentForm').addEventListener('submit', function(e) {
     });
 });
 
-// Success modal button handlers
-document.getElementById('viewBookings').addEventListener('click', function() {
-    window.location.href = "{{ route('booking.history') }}";
-});
+document.addEventListener('DOMContentLoaded', function () {
 
-document.getElementById('closeSuccess').addEventListener('click', function() {
-    window.location.href = "/";
+    document.getElementById('viewBookings')
+        .addEventListener('click', function () {
+            window.location.href = "{{ route('bookingHistory') }}";
+        });
+
+    document.getElementById('closeSuccess')
+        .addEventListener('click', function () {
+            window.location.href = "/";
+        });
+
 });
 
 // Voucher Handling

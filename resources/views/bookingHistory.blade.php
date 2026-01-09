@@ -797,28 +797,30 @@
 
                             <div class="price">RM{{ number_format($booking->totalPrice ?? 0, 2) }}</div>
 
-                            <div class="dates">
-                                @if($booking->bookingStatus === 'approved')
-                                    <div class="date-link">
-                                        <a href="{{ route('customer.pickup.form', ['bookingId' => $booking->bookingID]) }}" 
-                                           class="date-link-text"
-                                           title="Click to go to pickup form">
-                                            {{ date('d M Y', strtotime($booking->startDate)) }}
-                                        </a>
-                                    </div>
-                                    <span style="margin: 0 5px;">-</span>
-                                    <div class="date-link">
-                                        <a href="{{ route('customer.return.form', ['bookingId' => $booking->bookingID]) }}" 
-                                           class="date-link-text"
-                                           title="Click to go to return form">
-                                            {{ date('d M Y', strtotime($booking->endDate)) }}
-                                        </a>
-                                    </div>
-                                @else
-                                    {{ date('d M Y', strtotime($booking->startDate)) }} -
-                                    {{ date('d M Y', strtotime($booking->endDate)) }}
-                                @endif
-                            </div>
+                           <div class="dates">
+    {{ date('d M Y', strtotime($booking->startDate)) }} - 
+    {{ date('d M Y', strtotime($booking->endDate)) }}
+    
+    @if($booking->bookingStatus === 'approved')
+        <div class="action-buttons" style="margin-top: 10px;">
+            {{-- Pickup Button --}}
+            <a href="{{ route('pickup.form', ['bookingID' => $booking->bookingID]) }}" 
+               class="btn btn-primary btn-sm"
+               title="Process vehicle pickup">
+                <i class="fas fa-car"></i> Pickup
+            </a>
+            
+            {{-- Return Button (show only if pickup likely completed) --}}
+            @if(strtotime($booking->startDate) <= time()) {{-- If pickup date has passed --}}
+                <a href="{{ route('return.form', ['bookingID' => $booking->bookingID]) }}" 
+                   class="btn btn-warning btn-sm"
+                   title="Process vehicle return">
+                    <i class="fas fa-undo"></i> Return
+                </a>
+            @endif
+        </div>
+    @endif
+</div>
 
                             <div class="status active">Active</div>
 
