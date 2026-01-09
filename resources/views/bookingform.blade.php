@@ -264,13 +264,6 @@ textarea.input {resize:vertical; min-height:100px;}
                     <div class="field-label">Destination</div>
                     <div style="display: flex; gap: 10px;">
                         <input type="text" id="destination" name="destination" class="input" placeholder="Enter destination">
-                        <input type="hidden" id="destinationMapLink" name="destinationMapLink">
-                        <button type="button" onclick="openMap('destination')" class="map-btn">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                                <circle cx="12" cy="10" r="3"></circle>
-                            </svg>
-                        </button>
                     </div>
                 </div>
 
@@ -412,26 +405,6 @@ let baseGrandTotal = 0;
 let promotionDiscount = 0;
 const pricePerHour = {{ $vehicle->pricePerHour }};
 const pricePerDay = {{ $vehicle->pricePerDay }};
-
-// Open Google Maps in new tab
-function openMap(type) {
-    const loc = type === 'pickup' ? document.getElementById('pickupLocation') : 
-                type === 'return' ? document.getElementById('returnLocation') : 
-                document.getElementById('destination');
-    const addr = loc.value;
-    
-    if (addr) {
-        const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
-        window.open(mapUrl, '_blank');
-        
-        const mapLinkField = type === 'pickup' ? document.getElementById('pickupMapLink') : 
-                             type === 'return' ? document.getElementById('returnMapLink') : 
-                             document.getElementById('destinationMapLink');
-        mapLinkField.value = mapUrl;
-    } else {
-        alert('Please enter a location first');
-    }
-}
 
 // Toggle driver info section
 function toggleDriverInfo() {
