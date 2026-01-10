@@ -159,6 +159,20 @@ class BookingController extends Controller
                                         ];
                                    });
 
+        // === Loyalty Card Data ===
+        $loyaltyCard = null;
+        $user = Auth::user();
+
+        if ($user) {
+            $customerProfile = DB::table('customer')->where('userID', $user->userID)->first();
+            if ($customerProfile) {
+                $loyaltyCard = LoyaltyCard::firstOrCreate(
+                    ['matricNumber' => $customerProfile->matricNumber],
+                    ['stampCount' => 0]
+                );
+            }
+        }
+                                   
         return view('paymentform', compact(
             'vehicle',
             'pickupLocationDisplay',
@@ -184,7 +198,8 @@ class BookingController extends Controller
             'faculty',
             'depoBalance',
             'promoDetails',
-            'eligibleVouchers'
+            'eligibleVouchers',
+            'loyaltyCard'
         ));
     }
 
@@ -330,6 +345,26 @@ class BookingController extends Controller
             $booking->bookingStatus = 'approved';
             $booking->save();
             
+            // === Issue Loyalty Stamp ===
+            if (auth()->check()) {
+                $customerProfile = DB::table('customer')->where('userID', auth()->id())->first();
+                if ($customerProfile) {
+                    $loyaltyCard = LoyaltyCard::firstOrCreate(
+                        ['matricNumber' => $customerProfile->matricNumber],
+                        ['stampCount' => 0]
+                    );
+
+                    // Only give stamp if rental duration >= 9 hours
+                    $rentalHours = $end->diffInHours($start);
+                    if ($rentalHours >= 7) {
+                        $loyaltyCard->stampCount += 1;
+                        $loyaltyCard->save();
+
+                        // Optionally: auto-issue reward (see note below)
+                        // $this->issueLoyaltyReward($loyaltyCard, auth()->user());
+                    }
+                }
+            }
             // This will trigger the updateVehicleStatus in Bookings model
             // which will mark vehicle as rented if booking is currently active
             $booking->updateVehicleStatus();

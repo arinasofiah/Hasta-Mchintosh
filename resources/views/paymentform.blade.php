@@ -747,7 +747,100 @@
         <!-- Payment Details -->
         <div class="section">
             <h2><i class="fas fa-credit-card"></i> Payment Details</h2>
-            
+
+            <!-- Loyalty Stamp Tracker -->
+            <div class="form-group">
+                <label><i class="fas fa-gift"></i> Hasta Rewards</label>
+                <div style="background: linear-gradient(135deg, #fff8f0 0%, #fefefe 100%); padding:18px; border-radius:14px; font-size:14px; border:1px solid #ffe0cc; box-shadow: 0 2px 8px rgba(217, 68, 68, 0.08);">
+                    
+                    @if($loyaltyCard)
+                        @php
+                            $rewardTiers = [
+                                1 => 'RM10', 2 => 'RM10', 3 => 'RM20',
+                                4 => 'RM10', 5 => 'RM10', 6 => 'RM30',
+                                7 => 'RM10', 8 => 'RM10', 9 => 'RM20',
+                                10 => 'RM10', 11 => 'RM10', 12 => 'HALFDAY'
+                            ];
+                            $next = $loyaltyCard->stampCount + 1;
+                            $nextReward = ($next <= 12 && isset($rewardTiers[$next])) ? $rewardTiers[$next] : null;
+                        @endphp
+
+                        <!-- Progress Header -->
+                        <div style="display:flex; justify-content:space-between; margin-bottom:12px; align-items:center;">
+                            <strong style="color:#d94444;">{{ $loyaltyCard->stampCount }}/12 Stamps</strong>
+                            @if($nextReward)
+                                <span style="font-weight:600; font-size:14px; color:#28a745;">
+                                    @if($nextReward == 'HALFDAY')
+                                        🎁 Final Reward!
+                                    @else
+                                        ➕ {{ $nextReward }}
+                                    @endif
+                                </span>
+                            @else
+                                <span style="color:#6c757d; font-style:italic;">Completed!</span>
+                            @endif
+                        </div>
+
+                        <!-- Fancy Stamp Circles -->
+                        <div style="display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:10px 0;">
+                            @for($i = 1; $i <= 12; $i++)
+                                @php
+                                    $isFilled = $i <= $loyaltyCard->stampCount;
+                                    $color = '#e9e9e9'; // default empty
+                                    $textColor = '#aaa';
+
+                                    if ($isFilled) {
+                                        if ($i == 3) {
+                                            $color = '#4CAF50'; // green
+                                            $textColor = 'white';
+                                        } elseif ($i == 6) {
+                                            $color = '#2196F3'; // blue
+                                            $textColor = 'white';
+                                        } elseif ($i == 9) {
+                                            $color = '#9C27B0'; // purple
+                                            $textColor = 'white';
+                                        } elseif ($i == 12) {
+                                            $color = 'gold';
+                                            $textColor = '#5a3a00';
+                                        } else {
+                                            $color = '#d94444'; // red for normal stamps
+                                            $textColor = 'white';
+                                        }
+                                    }
+                                @endphp
+
+                                <div style="
+                                    width:24px; height:24px;
+                                    border-radius:50%;
+                                    background:{{ $color }};
+                                    display:flex; align-items:center; justify-content:center;
+                                    font-size:10px; color:{{ $textColor }};
+                                    font-weight:bold;
+                                    box-shadow: {{ $i == 12 ? '0 0 6px rgba(255,215,0,0.8)' : ($isFilled ? '0 0 4px rgba(0,0,0,0.2)' : 'none') }};
+                                    transition: transform 0.2s ease;
+                                " title="Stamp {{ $i }}: {{ $rewardTiers[$i] ?? 'RM10' }}">
+                                    @if($i == 12)
+                                        ★
+                                    @else
+                                        {{ $i }}
+                                    @endif
+                                </div>
+                            @endfor
+                        </div>
+
+                        <!-- Info Message -->
+                        <div style="margin-top:10px; font-size:12px; color:#555; text-align:center; line-height:1.5;">
+                            🎟️ <strong>Every booking ≥7 hours</strong> earns you a <strong style="color:#d94444;">RM10 voucher</strong>!<br>
+                            Special rewards at stamps 3, 6, 9 & 12!
+                        </div>
+                    @else
+                        <div style="text-align:center; color:#666; font-style:italic; padding:10px;">
+                            Complete your profile to unlock Hasta Rewards! 🎁
+                        </div>
+                    @endif
+                </div>
+            </div>
+
             <!-- Voucher Section -->
             <div class="form-group">
                 <label>Apply Voucher (Optional)</label>
