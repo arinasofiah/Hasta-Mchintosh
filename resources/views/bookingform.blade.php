@@ -258,8 +258,7 @@ textarea.input {resize:vertical; min-height:100px;}
                     <div class="field-label">Return Location</div>
                         <select id="returnLocationType" class="input" required onchange="handleLocationChange('return')">
                             <option value="">-- Select --</option>
-                            <option value="hasta">HASTA Office</option>
-                            <option value="student_mall">Student Mall</option>
+                            <option value="hasta">HASTA Office, Student Mall</option>
                             <option value="others">Others (within UTM)</option>
                         </select>
 
@@ -276,7 +275,7 @@ textarea.input {resize:vertical; min-height:100px;}
                                 <option value="college">College</option>
                                 <option value="office">Office</option>
                             </select>
-                            <input type="text" id="returnDetails" class="input" placeholder="e.g., DK, FKE" style="margin-top: 5px;" required>
+                            <input type="text" id="returnDetails" class="input" placeholder="e.g., N28, FC" style="margin-top: 5px;" required>
                         </div>
                 </div>
             </div>
@@ -444,11 +443,7 @@ function handleLocationChange(type) {
     hiddenInput.value = '';
 
     if (locType === 'hasta') {
-        hiddenInput.value = 'HASTA Office';
-        notice.style.display = 'none';
-        othersFields.style.display = 'none';
-    } else if (locType === 'student_mall') {
-        hiddenInput.value = 'Student Mall';
+        hiddenInput.value = 'HASTA Office, Student Mall';
         notice.style.display = 'none';
         othersFields.style.display = 'none';
     } else if (locType === 'others') {
@@ -586,8 +581,8 @@ function checkPromotion() {
         const promoDiscountEl = document.getElementById('promotionDiscount');
         if (promoDiscountEl) {
             promoDiscountEl.textContent = data.hasPromotion 
-                ? `- MYR ${promotionDiscount.toFixed(2)}` 
-                : '- MYR 0.00';
+                ? `- RM ${promotionDiscount.toFixed(2)}` 
+                : '- RM 0.00';
             promoDiscountEl.style.color = data.hasPromotion ? '#28a745' : '#333';
         }
 
@@ -621,14 +616,14 @@ function recalculateTotal() {
     // Update delivery charge display
     const deliveryChargeEl = document.getElementById('deliveryCharge');
     if (deliveryChargeEl) {
-        deliveryChargeEl.textContent = `MYR ${deliveryCharge.toFixed(2)}`;
+        deliveryChargeEl.textContent = `RM ${deliveryCharge.toFixed(2)}`;
     }
 
     // Update grand total
     const grandTotalEl = document.getElementById('grandTotal');
     const bottomBarTotalEl = document.getElementById('bottomBarTotal');
-    if (grandTotalEl) grandTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
-    if (bottomBarTotalEl) bottomBarTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
+    if (grandTotalEl) grandTotalEl.textContent = `RM ${finalTotal.toFixed(2)}`;
+    if (bottomBarTotalEl) bottomBarTotalEl.textContent = `RM ${finalTotal.toFixed(2)}`;
 
     window.finalTotal = finalTotal;
     console.log('Final Total (with delivery & promo):', finalTotal);
