@@ -202,13 +202,18 @@ class CustomerController extends Controller
     /**
      * Display customer bookings - CORRECTED VERSION
      */
-    public function bookings()
+   public function bookings()
 {
     $userId = auth()->id();
     
     // Get bookings with DB facade
     $bookings = DB::table('booking')
-        ->select('booking.*', 'vehicles.model', 'vehicles.vehicleType', 'vehicles.vehiclePhoto', 'vehicles.plateNumber')
+        ->select('booking.*', 
+                'vehicles.model', 
+                'vehicles.vehicleType', 
+                'vehicles.vehiclePhoto', 
+                'vehicles.plateNumber',
+                'vehicles.vehicleID as vehicle_vehicleID') // Add vehicleID
         ->leftJoin('vehicles', 'booking.vehicleID', '=', 'vehicles.vehicleID')
         ->where('booking.userID', $userId)
         ->orWhere('booking.customerID', $userId)
@@ -219,10 +224,20 @@ class CustomerController extends Controller
             $booking = (object) $booking;
             
             // Calculate payments
-            $payments = DB::table('payments')
+            $payments = DB::table('payment')
                 ->where('bookingID', $booking->bookingID)
                 ->where('paymentStatus', 'approved')
                 ->sum('amount');
+            
+            // Get pickup data
+            $pickup = DB::table('pickup')
+                ->where('bookingID', $booking->bookingID)
+                ->first();
+            
+            // Get return data from 'return' table
+            $returnData = DB::table('return')
+                ->where('bookingID', $booking->bookingID)
+                ->first();
             
             // MATCH PAYMENT FORM LOGIC
             $rentalPrice = $booking->totalPrice ?? 0;
@@ -240,6 +255,19 @@ class CustomerController extends Controller
                 $remainingBalance = max(0, $totalCost - $totalPaid);
             }
             
+            // Add pickup and return datetime to booking object
+            $booking->pickupDateTime = ($pickup->pickupDate ?? $booking->startDate) . ' ' . ($pickup->pickupTime ?? '08:00:00');
+            $booking->returnDateTime = ($returnData->returnDate ?? $booking->endDate) . ' ' . ($returnData->returnTime ?? '16:00:00');
+            
+            // Add vehicle as an object WITH vehicleID
+            $booking->vehicle = (object) [
+                'model' => $booking->model ?? null,
+                'vehicleType' => $booking->vehicleType ?? null,
+                'vehiclePhoto' => $booking->vehiclePhoto ?? null,
+                'plateNumber' => $booking->plateNumber ?? null,
+                'vehicleID' => $booking->vehicle_vehicleID ?? null // Use the aliased column
+            ];
+            
             $booking->totalPaid = $totalPaid;
             $booking->totalCost = $totalCost;
             $booking->remainingBalance = $remainingBalance;
@@ -248,7 +276,6 @@ class CustomerController extends Controller
             
             return $booking;
         });
-
 
     // Categorize bookings
     $active = $bookings->filter(function($booking) {

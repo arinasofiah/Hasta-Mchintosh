@@ -684,73 +684,73 @@
         }
 
         .action-buttons-container {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
 
-.past-booking {
-    margin-bottom: 10px;
-    padding: 15px;
-}
+        .past-booking {
+            margin-bottom: 10px;
+            padding: 15px;
+        }
 
-.past-booking-content {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    gap: 15px;
-}
+        .past-booking-content {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            gap: 15px;
+        }
 
-.past-car-image {
-    width: 80px;
-    height: 60px;
-    border-radius: 4px;
-    object-fit: cover;
-    flex-shrink: 0;
-}
+        .past-car-image {
+            width: 80px;
+            height: 60px;
+            border-radius: 4px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
 
-.past-booking-info {
-    flex: 1;
-}
+        .past-booking-info {
+            flex: 1;
+        }
 
-.past-booking-title {
-    font-weight: 600;
-    font-size: 14px;
-    color: #333;
-}
+        .past-booking-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: #333;
+        }
 
-.past-booking-type {
-    font-size: 12px;
-    color: #666;
-}
+        .past-booking-type {
+            font-size: 12px;
+            color: #666;
+        }
 
-.past-booking-dates {
-    font-size: 12px;
-    color: #666;
-}
+        .past-booking-dates {
+            font-size: 12px;
+            color: #666;
+        }
 
-.past-booking-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
+        .past-booking-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
 
-.view-btn {
-    padding: 5px 10px !important;
-    font-size: 12px !important;
-}
+        .view-btn {
+            padding: 5px 10px !important;
+            font-size: 12px !important;
+        }
 
-.rebook-btn {
-    padding: 5px 10px !important;
-    font-size: 12px !important;
-}
+        .rebook-btn {
+            padding: 5px 10px !important;
+            font-size: 12px !important;
+        }
 
-.empty-past-state {
-    text-align: center;
-    color: #666;
-    font-size: 14px;
-    padding: 20px;
-}
+        .empty-past-state {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            padding: 20px;
+        }
 
         /* ===== Responsive Design ===== */
         @media (max-width: 768px) {
@@ -881,7 +881,7 @@
         }
     </style>
 </head>
- <body class="has-scrollable-content">
+<body class="has-scrollable-content">
     
     {{-- Header --}}
     <div id="header">
@@ -921,25 +921,17 @@
             <ul class="sidebar-menu">
                 <li>
                     <a href="{{ route('customer.profile') }}">
-                        <span class="sidebar-icon"><i class="fas fa-user"></i></span>
                         My Profile
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('bookingHistory') }}" class="active">
-                        <span class="sidebar-icon"><i class="fas fa-history"></i></span>
                         My Bookings
                     </a>
                 </li>
-                <li>
-                    <a href="{{ route('customer.loyaltycard') }}">
-                        <span class="sidebar-icon"><i class="fas fa-id-card"></i></span>
-                        Loyalty Card
-                    </a>
-                </li>
+               
                <li>
                     <a href="{{ route('customer.documents') }}">
-                        <span class="sidebar-icon"><i class="fas fa-file-upload"></i></span>
                         Upload Documents
                     </a>
                 </li>
@@ -950,6 +942,27 @@
         <div class="booking-history-page">
             <h1 class="profile-title">My Booking History</h1>
 
+            <!-- Debug Section -->
+            <div style="background: #f0f0f0; padding: 10px; margin-bottom: 20px; border-radius: 4px; font-size: 12px; display: none;">
+                <strong>Debug Info:</strong><br>
+                
+                @php
+                    $testBooking = $active->first() ?? $pending->first() ?? $completed->first() ?? $cancelled->first();
+                @endphp
+                
+                @if($testBooking)
+                    First Booking ID: {{ $testBooking->bookingID }}<br>
+                    Vehicle Model: {{ $testBooking->vehicle->model ?? 'NO VEHICLE MODEL' }}<br>
+                    Vehicle Type: {{ $testBooking->vehicle->vehicleType ?? 'NO VEHICLE TYPE' }}<br>
+                    Vehicle Photo: {{ $testBooking->vehicle->vehiclePhoto ?? 'NO PHOTO' }}<br>
+                    <br>
+                    Counts: Active={{ count($active) }}, Pending={{ count($pending) }}, 
+                    Completed={{ count($completed) }}, Cancelled={{ count($cancelled) }}
+                @else
+                    No bookings found in any category
+                @endif
+            </div>
+
             <!-- Active/Ongoing Bookings Section -->
             <div class="booking-section">
                 <div class="section-title active">Active Bookings</div>
@@ -957,9 +970,21 @@
                 @forelse($active as $booking)
                     @php
                         $vehicle = $booking->vehicle ?? null;
-                        $canPayBalance = ($booking->pay_amount_type == 'deposit' || (isset($booking->depositAmount) && $booking->depositAmount > 0)) 
-                                        && $booking->remainingBalance > 0 
-                                        && $booking->bookingStatus === 'approved';
+                        // Calculate like payment form
+                        $rentalPrice = $booking->totalPrice ?? 0;
+                        $depositAmount = 50; // Fixed deposit
+                        $totalCost = $rentalPrice + $depositAmount;
+                        $totalPaid = $booking->totalPaid ?? 0;
+                        
+                        // Calculate remaining balance based on payment type
+                        if($booking->pay_amount_type == 'deposit') {
+                            $remainingBalance = max(0, $rentalPrice - ($totalPaid - $depositAmount));
+                        } else {
+                            $remainingBalance = max(0, $totalCost - $totalPaid);
+                        }
+                        
+                        $isFullyPaid = $remainingBalance <= 0;
+                        $canPayBalance = $remainingBalance > 0 && $booking->bookingStatus === 'approved';
                     @endphp
                     
                     <div class="booking-card">
@@ -981,17 +1006,17 @@
                                 
                                 <!-- Payment Information -->
                                 <div class="payment-info">
-                                    @if(($booking->pay_amount_type == 'deposit' || (isset($booking->depositAmount) && $booking->depositAmount > 0)) && $booking->remainingBalance > 0)
-                                        <div class="paid">Paid: RM{{ number_format($booking->totalPaid, 2) }}</div>
-                                        <div class="remaining">Balance: RM{{ number_format($booking->remainingBalance, 2) }}</div>
-                                    @elseif($booking->isFullyPaid)
+                                    @if($remainingBalance > 0)
+                                        <div class="paid">Paid: RM{{ number_format($totalPaid, 2) }}</div>
+                                        <div class="remaining">Balance: RM{{ number_format($remainingBalance, 2) }}</div>
+                                    @elseif($isFullyPaid)
                                         <div class="paid">Fully Paid</div>
                                     @endif
                                 </div>
                             </div>
 
                             <div class="price">
-                                RM{{ number_format($booking->totalPrice ?? 0, 2) }}
+                                RM{{ number_format($rentalPrice, 2) }}
                             </div>
 
                             <div class="dates">
@@ -1033,7 +1058,7 @@
                                     <a href="{{ route('payment.remaining', ['bookingID' => $booking->bookingID]) }}" 
                                        class="action-btn-success" 
                                        style="text-decoration: none;">
-                                        <i class="fas fa-credit-card"></i> Pay Balance (RM{{ number_format($booking->remainingBalance, 2) }})
+                                        <i class="fas fa-credit-card"></i> Pay Balance (RM{{ number_format($remainingBalance, 2) }})
                                     </a>
                                 @endif
                             </div>
@@ -1054,6 +1079,16 @@
                 @forelse($pending as $booking)
                     @php
                         $vehicle = $booking->vehicle ?? null;
+                        $rentalPrice = $booking->totalPrice ?? 0;
+                        $depositAmount = 50;
+                        $totalCost = $rentalPrice + $depositAmount;
+                        $totalPaid = $booking->totalPaid ?? 0;
+                        
+                        if($booking->pay_amount_type == 'deposit') {
+                            $remainingBalance = max(0, $rentalPrice - ($totalPaid - $depositAmount));
+                        } else {
+                            $remainingBalance = max(0, $totalCost - $totalPaid);
+                        }
                     @endphp
                     <div class="booking-card">
                         @if($vehicle && $vehicle->vehiclePhoto)
@@ -1073,7 +1108,7 @@
                                 <p>{{ $vehicle->vehicleType ?? 'Vehicle Type' }}</p>
                             </div>
 
-                            <div class="price">RM{{ number_format($booking->totalPrice ?? 0, 2) }}</div>
+                            <div class="price">RM{{ number_format($rentalPrice, 2) }}</div>
 
                             <div class="dates">
                                 {{ date('d M Y', strtotime($booking->startDate)) }} -
@@ -1113,6 +1148,7 @@
                         @forelse($completed as $booking)
                             @php
                                 $vehicle = $booking->vehicle ?? null;
+                                $rentalPrice = $booking->totalPrice ?? 0;
                             @endphp
                             <div class="booking-card" style="margin-bottom: 10px; padding: 15px;">
                                 <div style="display: flex; align-items: center; width: 100%; gap: 15px;">
@@ -1157,6 +1193,7 @@
                         @forelse($cancelled as $booking)
                             @php
                                 $vehicle = $booking->vehicle ?? null;
+                                $rentalPrice = $booking->totalPrice ?? 0;
                             @endphp
                             <div class="booking-card" style="margin-bottom: 10px; padding: 15px;">
                                 <div style="display: flex; align-items: center; width: 100%; gap: 15px;">
@@ -1186,13 +1223,13 @@
                                                 style="padding: 5px 10px; font-size: 12px;">
                                             <i class="fas fa-eye"></i> View
                                         </button>
-                                        @if($vehicle)
-                                            <a href="{{ route('customer.booking.form', ['vehicleId' => $vehicle->vehicleID]) }}" 
-                                               class="action-btn-link"
-                                               style="padding: 5px 10px; font-size: 12px;">
-                                                <i class="fas fa-redo"></i> Rebook
-                                            </a>
-                                        @endif
+                                       @if($booking->vehicleID)
+    <a href="{{ route('customer.booking.form', ['vehicleId' => $booking->vehicleID]) }}" 
+       class="action-btn-link"
+       style="padding: 5px 10px; font-size: 12px;">
+        <i class="fas fa-redo"></i> Rebook
+    </a>
+@endif
                                     </div>
                                 </div>
                             </div>
@@ -1265,33 +1302,6 @@
                 <div class="detail-section">
                     <h3><i class="fas fa-credit-card"></i> Payment Details</h3>
                     <div class="detail-row">
-                        <span class="detail-label">Rental Price</span>
-                        <span class="detail-value" id="detail-rental-price">RM 0.00</span>
-                    </div>
-                    
-                    <!-- Delivery Charge (conditionally shown) -->
-                    <div class="detail-row" id="detail-delivery-row" style="display: none;">
-                        <span class="detail-label">Delivery Charge</span>
-                        <span class="detail-value" id="detail-delivery-charge">RM 0.00</span>
-                    </div>
-                    
-                    <!-- Discounts -->
-                    <div class="detail-row" id="detail-promo-row" style="display: none; color: #28a745;">
-                        <span class="detail-label">Promotion Discount</span>
-                        <span class="detail-value" id="detail-promo-discount">- RM 0.00</span>
-                    </div>
-                    
-                    <div class="detail-row" id="detail-voucher-row" style="display: none; color: #d94444;">
-                        <span class="detail-label">Voucher Discount</span>
-                        <span class="detail-value" id="detail-voucher-discount">- RM 0.00</span>
-                    </div>
-                    
-                    <!-- Subtotal -->
-                    <div class="detail-row">
-                        <span class="detail-label"><strong>Subtotal</strong></span>
-                        <span class="detail-value" id="detail-subtotal">RM 0.00</span>
-                    </div>
-                    <div class="detail-row">
                         <span class="detail-label">Total Cost</span>
                         <span class="detail-value" id="detail-total-cost">RM 0.00</span>
                     </div>
@@ -1307,10 +1317,6 @@
                     <div class="detail-row">
                         <span class="detail-label">Payment Type</span>
                         <span class="detail-value" id="detail-payment-type">-</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Deposit Amount</span>
-                        <span class="detail-value" id="detail-deposit">RM 0.00</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Bank Name</span>
@@ -1368,38 +1374,50 @@
         </div>
     </div>
 
-<script>
+   <script>
 // Collect all booking data with proper vehicle information
 let bookingsData = [];
 
-// Add active bookings
-@if(isset($active) && $active->isNotEmpty())
-    @foreach($active as $booking)
-        @php
-            $vehicleData = [
-                'model' => $booking->vehicle->model ?? null,
-                'vehicleType' => $booking->vehicle->vehicleType ?? null,
-                'vehiclePhoto' => $booking->vehicle->vehiclePhoto ?? null,
-                'plateNumber' => $booking->vehicle->plateNumber ?? null,
-            ];
-        @endphp
-        bookingsData.push({
-            bookingID: {{ $booking->bookingID }},
-            startDate: '{{ $booking->startDate }}',
-            endDate: '{{ $booking->endDate }}',
-            bookingStatus: '{{ $booking->bookingStatus }}',
-            totalPrice: {{ $booking->totalPrice ?? 0 }},
-            totalPaid: {{ $booking->totalPaid ?? 0 }},
-            totalCost: {{ $booking->totalCost ?? ($booking->totalPrice + 50) }},
-            remainingBalance: {{ $booking->remainingBalance ?? 0 }},
-            depositAmount: {{ $booking->depositAmount ?? 0 }},
-            pay_amount_type: '{{ $booking->pay_amount_type ?? '' }}',
-            penamaBank: '{{ $booking->penamaBank ?? '' }}',
-            bookingDuration: {{ $booking->bookingDuration ?? 0 }},
-            vehicle: {!! json_encode($vehicleData) !!}
-        });
-    @endforeach
-@endif
+    // Add active bookings
+    @if(isset($active) && $active->isNotEmpty())
+        @foreach($active as $booking)
+            @php
+                $vehicleData = [
+                    'model' => $booking->vehicle->model ?? null,
+                    'vehicleType' => $booking->vehicle->vehicleType ?? null,
+                    'vehiclePhoto' => $booking->vehicle->vehiclePhoto ?? null,
+                    'plateNumber' => $booking->vehicle->plateNumber ?? null,
+                ];
+                
+                // Calculate like payment form
+                $rentalPrice = $booking->totalPrice ?? 0;
+                $depositAmount = 50;
+                $totalCost = $rentalPrice + $depositAmount;
+                $totalPaid = $booking->totalPaid ?? 0;
+                
+                if($booking->pay_amount_type == 'deposit') {
+                    $remainingBalance = max(0, $rentalPrice - ($totalPaid - $depositAmount));
+                } else {
+                    $remainingBalance = max(0, $totalCost - $totalPaid);
+                }
+            @endphp
+            bookingsData.push({
+                bookingID: {{ $booking->bookingID }},
+                startDate: '{{ $booking->startDate }}',
+                endDate: '{{ $booking->endDate }}',
+                bookingStatus: '{{ $booking->bookingStatus }}',
+                totalPrice: {{ $rentalPrice }},
+                totalPaid: {{ $totalPaid }},
+                totalCost: {{ $totalCost }},
+                remainingBalance: {{ $remainingBalance }},
+                depositAmount: {{ $depositAmount }},
+                pay_amount_type: '{{ $booking->pay_amount_type ?? '' }}',
+                penamaBank: '{{ $booking->penamaBank ?? '' }}',
+                bookingDuration: {{ $booking->bookingDuration ?? 0 }},
+                vehicle: {!! json_encode($vehicleData) !!}
+            });
+        @endforeach
+    @endif
 
 // Add pending bookings
 @if(isset($pending) && $pending->isNotEmpty())
@@ -1421,16 +1439,10 @@ let bookingsData = [];
             totalPaid: {{ $booking->totalPaid ?? 0 }},
             totalCost: {{ $booking->totalCost ?? ($booking->totalPrice + 50) }},
             remainingBalance: {{ $booking->remainingBalance ?? 0 }},
-            depositAmount: {{ $booking->depositAmount ?? 50 }},
+            depositAmount: {{ $booking->depositAmount ?? 0 }},
             pay_amount_type: '{{ $booking->pay_amount_type ?? '' }}',
             penamaBank: '{{ $booking->penamaBank ?? '' }}',
             bookingDuration: {{ $booking->bookingDuration ?? 0 }},
-            rentalPrice: {{ $booking->rental_price ?? ($booking->totalPrice - ($booking->delivery_charge ?? 0)) }},
-            deliveryCharge: {{ $booking->delivery_charge ?? 0 }},
-            promotionDiscount: {{ $booking->promotion_discount ?? 0 }},
-            voucherDiscount: {{ $booking->voucher_discount ?? 0 }},
-            subtotal: {{ $booking->subtotal ?? (($booking->totalPrice - ($booking->delivery_charge ?? 0)) - ($booking->promotion_discount ?? 0) - ($booking->voucher_discount ?? 0)) }},
-            
             vehicle: {!! json_encode($vehicleData) !!}
         });
     @endforeach
@@ -1456,41 +1468,6 @@ let bookingsData = [];
             totalPaid: {{ $booking->totalPaid ?? 0 }},
             totalCost: {{ $booking->totalCost ?? ($booking->totalPrice + 50) }},
             remainingBalance: {{ $booking->remainingBalance ?? 0 }},
-            depositAmount: {{ $booking->depositAmount ?? 50 }},
-            pay_amount_type: '{{ $booking->pay_amount_type ?? '' }}',
-            penamaBank: '{{ $booking->penamaBank ?? '' }}',
-            bookingDuration: {{ $booking->bookingDuration ?? 0 }},
-            rentalPrice: {{ $booking->rental_price ?? ($booking->totalPrice - ($booking->delivery_charge ?? 0)) }},
-            deliveryCharge: {{ $booking->delivery_charge ?? 0 }},
-            promotionDiscount: {{ $booking->promotion_discount ?? 0 }},
-            voucherDiscount: {{ $booking->voucher_discount ?? 0 }},
-            subtotal: {{ $booking->subtotal ?? (($booking->totalPrice - ($booking->delivery_charge ?? 0)) - ($booking->promotion_discount ?? 0) - ($booking->voucher_discount ?? 0)) }},
-            
-            vehicle: {!! json_encode($vehicleData) !!}
-        });
-    @endforeach
-@endif
-
-// Add cancelled bookings
-@if(isset($cancelled) && $cancelled->isNotEmpty())
-    @foreach($cancelled as $booking)
-        @php
-            $vehicleData = [
-                'model' => $booking->vehicle->model ?? null,
-                'vehicleType' => $booking->vehicle->vehicleType ?? null,
-                'vehiclePhoto' => $booking->vehicle->vehiclePhoto ?? null,
-                'plateNumber' => $booking->vehicle->plateNumber ?? null,
-            ];
-        @endphp
-        bookingsData.push({
-            bookingID: {{ $booking->bookingID }},
-            startDate: '{{ $booking->startDate }}',
-            endDate: '{{ $booking->endDate }}',
-            bookingStatus: '{{ $booking->bookingStatus }}',
-            totalPrice: {{ $booking->totalPrice ?? 0 }},
-            totalPaid: {{ $booking->totalPaid ?? 0 }},
-            totalCost: {{ $booking->totalCost ?? ($booking->totalPrice + 50) }},
-            remainingBalance: {{ $booking->remainingBalance ?? 0 }},
             depositAmount: {{ $booking->depositAmount ?? 0 }},
             pay_amount_type: '{{ $booking->pay_amount_type ?? '' }}',
             penamaBank: '{{ $booking->penamaBank ?? '' }}',
@@ -1500,35 +1477,72 @@ let bookingsData = [];
     @endforeach
 @endif
 
-console.log('Bookings data loaded:', bookingsData);
+    // Add cancelled bookings
+    @if(isset($cancelled) && $cancelled->isNotEmpty())
+        @foreach($cancelled as $booking)
+            @php
+                $vehicleData = [
+                    'model' => $booking->vehicle->model ?? null,
+                    'vehicleType' => $booking->vehicle->vehicleType ?? null,
+                    'vehiclePhoto' => $booking->vehicle->vehiclePhoto ?? null,
+                    'plateNumber' => $booking->vehicle->plateNumber ?? null,
+                ];
+                
+                // Calculate like payment form
+                $rentalPrice = $booking->totalPrice ?? 0;
+                $depositAmount = 50;
+                $totalCost = $rentalPrice + $depositAmount;
+                $totalPaid = $booking->totalPaid ?? 0;
+                
+                if($booking->pay_amount_type == 'deposit') {
+                    $remainingBalance = max(0, $rentalPrice - ($totalPaid - $depositAmount));
+                } else {
+                    $remainingBalance = max(0, $totalCost - $totalPaid);
+                }
+            @endphp
+            bookingsData.push({
+                bookingID: {{ $booking->bookingID }},
+                startDate: '{{ $booking->startDate }}',
+                endDate: '{{ $booking->endDate }}',
+                bookingStatus: '{{ $booking->bookingStatus }}',
+                totalPrice: {{ $rentalPrice }},
+                totalPaid: {{ $totalPaid }},
+                totalCost: {{ $totalCost }},
+                remainingBalance: {{ $remainingBalance }},
+                depositAmount: {{ $depositAmount }},
+                pay_amount_type: '{{ $booking->pay_amount_type ?? '' }}',
+                penamaBank: '{{ $booking->penamaBank ?? '' }}',
+                bookingDuration: {{ $booking->bookingDuration ?? 0 }},
+                vehicle: {!! json_encode($vehicleData) !!}
+            });
+        @endforeach
+    @endif
 
-function findBookingById(id) {
-    console.log('Looking for booking ID:', id);
-    console.log('Available bookings:', bookingsData.map(b => b.bookingID));
-    const found = bookingsData.find(b => b.bookingID == id);
-    console.log('Found booking:', found);
-    return found;
-}
+    console.log('Bookings data loaded:', bookingsData);
 
-function showDetailsModal(bookingId) {
-    console.log('showDetailsModal called with bookingId:', bookingId);
-    
-    const booking = findBookingById(bookingId);
-    if (!booking) {
-        alert('Booking not found with ID: ' + bookingId);
-        console.error('Booking not found. Available IDs:', bookingsData.map(b => b.bookingID));
-        return;
+    function findBookingById(id) {
+        return bookingsData.find(b => b.bookingID == id);
     }
 
-    console.log('Booking data for modal:', booking);
+    function showDetailsModal(bookingId) {
+        console.log('showDetailsModal called with bookingId:', bookingId);
+        
+        const booking = findBookingById(bookingId);
+        if (!booking) {
+            alert('Booking not found with ID: ' + bookingId);
+            console.error('Booking not found. Available IDs:', bookingsData.map(b => b.bookingID));
+            return;
+        }
 
-    // Set vehicle image dynamically
-    const carImage = document.getElementById('detail-car-image');
-    if (booking.vehicle && booking.vehicle.vehiclePhoto) {
-        carImage.src = "{{ Storage::url('') }}" + booking.vehicle.vehiclePhoto;
-    } else {
-        carImage.src = "{{ asset('img/vehicles/default.jpg') }}";
-    }
+        console.log('Booking data for modal:', booking);
+
+        // Set vehicle image dynamically
+        const carImage = document.getElementById('detail-car-image');
+        if (booking.vehicle && booking.vehicle.vehiclePhoto) {
+            carImage.src = "{{ Storage::url('') }}" + booking.vehicle.vehiclePhoto;
+        } else {
+            carImage.src = "{{ asset('img/vehicles/default.jpg') }}";
+        }
 
     // Set other booking details
     document.getElementById('detail-model').textContent = booking.vehicle?.model || '-';
@@ -1539,7 +1553,7 @@ function showDetailsModal(bookingId) {
     document.getElementById('detail-end').textContent = formatDate(booking.endDate);
     document.getElementById('detail-status').textContent = booking.bookingStatus || '-';
     document.getElementById('detail-duration').textContent = 
-    booking.bookingDuration ? booking.bookingDuration + ' days' : 'N/A';
+        booking.bookingDuration ? booking.bookingDuration + ' days' : 'N/A';
 
     // Set payment details
     const totalCost = booking.totalCost || (booking.totalPrice + 50);
@@ -1559,174 +1573,125 @@ function showDetailsModal(bookingId) {
     document.getElementById('detail-deposit').textContent = 'RM' + depositAmount.toFixed(2);
     document.getElementById('detail-bank-name').textContent = booking.penamaBank || '-';
 
-    // Set detailed summary
-    const rentalPrice = booking.rentalPrice || (booking.totalPrice - booking.deliveryCharge);
-    const deliveryCharge = booking.deliveryCharge || 0;
-    const promoDiscount = booking.promotionDiscount || 0;
-    const voucherDiscount = booking.voucherDiscount || 0;
-    const calculatedSubtotal = rentalPrice + deliveryCharge - promoDiscount - voucherDiscount;
-    const depositAmount = booking.depositAmount || 50;
-    const totalVehicleCost = calculatedSubtotal + depositAmount;
+        // Show/Hide Pay Balance button
+        const payBalanceBtn = document.getElementById('modal-pay-balance-btn');
+        const canPayBalance = booking.remainingBalance > 0 && booking.bookingStatus === 'approved';
+        
+        if (canPayBalance) {
+            payBalanceBtn.style.display = 'inline-block';
+            payBalanceBtn.href = "/payment/remaining/" + booking.bookingID;
+        } else {
+            payBalanceBtn.style.display = 'none';
+        }
 
-    // Update rental price
-    document.getElementById('detail-rental-price').textContent = 'RM' + rentalPrice.toFixed(2);
-
-    // Update delivery charge (show/hide)
-    const deliveryRow = document.getElementById('detail-delivery-row');
-    const deliveryChargeEl = document.getElementById('detail-delivery-charge');
-    if (deliveryCharge > 0) {
-        deliveryRow.style.display = 'flex';
-        deliveryChargeEl.textContent = 'RM' + deliveryCharge.toFixed(2);
-    } else {
-        deliveryRow.style.display = 'none';
+        document.getElementById('detailsModal').classList.add('active');
     }
 
-    // Update promotion discount (show/hide)
-    const promoRow = document.getElementById('detail-promo-row');
-    const promoDiscountEl = document.getElementById('detail-promo-discount');
-    if (promoDiscount > 0) {
-        promoRow.style.display = 'flex';
-        promoDiscountEl.textContent = '- RM' + promoDiscount.toFixed(2);
-    } else {
-        promoRow.style.display = 'none';
+    function showCancelModal(bookingId) {
+        console.log('showCancelModal called with bookingId:', bookingId);
+        
+        const booking = findBookingById(bookingId);
+        if (!booking) {
+            alert('Booking not found');
+            return;
+        }
+
+        // Set form action dynamically
+        const cancelForm = document.getElementById('cancelForm');
+        cancelForm.action = `/customer/booking/${bookingId}/cancel`;
+        
+        // Set booking ID in form
+        document.getElementById('cancelBookingId').value = bookingId;
+        
+        // Populate booking details
+        document.getElementById('cancel-booking-details').innerHTML = `
+            <strong>Vehicle:</strong> ${booking.vehicle?.model || '-'}<br>
+            <strong>Dates:</strong> ${formatDate(booking.startDate)} - ${formatDate(booking.endDate)}<br>
+            <strong>Total:</strong> RM${(booking.totalPrice || 0).toFixed(2)}<br>
+            <strong>Status:</strong> ${booking.bookingStatus || 'Pending'}
+        `;
+        
+        // Show modal
+        document.getElementById('cancelModal').classList.add('active');
     }
 
-    // Update voucher discount (show/hide)
-    const voucherRow = document.getElementById('detail-voucher-row');
-    const voucherDiscountEl = document.getElementById('detail-voucher-discount');
-    if (voucherDiscount > 0) {
-        voucherRow.style.display = 'flex';
-        voucherDiscountEl.textContent = '- RM' + voucherDiscount.toFixed(2);
-    } else {
-        voucherRow.style.display = 'none';
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('active');
     }
 
-    // Update subtotal and total vehicle cost
-    document.getElementById('detail-subtotal').textContent = 'RM' + calculatedSubtotal.toFixed(2);
-    document.getElementById('detail-deposit-amount').textContent = 'RM' + depositAmount.toFixed(2);
-    document.getElementById('detail-total-vehicle-cost').textContent = 'RM' + totalVehicleCost.toFixed(2);
+    function submitCancelForm() {
+        if (!confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
+            return;
+        }
 
-    // Show/Hide Pay Balance button
-    const payBalanceBtn = document.getElementById('modal-pay-balance-btn');
-    const canPayBalance = (booking.pay_amount_type === 'deposit' || depositAmount > 0) 
-                          && remainingBalance > 0 
-                          && booking.bookingStatus === 'approved';
-    
-    if (canPayBalance) {
-        payBalanceBtn.style.display = 'inline-block';
-        payBalanceBtn.href = "/payment/remaining/" + booking.bookingID;
-    } else {
-        payBalanceBtn.style.display = 'none';
+        // Show loading state
+        const cancelBtn = document.querySelector('#cancelModal .btn-danger');
+        const originalText = cancelBtn.innerHTML;
+        cancelBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        cancelBtn.disabled = true;
+
+        // Submit the form
+        document.getElementById('cancelForm').submit();
     }
 
-    document.getElementById('detailsModal').classList.add('active');
-}
-
-function showCancelModal(bookingId) {
-    console.log('showCancelModal called with bookingId:', bookingId);
-    
-    const booking = findBookingById(bookingId);
-    if (!booking) {
-        alert('Booking not found');
-        return;
+    function formatDate(date) {
+        if (!date) return '-';
+        try {
+            return new Date(date).toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+        } catch (e) {
+            return date;
+        }
     }
 
-    // Set form action dynamically
-    const cancelForm = document.getElementById('cancelForm');
-    cancelForm.action = `/customer/booking/${bookingId}/cancel`;
-    
-    // Set booking ID in form
-    document.getElementById('cancelBookingId').value = bookingId;
-    
-    // Populate booking details
-    document.getElementById('cancel-booking-details').innerHTML = `
-        <strong>Vehicle:</strong> ${booking.vehicle?.model || '-'}<br>
-        <strong>Dates:</strong> ${formatDate(booking.startDate)} - ${formatDate(booking.endDate)}<br>
-        <strong>Total:</strong> RM${(booking.totalPrice || 0).toFixed(2)}<br>
-        <strong>Status:</strong> ${booking.bookingStatus || 'Pending'}
-    `;
-    
-    // Show modal
-    document.getElementById('cancelModal').classList.add('active');
-}
+    window.onclick = function(e) {
+        if (e.target.classList.contains('modal')) {
+            e.target.classList.remove('active');
+        }
+    };
 
-function closeModal(id) {
-    document.getElementById(id).classList.remove('active');
-}
-
-function submitCancelForm() {
-    if (!confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
-        return;
-    }
-
-    // Show loading state
-    const cancelBtn = document.querySelector('#cancelModal .btn-danger');
-    const originalText = cancelBtn.innerHTML;
-    cancelBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-    cancelBtn.disabled = true;
-
-    // Submit the form
-    document.getElementById('cancelForm').submit();
-}
-
-function formatDate(date) {
-    if (!date) return '-';
-    try {
-        return new Date(date).toLocaleDateString('en-GB', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric'
+    // Add click handlers directly to buttons
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, adding click handlers');
+        
+        // Add click handlers for all Details buttons
+        document.querySelectorAll('button').forEach(button => {
+            if (button.textContent.includes('Details') || button.textContent.includes('View')) {
+                const onclick = button.getAttribute('onclick');
+                if (onclick && onclick.includes('showDetailsModal')) {
+                    const match = onclick.match(/showDetailsModal\((\d+)\)/);
+                    if (match) {
+                        const bookingId = match[1];
+                        button.onclick = function(e) {
+                            e.preventDefault();
+                            showDetailsModal(bookingId);
+                        };
+                    }
+                }
+            }
         });
-    } catch (e) {
-        return date;
-    }
-}
-
-window.onclick = function(e) {
-    if (e.target.classList.contains('modal')) {
-        e.target.classList.remove('active');
-    }
-};
-
-// Add click handlers directly to buttons
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded, adding click handlers');
-    
-    // Add click handlers for all Details buttons
-    document.querySelectorAll('button').forEach(button => {
-        if (button.textContent.includes('Details') || button.textContent.includes('View')) {
-            const onclick = button.getAttribute('onclick');
-            if (onclick && onclick.includes('showDetailsModal')) {
-                const match = onclick.match(/showDetailsModal\((\d+)\)/);
-                if (match) {
-                    const bookingId = match[1];
-                    button.onclick = function(e) {
-                        e.preventDefault();
-                        showDetailsModal(bookingId);
-                    };
+        
+        // Add click handlers for all Cancel buttons
+        document.querySelectorAll('button').forEach(button => {
+            if (button.textContent.includes('Cancel')) {
+                const onclick = button.getAttribute('onclick');
+                if (onclick && onclick.includes('showCancelModal')) {
+                    const match = onclick.match(/showCancelModal\((\d+)\)/);
+                    if (match) {
+                        const bookingId = match[1];
+                        button.onclick = function(e) {
+                            e.preventDefault();
+                            showCancelModal(bookingId);
+                        };
+                    }
                 }
             }
-        }
+        });
     });
-    
-    // Add click handlers for all Cancel buttons
-    document.querySelectorAll('button').forEach(button => {
-        if (button.textContent.includes('Cancel')) {
-            const onclick = button.getAttribute('onclick');
-            if (onclick && onclick.includes('showCancelModal')) {
-                const match = onclick.match(/showCancelModal\((\d+)\)/);
-                if (match) {
-                    const bookingId = match[1];
-                    button.onclick = function(e) {
-                        e.preventDefault();
-                        showCancelModal(bookingId);
-                    };
-                }
-            }
-        }
-    });
-});
-</script>
+    </script>
 
 </body>
 </html>
