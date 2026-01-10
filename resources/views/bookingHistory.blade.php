@@ -757,11 +757,6 @@
                         My Bookings
                     </a>
                 </li>
-                <li>
-                    <a href="{{ route('customer.loyaltycard') }}">
-                        Loyalty Card
-                    </a>
-                </li>
                <li>
                     <a href="{{ route('customer.documents') }}" >
                          Upload Documents
