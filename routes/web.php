@@ -30,6 +30,13 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::get('/', function () {
+    return view('welcome');
+})->name('welcome');
+
+// Vehicle Index page (shows all available vehicles in grid)
+Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
+
 // Pickup & Return (public or auth? assuming auth later)
 Route::get('/pickup/{bookingID}', [PickUpController::class, 'show'])->name('pickup.show');
 Route::get('/pickup', [PickUpController::class, 'show']);
@@ -43,6 +50,21 @@ Route::get('/vehicles/{id}', [VehicleController::class, 'show'])->name('vehicles
 Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
 Route::get('/vehicles/select/{id}', [VehicleController::class, 'select'])->name('selectVehicle');
 Route::get('/vehicles/available', [VehicleController::class, 'getAvailableVehicles'])->name('vehicles.available');
+
+Route::post('/store-pending-booking', function (Request $request) {
+    session([
+        'pending_booking' => [
+            'vehicleID' => $request->vehicleID,
+            'pickup_date' => $request->pickup_date,
+            'pickup_time' => $request->pickup_time,
+            'return_date' => $request->return_date,
+            'return_time' => $request->return_time,
+            'timestamp' => now()
+        ]
+    ]);
+    return response()->json(['success' => true]);
+})->name('store.pending.booking');
+
 
 // Admin vehicle management
 Route::middleware(['auth'])->prefix('admin')->group(function () {
@@ -94,7 +116,8 @@ Route::post('/register-customer', [CustomerController::class, 'registerCustomer'
 // Payment-related routes (used during booking flow)
 Route::middleware(['auth'])->group(function () {
     Route::post('/payment-form', [BookingController::class, 'showPaymentForm'])->name('payment.form');
-    Route::post('/check-promotion', [BookingController::class, 'checkPromotion']);
+    // In routes/web.php
+Route::post('/booking/check-promotion', [BookingController::class, 'checkPromotion'])->name('booking.checkPromotion');
     Route::post('/validate-voucher', [BookingController::class, 'validateVoucher'])->name('validate.voucher'); 
 });
 
@@ -103,7 +126,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
+   Route::get('/documents', [CustomerController::class, 'showDocuments'])->name('customer.documents');
+    Route::post('/documents/upload', [CustomerController::class, 'uploadDocuments'])->name('customer.documents.upload');
+    Route::get('/documents/delete/{type}', [CustomerController::class, 'deleteDocument'])->name('customer.documents.delete');
     Route::get('/my-loyalty', [LoyaltyController::class, 'index'])->name('customer.loyaltycard');
 });
 

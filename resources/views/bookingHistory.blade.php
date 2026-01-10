@@ -22,66 +22,65 @@
             min-height: 100vh;
         }
 
-        .content-with-sidebar {
-            display: flex;
-            min-height: calc(100vh - 180px);
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 20px;
-            gap: 30px;
-        }
+.content-with-sidebar {
+    display: flex;
+    min-height: calc(100vh - 180px);
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+    gap: 30px;
+}
 
-        .sidebar {
-            width: 250px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            padding: 25px 0;
-            flex-shrink: 0;
-            height: fit-content;
-        }
+.sidebar {
+    width: 250px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 25px 0;
+    flex-shrink: 0;
+    height: fit-content;
+}
 
-        .sidebar-menu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
 
-        .sidebar-menu li {
-            margin: 0;
-        }
+.sidebar-menu li {
+    margin: 0;
+}
 
-        .sidebar-menu a {
-            display: flex;
-            align-items: center;
-            padding: 15px 25px;
-            color: #555;
-            text-decoration: none;
-            transition: all 0.3s;
-            border-left: 4px solid transparent;
-            font-size: 15px;
-        }
+.sidebar-menu a {
+    display: flex;
+    align-items: center;
+    padding: 15px 25px;
+    color: #555;
+    text-decoration: none;
+    transition: all 0.3s;
+    border-left: 4px solid transparent;
+    font-size: 15px;
+}
 
-        .sidebar-menu a:hover {
-            background-color: #f8f9fa;
-            color: #bc3737;
-            border-left-color: #bc3737;
-        }
+.sidebar-menu a:hover {
+    background-color: #f8f9fa;
+    color: #bc3737;
+    border-left-color: #bc3737;
+}
 
-        .sidebar-menu a.active {
-            background-color: #f8f9fa;
-            color: #bc3737;
-            font-weight: 600;
-            border-left-color: #bc3737;
-        }
+.sidebar-menu a.active {
+    background-color: #f8f9fa;
+    color: #bc3737;
+    font-weight: 600;
+    border-left-color: #bc3737;
+}
 
-        .sidebar-icon {
-            margin-right: 12px;
-            font-size: 18px;
-            width: 24px;
-            text-align: center;
-        }
-
+.sidebar-icon {
+    margin-right: 12px;
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+}
         /* ===== Booking History Page Styles ===== */
         .booking-history-page {
             flex: 1;
@@ -750,26 +749,22 @@
             <ul class="sidebar-menu">
                 <li>
                     <a href="{{ route('customer.profile') }}">
-                        <span class="sidebar-icon"></span>
                         My Profile
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('bookingHistory') }}" class="active">
-                        <span class="sidebar-icon"></span>
                         My Bookings
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('customer.loyaltycard') }}">
-                        <span class="sidebar-icon"></span>
                         Loyalty Card
                     </a>
                 </li>
-                <li>
-                    <a href="{{ route('customer.profile.edit') }}">
-                        <span class="sidebar-icon"></span>
-                        Edit Profile
+               <li>
+                    <a href="{{ route('customer.documents') }}" >
+                         Upload Documents
                     </a>
                 </li>
             </ul>
@@ -785,9 +780,17 @@
                 
                 @forelse($active as $booking)
                     <div class="booking-card">
-                        <img src="{{ asset('img/default-car.png') }}" 
-                             alt="Vehicle Image" 
-                             class="car-image">
+                        @if($booking->vehiclePhoto)
+                            <img src="{{ Storage::url($booking->vehiclePhoto) }}" 
+                                 alt="{{ $booking->model }}"
+                                 class="car-image"
+                                 onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.jpg') }}'">
+                        @else
+                            <img src="{{ asset('img/vehicles/'.$booking->vehicleID.'.png') }}" 
+                                 alt="{{ $booking->model }}"
+                                 class="car-image"
+                                 onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.jpg') }}'">
+                        @endif
 
                         <div class="booking-details">
                             <div class="car-info">
@@ -845,9 +848,17 @@
                 
                 @forelse($pending as $booking)
                     <div class="booking-card">
-                        <img src="{{ asset('img/default-car.png') }}" 
-                             alt="Vehicle Image" 
-                             class="car-image">
+                        @if($booking->vehiclePhoto)
+                            <img src="{{ Storage::url($booking->vehiclePhoto) }}" 
+                                 alt="{{ $booking->model }}"
+                                 class="car-image"
+                                 onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.jpg') }}'">
+                        @else
+                            <img src="{{ asset('img/vehicles/'.$booking->vehicleID.'.png') }}" 
+                                 alt="{{ $booking->model }}"
+                                 class="car-image"
+                                 onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.jpg') }}'">
+                        @endif
 
                         <div class="booking-details">
                             <div class="car-info">
@@ -894,9 +905,17 @@
                         @forelse($completed as $booking)
                             <div class="booking-card" style="margin-bottom: 10px; padding: 15px;">
                                 <div style="display: flex; align-items: center; width: 100%;">
-                                    <img src="{{ asset('img/default-car.png') }}" 
-                                         alt="Vehicle Image" 
-                                         style="width: 80px; height: 60px; border-radius: 4px; margin-right: 15px;">
+                                    @if($booking->vehiclePhoto)
+                                        <img src="{{ Storage::url($booking->vehiclePhoto) }}" 
+                                             alt="{{ $booking->model }}"
+                                             style="width: 80px; height: 60px; border-radius: 4px; margin-right: 15px; object-fit: cover;"
+                                             onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.jpg') }}'">
+                                    @else
+                                        <img src="{{ asset('img/vehicles/'.$booking->vehicleID.'.png') }}" 
+                                             alt="{{ $booking->model }}"
+                                             style="width: 80px; height: 60px; border-radius: 4px; margin-right: 15px; object-fit: cover;"
+                                             onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.jpg') }}'">
+                                    @endif
                                     
                                     <div style="flex: 1;">
                                         <div style="font-weight: 600; font-size: 14px;">{{ $booking->model }}</div>
@@ -927,9 +946,17 @@
                         @forelse($cancelled as $booking)
                             <div class="booking-card" style="margin-bottom: 10px; padding: 15px;">
                                 <div style="display: flex; align-items: center; width: 100%;">
-                                    <img src="{{ asset('img/default-car.png') }}" 
-                                         alt="Vehicle Image" 
-                                         style="width: 80px; height: 60px; border-radius: 4px; margin-right: 15px;">
+                                    @if($booking->vehiclePhoto)
+                                        <img src="{{ Storage::url($booking->vehiclePhoto) }}" 
+                                             alt="{{ $booking->model }}"
+                                             style="width: 80px; height: 60px; border-radius: 4px; margin-right: 15px; object-fit: cover;"
+                                             onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.jpg') }}'">
+                                    @else
+                                        <img src="{{ asset('img/vehicles/'.$booking->vehicleID.'.png') }}" 
+                                             alt="{{ $booking->model }}"
+                                             style="width: 80px; height: 60px; border-radius: 4px; margin-right: 15px; object-fit: cover;"
+                                             onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.jpg') }}'">
+                                    @endif
                                     
                                     <div style="flex: 1;">
                                         <div style="font-weight: 600; font-size: 14px;">{{ $booking->model }}</div>
@@ -973,7 +1000,11 @@
                 <button class="close-btn" onclick="closeModal('detailsModal')">&times;</button>
             </div>
             <div class="modal-body">
-                <img src="{{ asset('img/default-car.png') }}" alt="Vehicle" class="car-detail-image">
+                <div id="detail-image-container">
+                    <!-- Image will be dynamically loaded here -->
+                    <img id="detail-car-image" src="" alt="Vehicle" class="car-detail-image"
+                         onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.jpg') }}'">
+                </div>
                 
                 <div class="detail-section">
                     <h3>Vehicle Information</h3>
@@ -1042,45 +1073,42 @@
     </div>
 
     <!-- Cancel Modal -->
-   <!-- Cancel Modal -->
-<div id="cancelModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Cancel Booking</h2>
-            <button class="close-btn" onclick="closeModal('cancelModal')">&times;</button>
-        </div>
-        <form id="cancelForm" method="POST">
-            @csrf
-            @method('POST')
-            <div class="modal-body">
-                <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                <input type="hidden" id="cancelBookingId" name="booking_id">
-                
-                <div class="info-message">
-                    <strong>Current Booking Details:</strong>
-                    <div id="cancel-booking-details">
-                        <!-- Will be populated by JavaScript -->
+    <div id="cancelModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Cancel Booking</h2>
+                <button class="close-btn" onclick="closeModal('cancelModal')">&times;</button>
+            </div>
+            <form id="cancelForm" method="POST">
+                @csrf
+                @method('POST')
+                <div class="modal-body">
+                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                    <input type="hidden" id="cancelBookingId" name="booking_id">
+                    
+                    <div class="info-message">
+                        <strong>Current Booking Details:</strong>
+                        <div id="cancel-booking-details">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="warning-message">
+                        <strong>Cancellation Policy:</strong><br>
+                        • Refund only for cancellation made in 24 hours before pickup<br>
+                        • No refund if cancelled less than 24 hours before pickup<br>
+                        • Refund will make in 2 weeks of working days
                     </div>
                 </div>
-
-                <div class="warning-message">
-                    <strong>Cancellation Policy:</strong><br>
-                    • Refund only for cancellation made in 24 hours before pickup<br>
-                    • No refund if cancelled less than 24 hours before pickup<br>
-                    • Refund will make in 2 weeks of working days
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('cancelModal')">Close</button>
+                    <button type="button" class="btn btn-danger" onclick="submitCancelForm()">Confirm Cancellation</button>
                 </div>
-
-                <!-- Removed cancellation reason textarea -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeModal('cancelModal')">Close</button>
-                <button type="button" class="btn btn-danger" onclick="submitCancelForm()">Confirm Cancellation</button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
-</div>
 
-   <script>
+    <script>
     // Merge all booking collections safely
     const bookingsData = [
         ...@json($active ?? []),
@@ -1100,6 +1128,15 @@
             return;
         }
 
+        // Set vehicle image dynamically
+        const carImage = document.getElementById('detail-car-image');
+        if (booking.vehiclePhoto) {
+            carImage.src = "{{ Storage::url('') }}" + booking.vehiclePhoto;
+        } else {
+            carImage.src = "{{ asset('img/vehicles/') }}/" + booking.vehicleID + ".png";
+        }
+
+        // Set other booking details
         document.getElementById('detail-model').textContent = booking.model ?? '-';
         document.getElementById('detail-type').textContent = booking.vehicleType ?? '-';
         document.getElementById('detail-plate').textContent = booking.plateNumber ?? '-';
@@ -1125,52 +1162,51 @@
     }
 
     function showCancelModal(bookingId) {
-    const booking = findBookingById(bookingId);
-    if (!booking) {
-        alert('Booking not found');
-        return;
-    }
+        const booking = findBookingById(bookingId);
+        if (!booking) {
+            alert('Booking not found');
+            return;
+        }
 
-    // Set form action dynamically
-    const cancelForm = document.getElementById('cancelForm');
-    cancelForm.action = `/customer/booking/${bookingId}/cancel`;
-    
-    // Set booking ID in form
-    document.getElementById('cancelBookingId').value = bookingId;
-    
-    // Populate booking details
-    document.getElementById('cancel-booking-details').innerHTML = `
-        <strong>Vehicle:</strong> ${booking.model ?? '-'}<br>
-        <strong>Dates:</strong> ${formatDate(booking.startDate)} - ${formatDate(booking.endDate)}<br>
-        <strong>Total:</strong> RM${Number(booking.totalPrice ?? 0).toFixed(2)}<br>
-        <strong>Status:</strong> ${booking.bookingStatus ?? 'Pending'}
-    `;
-    
-    // Show modal
-    document.getElementById('cancelModal').classList.add('active');
-}
+        // Set form action dynamically
+        const cancelForm = document.getElementById('cancelForm');
+        cancelForm.action = `/customer/booking/${bookingId}/cancel`;
+        
+        // Set booking ID in form
+        document.getElementById('cancelBookingId').value = bookingId;
+        
+        // Populate booking details
+        document.getElementById('cancel-booking-details').innerHTML = `
+            <strong>Vehicle:</strong> ${booking.model ?? '-'}<br>
+            <strong>Dates:</strong> ${formatDate(booking.startDate)} - ${formatDate(booking.endDate)}<br>
+            <strong>Total:</strong> RM${Number(booking.totalPrice ?? 0).toFixed(2)}<br>
+            <strong>Status:</strong> ${booking.bookingStatus ?? 'Pending'}
+        `;
+        
+        // Show modal
+        document.getElementById('cancelModal').classList.add('active');
+    }
 
     function closeModal(id) {
         document.getElementById(id).classList.remove('active');
     }
 
     function submitCancelForm() {
-    const bookingId = document.getElementById('cancelBookingId').value;
-    
-    if (!confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
-        return;
+        const bookingId = document.getElementById('cancelBookingId').value;
+        
+        if (!confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
+            return;
+        }
+
+        // Show loading state
+        const cancelBtn = document.querySelector('#cancelModal .btn-danger');
+        const originalText = cancelBtn.textContent;
+        cancelBtn.textContent = 'Processing...';
+        cancelBtn.disabled = true;
+
+        // Submit the form
+        document.getElementById('cancelForm').submit();
     }
-
-    // Show loading state
-    const cancelBtn = document.querySelector('#cancelModal .btn-danger');
-    const originalText = cancelBtn.textContent;
-    cancelBtn.textContent = 'Processing...';
-    cancelBtn.disabled = true;
-
-    // Submit the form
-    document.getElementById('cancelForm').submit();
-}
-
 
     function formatDate(date) {
         if (!date) return '-';
@@ -1196,8 +1232,7 @@
         // Console log for debugging
         console.log('Bookings data loaded:', bookingsData.length, 'bookings');
     });
-</script>
-
+    </script>
 
 </body>
 </html>

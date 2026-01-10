@@ -91,7 +91,7 @@
                             <option value="Hatchback" {{ old('vehicleType') == 'Hatchback' ? 'selected' : '' }}>Hatchback</option>
                             <option value="SUV" {{ old('vehicleType') == 'SUV' ? 'selected' : '' }}>SUV</option>
                             <option value="MPV" {{ old('vehicleType') == 'MPV' ? 'selected' : '' }}>MPV</option>
-                            <option value="Luxury" {{ old('vehicleType') == 'Luxury' ? 'selected' : '' }}>Luxury</option>
+                            <option value="Motorcycle" {{ old('vehicleType') == 'Motorcycle' ? 'selected' : '' }}>Motorcycle</option>
                         </select>
                     </div>
                     <div class="col-md-6 mb-3">

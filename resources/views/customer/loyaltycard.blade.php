@@ -134,7 +134,11 @@
                 <li><a href="{{ route('customer.profile') }}">My Profile</a></li>
                 <li><a href="{{ route('bookingHistory') }}">My Bookings</a></li>
                 <li><a href="{{ route('customer.loyaltycard') }}" class="active">Loyalty Card</a></li>
-                <li> <a href="{{ route('customer.profile.edit') }}">Edit Profile </a></li>
+               <li>
+                    <a href="{{ route('customer.documents') }}" >
+                         Upload Documents
+                    </a>
+                </li>
             </ul>
         </div>
 

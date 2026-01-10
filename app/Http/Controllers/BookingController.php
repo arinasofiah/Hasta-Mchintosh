@@ -50,16 +50,14 @@ class BookingController extends Controller
 
     public function checkPromotion(Request $request)
     {
-        // Get duration from the AJAX request
         $bookingDuration = $request->input('duration'); 
         $amount = $request->amount;
 
         $promotion = Promotion::where('applicableDays', '<=', $bookingDuration)
-            ->orderBy('discountValue', 'desc') // Get the best discount
+            ->orderBy('discountValue', 'desc')
             ->first();
 
         if ($promotion) {
-            // Calculate discount
             if ($promotion->discountType == 'percentage') {
                 $discount = ($amount * $promotion->discountValue) / 100;
             } else {
@@ -89,7 +87,6 @@ class BookingController extends Controller
 
         $vehicle = Vehicles::findOrFail($vehicleID);
 
-        // Inputs from Booking Form
         $pickupDate = $request->input('pickup_date');
         $pickupTime = $request->input('pickup_time');
         $returnDate = $request->input('return_date');
@@ -100,20 +97,17 @@ class BookingController extends Controller
         $remark = $request->input('remark');
         $forSomeoneElse = $request->boolean('for_someone_else');
         
-        // Driver Info
         $matricNumber = $request->input('matricNumber');
         $licenseNumber = $request->input('licenseNumber');
         $college = $request->input('college');
         $faculty = $request->input('faculty');
         $depoBalance = $request->input('depoBalance', 0);
 
-        // Pricing Inputs
         $subtotal = $request->input('subtotal');
         $promotionDiscount = $request->input('promotionDiscount', 0);
         $total = $request->input('total');
         $duration = $request->input('duration');
 
-        // Validation
         if (!$pickupDate || !$pickupTime || !$returnDate || !$returnTime) {
             return back()->withErrors(['error' => 'Booking dates/times are missing.']);
         }
@@ -128,7 +122,6 @@ class BookingController extends Controller
             return back()->withErrors(['error' => 'Invalid date/time format.']);
         }
 
-        // Calculations
         $diffHours = $return->diffInHours($pickup);
         $days = floor($diffHours / 24);
         $remainingHours = $diffHours % 24;
@@ -137,7 +130,6 @@ class BookingController extends Controller
         $finalSubtotal = $subtotal ?? $calculatedSubtotal;
         $finalTotal = $total ?? ($finalSubtotal - $promotionDiscount);
         
-        // Default deposit is 30% of total
         $deposit = $finalTotal * 0.3;
 
         $pickupLocationDisplay = $pickupLocation;
@@ -149,17 +141,14 @@ class BookingController extends Controller
                 : "{$diffHours} hour" . ($diffHours != 1 ? 's' : '')
         );
 
-        // Fetch Promo Details if applied
         $promoDetails = null;
         if ($request->input('promo_id')) {
             $promoDetails = Promotion::find($request->input('promo_id'));
         }
 
-        // ✅ NEW: Fetch Eligible Vouchers for the view
-        // Logic: Vouchers that are NOT used and NOT expired
-        $eligibleVouchers = Voucher::where('userID', Auth::id()) // <--- ADD THIS LINE
+        $eligibleVouchers = Voucher::where('userID', Auth::id())
                                    ->where('isUsed', 0)
-                                   ->where('expiryTime', '>', time()) // Check timestamp
+                                   ->where('expiryTime', '>', time())
                                    ->get()
                                    ->map(function($v) {
                                         return (object)[
@@ -195,15 +184,14 @@ class BookingController extends Controller
             'faculty',
             'depoBalance',
             'promoDetails',
-            'eligibleVouchers' // ✅ Passed to view
+            'eligibleVouchers'
         ));
     }
 
     public function validateVoucher(Request $request)
     {
-        $code = $request->code; // User enters the ID (e.g., 105)
+        $code = $request->code;
         
-        // Find voucher in DB
         $voucher = Voucher::where('voucherCode', $code)
                           ->where('userID', Auth::id())
                           ->first();
@@ -215,7 +203,6 @@ class BookingController extends Controller
             ]);
         }
 
-        // Check if used
         if ($voucher->isUsed) {
             return response()->json([
                 'valid' => false,
@@ -223,7 +210,6 @@ class BookingController extends Controller
             ]);
         }
 
-        // Check expiry (expiryTime is int timestamp)
         if ($voucher->expiryTime < time()) {
             return response()->json([
                 'valid' => false,
@@ -231,7 +217,6 @@ class BookingController extends Controller
             ]);
         }
 
-        // Success
         return response()->json([
             'valid' => true,
             'message' => 'Voucher Applied Successfully!',
@@ -241,93 +226,154 @@ class BookingController extends Controller
     }
 
     public function confirmBooking(Request $request)
-{
-    \Log::info('Booking request received', $request->all());
+    {
+        \Log::info('Booking request received', $request->all());
 
-    try {
-        $request->validate([
-            'vehicleID' => 'required|exists:vehicles,vehicleID',
-            'pickup_date' => 'required|date',
-            'pickup_time' => 'required',
-            'return_date' => 'required|date|after:pickup_date',
-            'return_time' => 'required',
-            'pickupLocation' => 'required',
-            'returnLocation' => 'required',
-            'bank_name' => 'required',
-            'bank_owner_name' => 'required',
-            'payAmount' => 'required|in:full,deposit',
-            'payment_receipt' => 'required|image|max:5120',
-        ]);
+        try {
+            $request->validate([
+                'vehicleID' => 'required|exists:vehicles,vehicleID',
+                'pickup_date' => 'required|date',
+                'pickup_time' => 'required',
+                'return_date' => 'required|date|after:pickup_date',
+                'return_time' => 'required',
+                'pickupLocation' => 'required',
+                'returnLocation' => 'required',
+                'bank_name' => 'required',
+                'bank_owner_name' => 'required',
+                'payAmount' => 'required|in:full,deposit',
+                'payment_receipt' => 'required|image|max:5120',
+            ]);
 
-        DB::beginTransaction();
+            DB::beginTransaction();
 
-        $vehicle = Vehicles::findOrFail($request->vehicleID);
-        
-        // Calculate duration
-        $start = Carbon::parse($request->pickup_date . ' ' . $request->pickup_time);
-        $end = Carbon::parse($request->return_date . ' ' . $request->return_time);
-        $durationDays = $end->diffInDays($start);
-        if ($durationDays < 1) $durationDays = 1;
-        
-        // Calculate total price
-        $totalPrice = $durationDays * $vehicle->pricePerDay;
-        
-        // Handle file upload
-        $receiptPath = null;
-        if ($request->hasFile('payment_receipt')) {
-            $receiptPath = $request->file('payment_receipt')->store('receipts', 'public');
+            $vehicle = Vehicles::findOrFail($request->vehicleID);
+            
+            $start = Carbon::parse($request->pickup_date . ' ' . $request->pickup_time);
+            $end = Carbon::parse($request->return_date . ' ' . $request->return_time);
+            $durationDays = $end->diffInDays($start);
+            if ($durationDays < 1) $durationDays = 1;
+            
+            $totalPrice = $durationDays * $vehicle->pricePerDay;
+            
+            $receiptPath = null;
+            if ($request->hasFile('payment_receipt')) {
+                $receiptPath = $request->file('payment_receipt')->store('receipts', 'public');
+            }
+            
+            // Create booking with pending status
+            $booking = new Bookings();
+            $booking->userID = auth()->id();
+            $booking->customerID = auth()->id();
+            $booking->vehicleID = $vehicle->vehicleID;
+            $booking->startDate = $request->pickup_date;
+            $booking->endDate = $request->return_date;
+            $booking->pickupTime = $request->pickup_time;
+            $booking->returnTime = $request->return_time;
+            $booking->pickupLocation = $request->pickupLocation;
+            $booking->returnLocation = $request->returnLocation;
+            $booking->destination = $request->input('destination', '');
+            $booking->remark = $request->input('remark', '');
+            $booking->matricNumber = $request->input('matricNumber', '');
+            $booking->licenseNumber = $request->input('licenseNumber', '');
+            $booking->bankName = $request->bank_name;
+            $booking->bankOwnerName = $request->bank_owner_name;
+            $booking->payAmount = $request->payAmount;
+            $booking->paymentReceipt = $receiptPath;
+            $booking->bookingDuration = $durationDays;
+            $booking->totalPrice = $totalPrice;
+            $booking->promo_id = $request->input('promo_id');
+            $booking->voucher_id = $request->input('voucher_id');
+            
+            if ($request->payAmount == 'deposit') {
+                $booking->depositAmount = $totalPrice * 0.5;
+            } else {
+                $booking->depositAmount = $totalPrice;
+            }
+            
+            // Set status to pending (admin needs to approve)
+            $booking->bookingStatus = 'pending';
+            
+            $booking->save();
+            
+            // Don't change vehicle status here - it will be updated when admin approves
+            // Vehicle remains available for other users until approved
+            
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Booking submitted successfully! Waiting for admin approval.',
+                'booking_id' => $booking->bookingID,
+                'booking_code' => $booking->booking_code 
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Booking error: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Booking failed: ' . $e->getMessage()
+            ], 500);
         }
-        
-        // Save Booking
-        $booking = new Bookings();
-        
-        // If your table has userID column:
-        $booking->userID = auth()->id();
-        
-        // If your table doesn't have userID, only set customerID:
-        $booking->customerID = auth()->id();
-        $booking->vehicleID = $vehicle->vehicleID;
-        $booking->bankNum = $request->bank_owner_name ?? '';
-        $booking->penamaBank = $request->bank_name;
-        $booking->startDate = $request->pickup_date;
-        $booking->endDate = $request->return_date;
-        $booking->bookingDuration = $durationDays;
-        $booking->totalPrice = $totalPrice;
-        
-        // Determine deposit
-        if ($request->payAmount == 'deposit') {
-            $booking->depositAmount = $totalPrice * 0.5;
-        } else {
-            $booking->depositAmount = $totalPrice; // Full payment
-        }
-        
-        $booking->bookingStatus = 'pending';
-        
-        // Save WITHOUT using mass assignment to avoid userID issue
-        $booking->save();
-        
-        // Update vehicle status
-        $vehicle->status = 'rented';
-        $vehicle->save();
-
-        DB::commit();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Booking submitted successfully!',
-            'booking_id' => $booking->bookingID
-        ]);
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-        \Log::error('Booking error: ' . $e->getMessage());
-        
-        return response()->json([
-            'success' => false,
-            'message' => 'Booking failed: ' . $e->getMessage()
-        ], 500);
     }
-}
+
+    /**
+     * Admin approves a booking
+     */
+    public function approveBooking($bookingID)
+    {
+        try {
+            DB::beginTransaction();
+            
+            $booking = Bookings::findOrFail($bookingID);
+            $booking->bookingStatus = 'approved';
+            $booking->save();
+            
+            // This will trigger the updateVehicleStatus in Bookings model
+            // which will mark vehicle as rented if booking is currently active
+            $booking->updateVehicleStatus();
+            
+            DB::commit();
+            
+            return redirect()->back()->with('success', 'Booking approved successfully!');
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Approve booking error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to approve booking: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Mark booking as completed (vehicle becomes available again)
+     */
+    public function completeBooking($bookingID)
+    {
+        try {
+            DB::beginTransaction();
+            
+            $booking = Bookings::findOrFail($bookingID);
+            $booking->bookingStatus = 'completed';
+            $booking->save();
+            
+            // Make vehicle available again
+            $vehicle = $booking->vehicle;
+            if ($vehicle) {
+                $vehicle->status = 'available';
+                $vehicle->save();
+            }
+            
+            DB::commit();
+            
+            return redirect()->back()->with('success', 'Booking marked as completed!');
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Complete booking error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to complete booking: ' . $e->getMessage());
+        }
+    }
 
     public function bookingHistory()
     {
@@ -337,7 +383,11 @@ class BookingController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $active = $bookings->whereIn('bookingStatus', ['approved', 'confirmed']);
+        $active = $bookings->whereIn('bookingStatus', ['approved', 'confirmed'])
+            ->filter(function($booking) {
+                return $booking->isCurrentlyActive();
+            });
+            
         $pending = $bookings->where('bookingStatus', 'pending');
         $completed = $bookings->where('bookingStatus', 'completed');
         $cancelled = $bookings->where('bookingStatus', 'cancelled');
