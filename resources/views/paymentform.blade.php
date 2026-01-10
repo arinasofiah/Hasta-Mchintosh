@@ -702,44 +702,59 @@
             </div>
             <div class="info-row">
                 <span class="info-label">Rental Price</span>
-                <span class="info-value" id="rental_price_display">MYR {{ number_format($finalSubtotal, 2) }}</span>
+                <span class="info-value" id="rental_price_display">RM {{ number_format($finalSubtotal, 2) }}</span>
             </div>
+            
+            @if(($deliveryCharge ?? 0) > 0)
+            <div class="info-row">
+                <span class="info-label">Delivery Charge</span>
+                <span class="info-value" id="delivery_charge_display">RM {{ number_format($deliveryCharge, 2) }}</span>
+            </div>
+            @endif
+            <input type="hidden" name="delivery_charge" value="{{ $deliveryCharge ?? 0 }}">
+            <input type="hidden" name="base_rental_price" value="{{ $originalRentalPrice ?? 0 }}">
+
             @if($promotionDiscount > 0)
             <div class="info-row discount-row">
                 <span class="info-label">Promotion Discount</span>
-                <span class="info-value">- MYR {{ number_format($promotionDiscount, 2) }}</span>
+                <span class="info-value">- RM {{ number_format($promotionDiscount, 2) }}</span>
             </div>
             @endif
+
             <div class="info-row" id="voucher_discount_row" style="display:none; color: #d94444;">
                 <span class="info-label">Voucher Discount</span>
-                <span class="info-value" id="voucher_discount_display">- MYR 0.00</span>
+                <span class="info-value" id="voucher_discount_display">- RM 0.00</span>
             </div>
             <div class="info-row">
                 <span class="info-label">Fixed Deposit</span>
-                <span class="info-value" id="deposit_display">MYR 50.00</span>
+                <span class="info-value" id="deposit_display">RM 50.00</span>
             </div>
             
             <!-- Payment Summary Section -->
             <div class="payment-summary">
+                <div class="payment-row total-row">
+                    <span><strong>Total Vehicle Cost</strong></span>
+                    <span id="total_vehicle_cost_display">RM {{ number_format(($finalSubtotal + ($deliveryCharge ?? 0)) - $promotionDiscount + 50, 2) }}</span>
+                </div>
+                
                 <div class="payment-row">
                     <span>Subtotal (After Discounts)</span>
-                    <span id="subtotal_display">MYR {{ number_format($finalSubtotal - $promotionDiscount, 2) }}</span>
+                    <span id="subtotal_display">RM {{ number_format(($finalSubtotal + ($deliveryCharge ?? 0)) - $promotionDiscount, 2) }}</span>
                 </div>
+                
                 <div class="payment-row">
                     <span>Deposit</span>
-                    <span id="summary_deposit_display">MYR 50.00</span>
+                    <span id="summary_deposit_display">RM 50.00</span>
                 </div>
+                
                 <div class="payment-row" id="pay_now_section">
                     <span>Pay Now (<span id="payment_type_label">Deposit Only</span>)</span>
-                    <span id="pay_now_display">MYR 50.00</span>
+                    <span id="pay_now_display">RM 50.00</span>
                 </div>
+                
                 <div class="payment-row">
                     <span>Remaining Balance</span>
-                    <span id="remaining_balance_display">MYR {{ number_format($finalSubtotal - $promotionDiscount - 50, 2) }}</span>
-                </div>
-                <div class="payment-row">
-                    <span>Total Vehicle Cost</span>
-                    <span id="total_vehicle_cost_display">MYR {{ number_format($finalSubtotal - $promotionDiscount + 50, 2) }}</span>
+                    <span id="remaining_balance_display">RM {{ number_format(($finalSubtotal + ($deliveryCharge ?? 0)) - $promotionDiscount - 50, 2) }}</span>
                 </div>
             </div>
         </div>
@@ -1036,9 +1051,11 @@ const closeSuccess = document.getElementById('closeSuccess');
 
 // Payment Calculation Variables
 const FIXED_DEPOSIT = 50;
-let originalRentalPrice = {{ $finalSubtotal ?? 0 }};
+let baseRentalPrice = {{ $originalRentalPrice ?? 0 }}; 
+let deliveryCharge = {{ $deliveryCharge ?? 0 }}; 
 let promotionDiscount = {{ $promotionDiscount ?? 0 }};
 let currentVoucherValue = 0;
+let originalRentalPrice = baseRentalPrice + deliveryCharge;
 
 // Initialize payment calculations
 document.addEventListener('DOMContentLoaded', function() {
@@ -1205,13 +1222,19 @@ function updatePaymentSummary() {
     }
     
     // Update display values
-    document.getElementById('rental_price_display').textContent = 'MYR ' + originalRentalPrice.toFixed(2);
-    document.getElementById('subtotal_display').textContent = 'MYR ' + subtotal.toFixed(2);
-    document.getElementById('summary_deposit_display').textContent = 'MYR ' + FIXED_DEPOSIT.toFixed(2);
+    document.getElementById('rental_price_display').textContent = 'RM ' + baseRentalPrice.toFixed(2);
+    document.getElementById('subtotal_display').textContent = 'RM ' + subtotal.toFixed(2);
+    document.getElementById('summary_deposit_display').textContent = 'RM ' + FIXED_DEPOSIT.toFixed(2);
     document.getElementById('payment_type_label').textContent = paymentTypeLabel;
-    document.getElementById('pay_now_display').textContent = 'MYR ' + payNow.toFixed(2);
-    document.getElementById('remaining_balance_display').textContent = 'MYR ' + Math.max(0, remainingBalance).toFixed(2);
-    document.getElementById('total_vehicle_cost_display').textContent = 'MYR ' + (subtotal + FIXED_DEPOSIT).toFixed(2);
+    document.getElementById('pay_now_display').textContent = 'RM ' + payNow.toFixed(2);
+    document.getElementById('remaining_balance_display').textContent = 'RM ' + Math.max(0, remainingBalance).toFixed(2);
+    document.getElementById('total_vehicle_cost_display').textContent = 'RM ' + (subtotal + FIXED_DEPOSIT).toFixed(2);
+
+    // Update delivery charge display if it exists
+    const deliveryChargeDisplay = document.getElementById('delivery_charge_display');
+    if (deliveryChargeDisplay) {
+        deliveryChargeDisplay.textContent = 'RM ' + deliveryCharge.toFixed(2);
+    }
 }
 
 function handleFileSelect(e) {
