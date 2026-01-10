@@ -36,14 +36,52 @@ protected $fillable = [
     'paymentReceipt',
     'promo_id',
     'voucher_id',
-    'bookingStatus'
+    'bookingStatus',
+    'booking_code'
 ];
 
     protected $dates = [
-        'reservation_expires_at',
-        'created_at',
-        'updated_at'
-    ];
+    'reservation_expires_at',
+    'created_at',
+    'updated_at'
+];
+
+// Add this entire boot method here
+protected static function boot()
+{
+    parent::boot();
+
+    static::creating(function ($booking) {
+        $booking->booking_code = self::generateBookingCode();
+    });
+}
+
+/**
+ * Generate unique booking code in format: B240800043
+ * B + YYMMDD + 5-digit sequential number
+ */
+private static function generateBookingCode()
+{
+    $date = now()->format('ymd'); // e.g., 250110 for January 10, 2025
+    $prefix = 'B' . $date;
+    
+    // Get the last booking code for today
+    $lastBooking = self::where('booking_code', 'like', $prefix . '%')
+        ->orderBy('booking_code', 'desc')
+        ->lockForUpdate() // Prevent race conditions
+        ->first();
+    
+    if ($lastBooking) {
+        // Extract the sequential number and increment
+        $lastNumber = (int) substr($lastBooking->booking_code, -5);
+        $newNumber = $lastNumber + 1;
+    } else {
+        // First booking of the day
+        $newNumber = 1;
+    }
+    
+    return $prefix . str_pad($newNumber, 5, '0', STR_PAD_LEFT);
+}
 
     
     public function vehicle()

@@ -315,7 +315,8 @@ class BookingController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Booking submitted successfully!',
-            'booking_id' => $booking->bookingID
+            'booking_id' => $booking->bookingID,
+            'booking_code' => $booking->booking_code 
         ]);
 
     } catch (\Exception $e) {
