@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>HASTA – Booking Details</title>
+<title>HASTA - Booking Details</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="{{ asset('css/header.css') }}" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -255,12 +255,12 @@ textarea.input {resize:vertical; min-height:100px;}
 
                 <div>
                     <div class="field-label">Return Location</div>
-                    <select id="returnLocationType" class="input" required onchange="handleLocationChange('return')">
-                        <option value="">-- Select --</option>
-                        <option value="hasta">HASTA Office</option>
-                        <option value="student_mall">Student Mall</option>
-                        <option value="others">Others (within UTM)</option>
-                    </select>
+                        <select id="returnLocationType" class="input" required onchange="handleLocationChange('return')">
+                            <option value="">-- Select --</option>
+                            <option value="hasta">HASTA Office</option>
+                            <option value="student_mall">Student Mall</option>
+                            <option value="others">Others (within UTM)</option>
+                        </select>
 
                     <input type="hidden" id="returnLocation" name="returnLocation">
 
@@ -268,15 +268,15 @@ textarea.input {resize:vertical; min-height:100px;}
                         ⚠️ Delivery charge of RM15 applies.
                     </div>
 
-                    <div id="returnOthersFields" style="display: none; margin-top: 10px;">
-                        <select id="returnCategory" class="input">
-                            <option value="">-- Faculty / College / Office --</option>
-                            <option value="faculty">Faculty</option>
-                            <option value="college">College</option>
-                            <option value="office">Office</option>
-                        </select>
-                        <input type="text" id="returnDetails" class="input" placeholder="e.g., DK, FKE" style="margin-top: 5px;">
-                    </div>
+                        <div id="returnOthersFields" style="display: none; margin-top: 10px;">
+                            <select id="returnCategory" class="input" required>
+                                <option value="">-- Faculty / College / Office --</option>
+                                <option value="faculty">Faculty</option>
+                                <option value="college">College</option>
+                                <option value="office">Office</option>
+                            </select>
+                            <input type="text" id="returnDetails" class="input" placeholder="e.g., DK, FKE" style="margin-top: 5px;" required>
+                        </div>
                 </div>
             </div>
 
@@ -448,17 +448,6 @@ function handleLocationChange(type) {
         hiddenInput.value = 'HASTA Office';
         notice.style.display = 'none';
         othersFields.style.display = 'none';
-        
-        // Remove required from "Others" fields
-        if (categoryField) {
-            categoryField.removeAttribute('required');
-            categoryField.value = '';
-        }
-        if (detailsField) {
-            detailsField.removeAttribute('required');
-            detailsField.value = '';
-        }
-        
     } else if (locType === 'student_mall') {
         hiddenInput.value = 'Student Mall';
         notice.style.display = 'none';
@@ -665,8 +654,8 @@ function checkPromotion() {
         const promoDiscountEl = document.getElementById('promotionDiscount');
         if (promoDiscountEl) {
             promoDiscountEl.textContent = data.hasPromotion 
-                ? `- MYR ${promotionDiscount.toFixed(2)}` 
-                : '- MYR 0.00';
+                ? `- RM ${promotionDiscount.toFixed(2)}` 
+                : '- RM 0.00';
             promoDiscountEl.style.color = data.hasPromotion ? '#28a745' : '#333';
         }
 
@@ -694,19 +683,19 @@ function checkPromotion() {
 }
 
 function recalculateTotal() {
-    const finalTotal = Math.max(0, baseGrandTotal + deliveryCharge - promotionDiscount);
+    const finalTotal = baseGrandTotal + deliveryCharge - promotionDiscount;
+
+    // Update delivery charge display
+    const deliveryChargeEl = document.getElementById('deliveryCharge');
+    if (deliveryChargeEl) {
+        deliveryChargeEl.textContent = `MYR ${deliveryCharge.toFixed(2)}`;
+    }
 
     // Update grand total displays
     const grandTotalEl = document.getElementById('grandTotal');
     const bottomBarTotalEl = document.getElementById('bottomBarTotal');
-    
-    if (grandTotalEl) {
-        grandTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
-    }
-    
-    if (bottomBarTotalEl) {
-        bottomBarTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
-    }
+    if (grandTotalEl) grandTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
+    if (bottomBarTotalEl) bottomBarTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
 
     window.finalTotal = finalTotal;
     console.log('Final Total:', finalTotal, 'Base:', baseGrandTotal, 'Delivery:', deliveryCharge, 'Promo:', promotionDiscount);

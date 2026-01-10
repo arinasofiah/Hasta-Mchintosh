@@ -146,37 +146,56 @@
             <h2 class="profile-title">My Loyalty Program</h2>
             
             <div class="loyalty-card-box">
-                <div class="card-header-text">
-                    <div>
-                        <h3 style="margin:0;">Hasta Rewards</h3>
-                        <small>Matric: {{ $card->matricNumber }}</small>
-                    </div>
-                    <div style="text-align: right;">
-                        <h1 style="margin:0; font-size: 3rem;">{{ $card->stampCount }}</h1>
-                        <small>Total Stamps</small>
-                    </div>
+            <div class="card-header-text">
+                <div>
+                    <h3 style="margin:0;">Hasta Rewards</h3>
+                    <small>Matric: {{ $card->matricNumber }}</small>
                 </div>
-
-                <p style="font-size: 1.1rem;">
-                    🎁 <strong>Every stamp</strong> gets a <span style="text-decoration: underline;">RM10 Voucher</span>! <br>
-                    🌟 Collect <strong>5 stamps</strong> for a <strong style="color: #ffd700;">SPECIAL REWARD</strong>!
-                </p>
-
-                <div class="stamp-container">
-                    @for($i = 1; $i <= 5; $i++)
-                        <div class="stamp-circle 
-                            {{ $i == 5 ? 'special-stamp' : '' }} 
-                            {{ ($card->stampCount % 5 >= $i || ($card->stampCount > 0 && $card->stampCount % 5 == 0)) ? 'active' : '' }}">
-                            
-                            @if($i == 5)
-                                ★
-                            @else
-                                {{ $i }}
-                            @endif
-                        </div>
-                    @endfor
+                <div style="text-align: right;">
+                    <h1 style="margin:0; font-size: 3rem;">{{ $card->stampCount }}</h1>
+                    <small>Total Stamps</small>
                 </div>
             </div>
+
+            <!-- Dynamic next reward message -->
+            @php
+                $next = $card->stampCount + 1;
+                $nextReward = isset($rewardTiers[$next]) ? $rewardTiers[$next] : null;
+            @endphp
+
+            <p style="font-size: 1.1rem;">
+                🎁 <strong>Next stamp</strong> 
+                @if($nextReward)
+                    earns you a <span style="text-decoration: underline;">
+                        @if($nextReward == 'HALFDAY')
+                            Half-Day Free Booking!
+                        @else
+                            {{ $nextReward }} Voucher
+                        @endif
+                    </span>!
+                @else
+                    — keep going!
+                @endif
+                <br>
+                🌟 Collect <strong>12 stamps</strong> for a <strong style="color: #ffd700;">HALF-DAY FREE BOOKING!</strong>
+            </p>
+
+            <!-- Show 12 stamps -->
+            <div class="stamp-container" style="flex-wrap: wrap; gap: 10px; justify-content: center;">
+                @for($i = 1; $i <= 12; $i++)
+                    <div class="stamp-circle 
+                        {{ $i == 12 ? 'special-stamp' : '' }} 
+                        {{ $card->stampCount >= $i ? 'active' : '' }}">
+                        
+                        @if($i == 12)
+                            ★
+                        @else
+                            {{ $i }}
+                        @endif
+                    </div>
+                @endfor
+            </div>
+        </div>
 
             <h3 class="mt-5 mb-3">My Vouchers</h3>
 
@@ -187,6 +206,8 @@
                         <h5 class="mb-1" style="font-weight: 600;">
                             @if($voucher->voucherType == 'cash_reward')
                                 💰 Cash Reward
+                            @elseif($voucher->voucherType == 'free_halfday')
+                                🕒 Half-Day Free Booking
                             @else
                                 ⏳ Free Hour
                             @endif
@@ -195,6 +216,8 @@
                         <div class="text-muted small">
                             @if($voucher->voucherType == 'cash_reward')
                                 Save RM{{ number_format($voucher->value, 0) }} on your next booking!
+                            @elseif($voucher->voucherType == 'free_halfday')
+                                Enjoy a half-day (4 hours) free vehicle booking!
                             @else
                                 Enjoy {{ intval($voucher->value) }} hour(s) free ride!
                             @endif
@@ -216,7 +239,7 @@
             @empty
                 <div class="text-center p-5 text-muted" style="background: #f8f9fa; border-radius: 10px;">
                     <h4>Start Your Journey! 🚗</h4>
-                    <p>Rent for 9+ hours to get your first <strong>RM10 Voucher</strong> instantly!</p>
+                    <p>Rent for 9+ hours to earn your first stamp and unlock rewards!</p>
                 </div>
             @endforelse
             </div>
