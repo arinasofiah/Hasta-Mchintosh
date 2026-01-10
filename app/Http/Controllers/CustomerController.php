@@ -6,11 +6,13 @@ use App\Models\User;
 use App\Models\Telephone;
 use App\Models\LoyaltyCard;
 use App\Models\Voucher;
+use App\Models\Customer;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Carbon\Carbon;
 
@@ -660,50 +662,164 @@ class CustomerController extends Controller
         return response()->json($booking);
     }
 
-  /**
- * Cancel a booking
- */
-public function cancelBooking(Request $request, $bookingId)
-{
-    if (auth()->user()->userType !== 'customer') {
-        abort(403, 'Unauthorized. Customer access only.');
-    }
-    
-    $userId = Auth::user()->userID;
-    
-    // Find the booking
-    $booking = DB::table('booking')
-        ->where('bookingID', $bookingId)
-        ->where('userID', $userId)
-        ->first();
-    
-    if (!$booking) {
+    /**
+     * Cancel a booking
+     */
+    public function cancelBooking(Request $request, $bookingId)
+    {
+        if (auth()->user()->userType !== 'customer') {
+            abort(403, 'Unauthorized. Customer access only.');
+        }
+        
+        $userId = Auth::user()->userID;
+        
+        // Find the booking
+        $booking = DB::table('booking')
+            ->where('bookingID', $bookingId)
+            ->where('userID', $userId)
+            ->first();
+        
+        if (!$booking) {
+            return redirect()->route('bookingHistory')
+                ->with('error', 'Booking not found.');
+        }
+        
+        // Check if booking can be cancelled
+        if (!in_array($booking->bookingStatus, ['pending', 'confirmed'])) {
+            return redirect()->route('bookingHistory')
+                ->with('error', 'Only pending or confirmed bookings can be cancelled.');
+        }
+        
+        // Update booking status
+        DB::table('booking')
+            ->where('bookingID', $bookingId)
+            ->update([
+                'bookingStatus' => 'cancelled',
+                'updated_at' => now(),
+            ]);
+        
+        // ALWAYS update vehicle status back to available when cancelled
+        // This ensures the vehicle can be booked by other customers immediately
+        DB::table('vehicles')
+            ->where('vehicleID', $booking->vehicleID)
+            ->update(['status' => 'available']);
+        
         return redirect()->route('bookingHistory')
-            ->with('error', 'Booking not found.');
+            ->with('success', 'Booking cancelled successfully. Vehicle is now available for booking.');
     }
-    
-    // Check if booking can be cancelled
-    if (!in_array($booking->bookingStatus, ['pending', 'confirmed'])) {
-        return redirect()->route('bookingHistory')
-            ->with('error', 'Only pending or confirmed bookings can be cancelled.');
+
+    /**
+     * Show documents upload page
+     */
+    public function showDocuments()
+    {
+        if (auth()->user()->userType !== 'customer') {
+            abort(403, 'Unauthorized. Customer access only.');
+        }
+        
+        $user = Auth::user();
+        $customer = Customer::where('userID', $user->userID)->first();
+        
+        // Get uploaded files info for display
+        $uploadedFiles = [];
+        if ($customer) {
+            $uploadedFiles = [
+                'ic_passport' => $customer->ic_passport_path ? [
+                    'path' => $customer->ic_passport_path,
+                    'url' => Storage::url($customer->ic_passport_path),
+                    'name' => basename($customer->ic_passport_path)
+                ] : null,
+                'driving_license' => $customer->driving_license_path ? [
+                    'path' => $customer->driving_license_path,
+                    'url' => Storage::url($customer->driving_license_path),
+                    'name' => basename($customer->driving_license_path)
+                ] : null,
+                'matric_card' => $customer->matric_card_path ? [
+                    'path' => $customer->matric_card_path,
+                    'url' => Storage::url($customer->matric_card_path),
+                    'name' => basename($customer->matric_card_path)
+                ] : null,
+            ];
+        }
+        
+        return view('customer.documents', compact('user', 'customer', 'uploadedFiles'));
     }
-    
-    // Update booking status
-    DB::table('booking')
-        ->where('bookingID', $bookingId)
-        ->update([
-            'bookingStatus' => 'cancelled',
-            'updated_at' => now(),
+
+    /**
+     * Handle document upload
+     */
+    public function uploadDocuments(Request $request)
+    {
+        if (auth()->user()->userType !== 'customer') {
+            abort(403, 'Unauthorized. Customer access only.');
+        }
+        
+        $user = Auth::user();
+        $customer = Customer::where('userID', $user->userID)->firstOrFail();
+        
+        $request->validate([
+            'ic_passport' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120', // 5MB
+            'driving_license' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+            'matric_card' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
+        
+        // Upload IC/Passport
+        if ($request->hasFile('ic_passport')) {
+            $icFile = $request->file('ic_passport');
+            $icPath = $icFile->store('documents/' . $user->userID, 'public');
+            $customer->ic_passport_path = $icPath;
+        }
+        
+        // Upload Driving License
+        if ($request->hasFile('driving_license')) {
+            $licenseFile = $request->file('driving_license');
+            $licensePath = $licenseFile->store('documents/' . $user->userID, 'public');
+            $customer->driving_license_path = $licensePath;
+        }
+        
+        // Upload Matric Card
+        if ($request->hasFile('matric_card')) {
+            $matricFile = $request->file('matric_card');
+            $matricPath = $matricFile->store('documents/' . $user->userID, 'public');
+            $customer->matric_card_path = $matricPath;
+        }
+        
+        // Save once
+        $customer->save();
+        
+        return redirect()->route('customer.documents')
+            ->with('success', 'Documents uploaded successfully!');
+    }
     
-    // ALWAYS update vehicle status back to available when cancelled
-    // This ensures the vehicle can be booked by other customers immediately
-    DB::table('vehicles')
-        ->where('vehicleID', $booking->vehicleID)
-        ->update(['status' => 'available']);
-    
-    return redirect()->route('bookingHistory')
-        ->with('success', 'Booking cancelled successfully. Vehicle is now available for booking.');
-}
+    /**
+     * Delete a specific document
+     */
+    public function deleteDocument($type)
+    {
+        if (auth()->user()->userType !== 'customer') {
+            abort(403, 'Unauthorized. Customer access only.');
+        }
+        
+        $user = Auth::user();
+        $customer = Customer::where('userID', $user->userID)->firstOrFail();
+        
+        $validTypes = ['ic_passport', 'driving_license', 'matric_card'];
+        
+        if (!in_array($type, $validTypes)) {
+            return redirect()->back()->with('error', 'Invalid document type.');
+        }
+        
+        // Delete file from storage
+        $pathField = $type . '_path';
+        if ($customer->$pathField && Storage::disk('public')->exists($customer->$pathField)) {
+            Storage::disk('public')->delete($customer->$pathField);
+        }
+        
+        // Clear the path
+        $customer->$pathField = null;
+        $customer->save();
+        
+        return redirect()->back()->with('success', 'Document deleted successfully.');
+    }
 
 }

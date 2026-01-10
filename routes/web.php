@@ -125,7 +125,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
+   Route::get('/documents', [CustomerController::class, 'showDocuments'])->name('customer.documents');
+    Route::post('/documents/upload', [CustomerController::class, 'uploadDocuments'])->name('customer.documents.upload');
+    Route::get('/documents/delete/{type}', [CustomerController::class, 'deleteDocument'])->name('customer.documents.delete');
     Route::get('/my-loyalty', [LoyaltyController::class, 'index'])->name('customer.loyaltycard');
 });
 

@@ -22,66 +22,65 @@
             min-height: 100vh;
         }
 
-        .content-with-sidebar {
-            display: flex;
-            min-height: calc(100vh - 180px);
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 20px;
-            gap: 30px;
-        }
+.content-with-sidebar {
+    display: flex;
+    min-height: calc(100vh - 180px);
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+    gap: 30px;
+}
 
-        .sidebar {
-            width: 250px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            padding: 25px 0;
-            flex-shrink: 0;
-            height: fit-content;
-        }
+.sidebar {
+    width: 250px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 25px 0;
+    flex-shrink: 0;
+    height: fit-content;
+}
 
-        .sidebar-menu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
 
-        .sidebar-menu li {
-            margin: 0;
-        }
+.sidebar-menu li {
+    margin: 0;
+}
 
-        .sidebar-menu a {
-            display: flex;
-            align-items: center;
-            padding: 15px 25px;
-            color: #555;
-            text-decoration: none;
-            transition: all 0.3s;
-            border-left: 4px solid transparent;
-            font-size: 15px;
-        }
+.sidebar-menu a {
+    display: flex;
+    align-items: center;
+    padding: 15px 25px;
+    color: #555;
+    text-decoration: none;
+    transition: all 0.3s;
+    border-left: 4px solid transparent;
+    font-size: 15px;
+}
 
-        .sidebar-menu a:hover {
-            background-color: #f8f9fa;
-            color: #bc3737;
-            border-left-color: #bc3737;
-        }
+.sidebar-menu a:hover {
+    background-color: #f8f9fa;
+    color: #bc3737;
+    border-left-color: #bc3737;
+}
 
-        .sidebar-menu a.active {
-            background-color: #f8f9fa;
-            color: #bc3737;
-            font-weight: 600;
-            border-left-color: #bc3737;
-        }
+.sidebar-menu a.active {
+    background-color: #f8f9fa;
+    color: #bc3737;
+    font-weight: 600;
+    border-left-color: #bc3737;
+}
 
-        .sidebar-icon {
-            margin-right: 12px;
-            font-size: 18px;
-            width: 24px;
-            text-align: center;
-        }
-
+.sidebar-icon {
+    margin-right: 12px;
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+}
         /* ===== Booking History Page Styles ===== */
         .booking-history-page {
             flex: 1;
@@ -750,26 +749,22 @@
             <ul class="sidebar-menu">
                 <li>
                     <a href="{{ route('customer.profile') }}">
-                        <span class="sidebar-icon"></span>
                         My Profile
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('bookingHistory') }}" class="active">
-                        <span class="sidebar-icon"></span>
                         My Bookings
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('customer.loyaltycard') }}">
-                        <span class="sidebar-icon"></span>
                         Loyalty Card
                     </a>
                 </li>
-                <li>
-                    <a href="{{ route('customer.profile.edit') }}">
-                        <span class="sidebar-icon"></span>
-                        Edit Profile
+               <li>
+                    <a href="{{ route('customer.documents') }}" >
+                         Upload Documents
                     </a>
                 </li>
             </ul>
