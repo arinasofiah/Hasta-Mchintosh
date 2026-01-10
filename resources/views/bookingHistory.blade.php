@@ -13,11 +13,7 @@
     <link href="{{ asset('css/footer.css') }}" rel="stylesheet">
     <link href="{{ asset('css/profile.css') }}" rel="stylesheet">
     <link href="{{ asset('css/booking-history.css') }}" rel="stylesheet">
-<<<<<<< Updated upstream
  
-=======
-    
->>>>>>> Stashed changes
 </head>
 <body class="has-scrollable-content">
     
@@ -492,10 +488,7 @@
     
    <script>
 
-<<<<<<< Updated upstream
-=======
-    <script>
-        // booking-history.js
+    // booking-history.js
 
 // Collect all booking data with proper vehicle information
 let bookingsData = [];
@@ -1014,7 +1007,7 @@ window.onclick = function(e) {
         e.target.classList.remove('active');
     }
 };
->>>>>>> Stashed changes
+
     </script>
 </body>
 </html>
