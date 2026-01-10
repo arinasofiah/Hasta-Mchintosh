@@ -7,6 +7,8 @@ use App\Models\Telephone;
 use App\Models\LoyaltyCard;
 use App\Models\Voucher;
 use App\Models\Customer;
+use App\Models\Bookings; // Add this line
+use App\Models\Vehicles;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -201,83 +203,72 @@ class CustomerController extends Controller
      * Display customer bookings - CORRECTED VERSION
      */
     public function bookings()
-    {
-        if (auth()->user()->userType !== 'customer') {
-            abort(403, 'Unauthorized. Customer access only.');
+{
+    $userId = auth()->id();
+    
+    // Get bookings with DB facade
+    $bookings = DB::table('booking')
+        ->select('booking.*', 'vehicles.model', 'vehicles.vehicleType', 'vehicles.vehiclePhoto', 'vehicles.plateNumber')
+        ->leftJoin('vehicles', 'booking.vehicleID', '=', 'vehicles.vehicleID')
+        ->where('booking.userID', $userId)
+        ->orWhere('booking.customerID', $userId)
+        ->orderBy('booking.created_at', 'desc')
+        ->get()
+        ->map(function($booking) {
+            // Convert to object
+            $booking = (object) $booking;
+            
+            // Calculate payments
+            $payments = DB::table('payments')
+                ->where('bookingID', $booking->bookingID)
+                ->where('paymentStatus', 'approved')
+                ->sum('amount');
+            
+            // MATCH PAYMENT FORM LOGIC
+            $rentalPrice = $booking->totalPrice ?? 0;
+            $depositAmount = 50; // Fixed deposit
+            $totalCost = $rentalPrice + $depositAmount; // This matches payment form
+            $totalPaid = $payments;
+            
+            // Calculate remaining balance based on payment type
+            if ($booking->pay_amount_type === 'deposit') {
+                // If deposit only, remaining balance is rentalPrice
+                // Subtract any payments beyond the initial deposit
+                $remainingBalance = max(0, $rentalPrice - ($totalPaid - $depositAmount));
+            } else {
+                // If full payment
+                $remainingBalance = max(0, $totalCost - $totalPaid);
+            }
+            
+            $booking->totalPaid = $totalPaid;
+            $booking->totalCost = $totalCost;
+            $booking->remainingBalance = $remainingBalance;
+            $booking->isFullyPaid = $remainingBalance <= 0;
+            $booking->depositAmount = $depositAmount; // Always RM50
+            
+            return $booking;
+        });
+
+
+    // Categorize bookings
+    $active = $bookings->filter(function($booking) {
+        if (!in_array($booking->bookingStatus, ['approved', 'confirmed'])) {
+            return false;
         }
         
-        $userId = Auth::user()->userID;
+        $now = Carbon::now();
+        $start = Carbon::parse($booking->pickupDateTime);
+        $end = Carbon::parse($booking->returnDateTime);
         
-        // Get all bookings with vehicle details - FIXED: Changed customerID to userID
-        $bookings = DB::table('booking')
-            ->where('userID', $userId) // Changed from customerID to userID
-            ->join('vehicles', 'booking.vehicleID', '=', 'vehicles.vehicleID')
-            ->select(
-                'booking.bookingID',
-                'booking.userID', // Changed from customerID
-                'booking.vehicleID',
-                'booking.startDate',
-                'booking.endDate',
-                'booking.bookingStatus',
-                'booking.totalPrice',
-                'booking.depositAmount',
-                'booking.bankNum',
-                'booking.penamaBank',
-                'booking.bookingDuration',
-                'booking.rewardApplied',
-                'booking.created_at',
-                'vehicles.model',
-                'vehicles.vehicleType',
-                'vehicles.plateNumber',
-                'vehicles.vehiclePhoto'
-            )
-            ->orderBy('booking.created_at', 'desc')
-            ->get();
-        
-        // Categorize by bookingStatus
-        $active = $bookings->filter(function($booking) {
-            $now = Carbon::now();
-            try {
-                $startDate = Carbon::parse($booking->startDate);
-                $endDate = Carbon::parse($booking->endDate);
-                
-                return $booking->bookingStatus === 'approved' && 
-                       $now->between($startDate, $endDate);
-            } catch (\Exception $e) {
-                return false;
-            }
-        })->values();
-        
-        // Upcoming: confirmed or approved with future pickup date
-        $upcoming = $bookings->filter(function($booking) {
-            try {
-                $startDate = Carbon::parse($booking->startDate);
-                return ($booking->bookingStatus === 'confirmed' || $booking->bookingStatus === 'approved') && 
-                       $startDate->isFuture();
-            } catch (\Exception $e) {
-                return false;
-            }
-        })->values();
-        
-        // Completed: completed status
-        $completed = $bookings->filter(function($booking) {
-            return $booking->bookingStatus === 'completed';
-        })->values();
-        
-        // Pending: pending status
-        $pending = $bookings->filter(function($booking) {
-            return $booking->bookingStatus === 'pending';
-        })->values();
-        
-        // Cancelled: cancelled status
-        $cancelled = $bookings->filter(function($booking) {
-            return $booking->bookingStatus === 'cancelled';
-        })->values();
-        
-        return view('bookingHistory', compact(
-            'bookings', 'active', 'upcoming', 'completed', 'pending', 'cancelled'
-        ));
-    }
+        return $now->between($start, $end);
+    });
+    
+    $pending = $bookings->where('bookingStatus', 'pending');
+    $completed = $bookings->where('bookingStatus', 'completed');
+    $cancelled = $bookings->where('bookingStatus', 'cancelled');
+
+    return view('bookingHistory', compact('active', 'pending', 'completed', 'cancelled'));
+}
     
     /**
      * Show booking form for a specific vehicle.

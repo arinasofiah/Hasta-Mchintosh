@@ -15,34 +15,27 @@ class Bookings extends Model
     
     protected $fillable = [
         'userID',
-        'customerID',
+        'customerID', 
         'vehicleID',
-        'startDate',
-        'endDate',
-        'pickupTime',
-        'returnTime',
+        'startDate',    // Date only
+        'endDate',      // Date only
         'pickupLocation',
         'returnLocation',
         'destination',
         'remark',
-        'forSomeoneElse',
         'matricNumber',
         'licenseNumber',
-        'college',
-        'faculty',
-        'depoBalance',
         'bankName',
         'bankOwnerName',
-        'bankNum',
         'payAmount',
         'paymentReceipt',
+        'bookingDuration',
+        'totalPrice',
         'promo_id',
         'voucher_id',
-        'bookingStatus',
-        'booking_code',
-        'totalPrice',
         'depositAmount',
-        'bookingDuration'
+        'bookingStatus',
+        'booking_code'
     ];
 
     protected $dates = [
@@ -191,6 +184,55 @@ class Bookings extends Model
             });
     }
 
+    // Add these methods to your Bookings model
+
+public function payments()
+{
+    return $this->hasMany(Payment::class, 'bookingID', 'bookingID');
+}
+
+public function depositPayment()
+{
+    return $this->hasOne(Payment::class, 'bookingID', 'bookingID')
+                ->where('paymentType', 'deposit')
+                ->where('paymentStatus', 'approved');
+}
+
+public function remainingPayments()
+{
+    return $this->hasMany(Payment::class, 'bookingID', 'bookingID')
+                ->where('paymentType', 'remaining');
+}
+
+/**
+ * Calculate total paid amount
+ */
+public function getTotalPaidAttribute()
+{
+    return $this->payments()
+                ->where('paymentStatus', 'approved')
+                ->sum('amount');
+}
+
+/**
+ * Calculate remaining balance
+ */
+public function getRemainingBalanceAttribute()
+{
+    $totalCost = $this->totalPrice + 50; // Rental price + fixed deposit
+    $totalPaid = $this->total_paid;
+    
+    return max(0, $totalCost - $totalPaid);
+}
+
+/**
+ * Check if booking is fully paid
+ */
+public function getIsFullyPaidAttribute()
+{
+    return $this->remaining_balance <= 0;
+}
+
     // Relationships
     public function vehicle()
     {
@@ -209,7 +251,8 @@ class Bookings extends Model
 
     public function returnCar()
     {
-        return $this->hasOne(ReturnCar::class, 'bookingID', 'bookingID');
+        return $this->hasOne(ReturnCar::class, 'bookingID', 'bookingID')
+        ->from('return');
     }
 
     public function voucher()

@@ -152,7 +152,7 @@ class BookingController extends Controller
                                    ->get()
                                    ->map(function($v) {
                                         return (object)[
-                                            'promoID' => $v->voucherCode,
+                                            'voucherID' => $v->voucherID,
                                             'title' => ($v->voucherType == 'free_hour' ? 'Free Hour' : 'Cash Voucher'),
                                             'code' => $v->voucherCode,
                                             'discountValue' => $v->value
@@ -236,103 +236,87 @@ class BookingController extends Controller
             'valid' => true,
             'message' => 'Voucher Applied Successfully!',
             'amount' => $voucher->value,
-            'voucher_id' => $voucher->voucherCode
+            'voucher_id' => $voucher->voucherID  // Fixed: use voucherID instead of voucherCode
         ]);
     }
 
     public function confirmBooking(Request $request)
-    {
-        \Log::info('Booking request received', $request->all());
+{
+    \Log::info('Booking request received', $request->all());
 
-        try {
-            $request->validate([
-                'vehicleID' => 'required|exists:vehicles,vehicleID',
-                'pickup_date' => 'required|date',
-                'pickup_time' => 'required',
-                'return_date' => 'required|date|after:pickup_date',
-                'return_time' => 'required',
-                'pickupLocation' => 'required',
-                'returnLocation' => 'required',
-                'bank_name' => 'required',
-                'bank_owner_name' => 'required',
-                'payAmount' => 'required|in:full,deposit',
-                'payment_receipt' => 'required|image|max:5120',
-            ]);
+    try {
+        $request->validate([
+            'vehicleID' => 'required|exists:vehicles,vehicleID',
+            'pickup_date' => 'required|date',
+            'pickup_time' => 'required',
+            'return_date' => 'required|date|after:pickup_date',
+            'return_time' => 'required',
+            'pickupLocation' => 'required',
+            'returnLocation' => 'required',
+            'bank_name' => 'required',
+            'bank_owner_name' => 'required',
+            'payAmount' => 'required|in:full,deposit',
+            'payment_receipt' => 'required|image|max:5120',
+        ]);
 
-            DB::beginTransaction();
+        DB::beginTransaction();
 
-            $vehicle = Vehicles::findOrFail($request->vehicleID);
-            
-            $start = Carbon::parse($request->pickup_date . ' ' . $request->pickup_time);
-            $end = Carbon::parse($request->return_date . ' ' . $request->return_time);
-            $durationDays = $end->diffInDays($start);
-            if ($durationDays < 1) $durationDays = 1;
-            
-            $totalPrice = $durationDays * $vehicle->pricePerDay;
-            
-            $receiptPath = null;
-            if ($request->hasFile('payment_receipt')) {
-                $receiptPath = $request->file('payment_receipt')->store('receipts', 'public');
-            }
-            
-            // Create booking with pending status
-            $booking = new Bookings();
-            $booking->userID = auth()->id();
-            $booking->customerID = auth()->id();
-            $booking->vehicleID = $vehicle->vehicleID;
-            $booking->startDate = $request->pickup_date;
-            $booking->endDate = $request->return_date;
-            $booking->pickupTime = $request->pickup_time;
-            $booking->returnTime = $request->return_time;
-            $booking->pickupLocation = $request->pickupLocation;
-            $booking->returnLocation = $request->returnLocation;
-            $booking->destination = $request->input('destination', '');
-            $booking->remark = $request->input('remark', '');
-            $booking->matricNumber = $request->input('matricNumber', '');
-            $booking->licenseNumber = $request->input('licenseNumber', '');
-            $booking->bankName = $request->bank_name;
-            $booking->bankOwnerName = $request->bank_owner_name;
-            $booking->payAmount = $request->payAmount;
-            $booking->paymentReceipt = $receiptPath;
-            $booking->bookingDuration = $durationDays;
-            $booking->totalPrice = $totalPrice;
-            $booking->promo_id = $request->input('promo_id');
-            $booking->voucher_id = $request->input('voucher_id');
-            
-            if ($request->payAmount == 'deposit') {
-                $booking->depositAmount = $totalPrice * 0.5;
-            } else {
-                $booking->depositAmount = $totalPrice;
-            }
-            
-            // Set status to pending (admin needs to approve)
-            $booking->bookingStatus = 'pending';
-            
-            $booking->save();
-            
-            // Don't change vehicle status here - it will be updated when admin approves
-            // Vehicle remains available for other users until approved
-            
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Booking submitted successfully! Waiting for admin approval.',
-                'booking_id' => $booking->bookingID,
-                'booking_code' => $booking->booking_code 
-            ]);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            \Log::error('Booking error: ' . $e->getMessage());
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'Booking failed: ' . $e->getMessage()
-            ], 500);
+        $vehicle = Vehicles::findOrFail($request->vehicleID);
+        
+        $start = Carbon::parse($request->pickup_date . ' ' . $request->pickup_time);
+        $end = Carbon::parse($request->return_date . ' ' . $request->return_time);
+        $durationHours = $end->diffInHours($start);
+        $durationDays = ceil($durationHours / 24);
+        if ($durationDays < 1) $durationDays = 1;
+        
+        $totalPrice = $durationDays * $vehicle->pricePerDay;
+        
+        $receiptPath = null;
+        if ($request->hasFile('payment_receipt')) {
+            $receiptPath = $request->file('payment_receipt')->store('receipts', 'public');
         }
+        
+        // Generate booking code
+        $count = Bookings::whereDate('created_at', today())->count() + 1;
+        $bookingCode = 'B' . date('ymd') . str_pad($count, 5, '0', STR_PAD_LEFT);
+        
+        // Create booking WITHOUT pickupLocation and returnLocation
+        $booking = new Bookings();
+        $booking->userID = auth()->id();
+        $booking->customerID = auth()->id();
+        $booking->vehicleID = $vehicle->vehicleID;
+        $booking->startDate = $request->pickup_date;
+        $booking->endDate = $request->return_date;
+        $booking->destination = $request->input('destination', '');
+        $booking->remark = $request->input('remark', '');
+        $booking->driver_matric_number = $request->input('matricNumber', '');
+        $booking->driver_license_number = $request->input('licenseNumber', '');
+        $booking->driver_college = $request->input('college', '');
+        $booking->driver_faculty = $request->input('faculty', '');
+        $booking->driver_deposit_balance = $request->input('depoBalance', 0);
+        $booking->bank_name = $request->bank_name;
+        $booking->bank_owner_name = $request->bank_owner_name;
+        $booking->pay_amount_type = $request->payAmount;
+        $booking->payment_receipt_path = $receiptPath;
+        $booking->bookingDuration = $durationDays;
+        $booking->totalPrice = $totalPrice;
+        $booking->promo_id = $request->input('promo_id') ?: null;
+        $booking->voucher_id = $request->input('voucher_id') ?: null;
+        $booking->booking_code = $bookingCode;
+        $booking->for_someone_else = $request->boolean('for_someone_else') ? 1 : 0;
+        
+        // Bank number and name
+        $booking->bankNum = $request->input('bankNum', '');
+        $booking->penamaBank = $request->input('penamaBank', '');
+        
+        // Deposit calculation
+        if ($request->payAmount == 'deposit') {
+            $booking->depositAmount = $totalPrice * 0.5;
+        } else {
+            $booking->depositAmount = $totalPrice;
     }
-
+    }
+    }
     /**
      * Admin approves a booking
      */
@@ -378,8 +362,47 @@ class BookingController extends Controller
             \Log::error('Approve booking error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to approve booking: ' . $e->getMessage());
         }
-    }
+        
+        // Set status to pending
+        $booking->bookingStatus = 'pending';
+        
+        $booking->save();
+        
+        // Create pickup record with all pickup details
+        $pickup = new PickUp();
+        $pickup->bookingID = $booking->bookingID;
+        $pickup->pickupDate = $request->pickup_date;
+        $pickup->pickupTime = $request->pickup_time;
+        $pickup->pickupLocation = $request->pickupLocation;
+        $pickup->save();
+        
+        // Create return record with all return details
+        $returnCar = new ReturnCar();
+        $returnCar->bookingID = $booking->bookingID;
+        $returnCar->returnDate = $request->return_date;
+        $returnCar->returnTime = $request->return_time;
+        $returnCar->returnLocation = $request->returnLocation;
+        $returnCar->save();
+        
+        DB::commit();
 
+        return response()->json([
+            'success' => true,
+            'message' => 'Booking submitted successfully! Waiting for admin approval.',
+            'booking_id' => $booking->bookingID,
+            'booking_code' => $booking->booking_code 
+        ]);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        \Log::error('Booking error: ' . $e->getMessage());
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Booking failed: ' . $e->getMessage()
+        ], 500);
+    }
+}
     /**
      * Mark booking as completed (vehicle becomes available again)
      */
@@ -410,23 +433,91 @@ class BookingController extends Controller
         }
     }
 
-    public function bookingHistory()
-    {
-        $bookings = Bookings::where('customerID', auth()->id())
-            ->orWhere('userID', auth()->id())
-            ->with(['vehicle', 'pickup', 'return'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        $active = $bookings->whereIn('bookingStatus', ['approved', 'confirmed'])
-            ->filter(function($booking) {
-                return $booking->isCurrentlyActive();
-            });
+  public function bookingHistory()
+{
+    $userId = auth()->id();
+    
+    // Get bookings with explicit join to ensure vehicle data is loaded
+    $bookings = DB::table('booking')
+        ->join('vehicles', 'booking.vehicleID', '=', 'vehicles.vehicleID')
+        ->leftJoin('pickup', 'booking.bookingID', '=', 'pickup.bookingID')
+        ->leftJoin('return_car', 'booking.bookingID', '=', 'return_car.bookingID')
+        ->select(
+            'booking.*',
+            'vehicles.model',
+            'vehicles.vehicleType',
+            'vehicles.plateNumber',
+            'vehicles.vehiclePhoto',
+            'vehicles.pricePerDay',
+            'pickup.pickupLocation',
+            'pickup.pickupDate as pickup_date',
+            'pickup.pickupTime as pickup_time',
+            'return_car.returnLocation',
+            'return_car.returnDate as return_date',
+            'return_car.returnTime as return_time'
+        )
+        ->where(function($query) use ($userId) {
+            $query->where('booking.customerID', $userId)
+                  ->orWhere('booking.userID', $userId);
+        })
+        ->orderBy('booking.created_at', 'desc')
+        ->get()
+        ->map(function($booking) {
+            // Convert stdClass to object with vehicle property
+            $bookingObj = (object) (array) $booking;
             
-        $pending = $bookings->where('bookingStatus', 'pending');
-        $completed = $bookings->where('bookingStatus', 'completed');
-        $cancelled = $bookings->where('bookingStatus', 'cancelled');
+            // Create vehicle object from the joined data
+            $bookingObj->vehicle = (object) [
+                'model' => $booking->model,
+                'vehicleType' => $booking->vehicleType,
+                'plateNumber' => $booking->plateNumber,
+                'vehiclePhoto' => $booking->vehiclePhoto,
+                'pricePerDay' => $booking->pricePerDay,
+                'vehicleID' => $booking->vehicleID
+            ];
+            
+            // Calculate payments
+            $payments = DB::table('payments')
+                ->where('bookingID', $booking->bookingID)
+                ->where('paymentStatus', 'approved')
+                ->sum('amount');
+            
+            // Calculate totals
+            $bookingObj->totalPaid = $payments;
+            $bookingObj->totalCost = $booking->totalPrice + 50; // RM50 deposit
+            $bookingObj->remainingBalance = max(0, $bookingObj->totalCost - $payments);
+            $bookingObj->isFullyPaid = $bookingObj->remainingBalance <= 0;
+            
+            // Pickup/return locations
+            $bookingObj->pickupLocation = $booking->pickupLocation ?? 'Not specified';
+            $bookingObj->returnLocation = $booking->returnLocation ?? 'Not specified';
+            
+            // Create datetime strings
+            $bookingObj->pickupDateTime = ($booking->pickup_date ?? $booking->startDate) 
+                . ' ' . ($booking->pickup_time ?? '08:00:00');
+            $bookingObj->returnDateTime = ($booking->return_date ?? $booking->endDate) 
+                . ' ' . ($booking->return_time ?? '16:00:00');
+            
+            return $bookingObj;
+        });
 
-        return view('bookingHistory', compact('active', 'pending', 'completed', 'cancelled'));
-    }
+    // Categorize bookings
+    $active = $bookings->filter(function($booking) {
+        if (!in_array($booking->bookingStatus, ['approved', 'confirmed'])) {
+            return false;
+        }
+        
+        $now = Carbon::now();
+        $start = Carbon::parse($booking->pickupDateTime);
+        $end = Carbon::parse($booking->returnDateTime);
+        
+        return $now->between($start, $end);
+    });
+    
+    $pending = $bookings->where('bookingStatus', 'pending');
+    $completed = $bookings->where('bookingStatus', 'completed');
+    $cancelled = $bookings->where('bookingStatus', 'cancelled');
+
+    return view('bookingHistory', compact('active', 'pending', 'completed', 'cancelled'));
+}
 }
