@@ -182,6 +182,97 @@ body {
     color: white;
 }
 
+.btn-book-now {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-book-now:hover {
+    background: linear-gradient(135deg, #ee5a52, #d6453b);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(238, 90, 82, 0.3);
+}
+
+.btn-book-now i {
+    font-size: 16px;
+}
+
+.vehicle-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.price-container {
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+}
+
+.price-period {
+    font-size: 12px;
+    color: #666;
+    margin-left: 2px;
+}
+
+/* Progress Steps */
+.progress-container { 
+    max-width: 1200px; 
+    margin: 40px auto; 
+    padding: 0 20px; 
+}
+.steps { 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 8px; 
+    margin-bottom: 40px; 
+    flex-wrap: wrap;
+}
+.step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 25px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 600;
+    min-width: 140px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+.step.filled { 
+    background: #d94444; 
+    color: white; 
+    border: none;
+}
+.step.active { 
+    border: 2px solid #d94444; 
+    color: #d94444; 
+    background: white;
+}
+.step-connector { 
+    width: 80px; 
+    height: 2px; 
+    background: #ddd;
+}
+
 /* Responsive Breakpoints */
 @media (max-width: 1024px) {
     .vehicles-grid { grid-template-columns: repeat(2, 1fr); }

@@ -921,25 +921,17 @@
             <ul class="sidebar-menu">
                 <li>
                     <a href="{{ route('customer.profile') }}">
-                        <span class="sidebar-icon"><i class="fas fa-user"></i></span>
                         My Profile
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('bookingHistory') }}" class="active">
-                        <span class="sidebar-icon"><i class="fas fa-history"></i></span>
                         My Bookings
                     </a>
                 </li>
-                <li>
-                    <a href="{{ route('customer.loyaltycard') }}">
-                        <span class="sidebar-icon"><i class="fas fa-id-card"></i></span>
-                        Loyalty Card
-                    </a>
-                </li>
+               
                <li>
                     <a href="{{ route('customer.documents') }}">
-                        <span class="sidebar-icon"><i class="fas fa-file-upload"></i></span>
                         Upload Documents
                     </a>
                 </li>

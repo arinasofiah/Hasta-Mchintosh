@@ -282,7 +282,6 @@
     <link href="{{ asset('css/header.css') }}" rel="stylesheet">
     <link href="{{ asset('css/footer.css') }}" rel="stylesheet">
     <style>
-        /* Add the same styles from your previous welcome page */
         body { font-family: 'Poppins', sans-serif; margin: 0; padding: 0; background-color: #f8f9fa; }
         .hero-wrapper { padding: 80px 20px; display: flex; justify-content: center; align-items: center; }
         .gradient-card { width: 100%; max-width: 800px; padding: 60px 40px; border-radius: 24px; background: linear-gradient(135deg, #FF6F6F 0%, #E63946 100%); box-shadow: 0 20px 40px rgba(230, 57, 70, 0.2); text-align: center; }
@@ -316,31 +315,39 @@
                 </div>
                 
                 <!-- FORM GOES TO VEHICLES.INDEX -->
-                <form action="{{ route('vehicles.index') }}" method="GET" class="booking-form">
+                <form action="{{ route('vehicles.index') }}" method="GET" class="booking-form" id="bookingForm">
                     <div class="datetime-grid">
                         <div class="datetime-group">
                             <div class="datetime-label"><i class="fas fa-calendar-alt"></i><span>Pickup Date & Time</span></div>
                             <div class="datetime-inputs">
-                                <input type="date" name="pickup_date" class="date-input" min="{{ date('Y-m-d') }}" value="{{ date('Y-m-d') }}" required>
-                                <select name="pickup_time" class="time-select" required>
-                                    <option value="08:00">8:00 AM</option><option value="09:00">9:00 AM</option>
-                                    <option value="10:00">10:00 AM</option><option value="11:00">11:00 AM</option>
-                                    <option value="12:00" selected>12:00 PM</option><option value="13:00">1:00 PM</option>
-                                    <option value="14:00">2:00 PM</option><option value="15:00">3:00 PM</option>
-                                    <option value="16:00">4:00 PM</option><option value="17:00">5:00 PM</option>
+                                <input type="date" name="pickup_date" id="pickup_date" class="date-input" min="{{ date('Y-m-d') }}" value="{{ date('Y-m-d') }}" required>
+                                <select name="pickup_time" id="pickup_time" class="time-select" required>
+                                    <option value="09:00" selected>9:00 AM</option>
+                                    <option value="10:00">10:00 AM</option>
+                                    <option value="11:00">11:00 AM</option>
+                                    <option value="12:00">12:00 PM</option>
+                                    <option value="13:00">1:00 PM</option>
+                                    <option value="14:00">2:00 PM</option>
+                                    <option value="15:00">3:00 PM</option>
+                                    <option value="16:00">4:00 PM</option>
+                                    <option value="17:00">5:00 PM</option>
                                 </select>
                             </div>
                         </div>
                         <div class="datetime-group">
                             <div class="datetime-label"><i class="fas fa-calendar-alt"></i><span>Return Date & Time</span></div>
                             <div class="datetime-inputs">
-                                <input type="date" name="return_date" class="date-input" min="{{ date('Y-m-d', strtotime('+1 day')) }}" value="{{ date('Y-m-d', strtotime('+1 day')) }}" required>
-                                <select name="return_time" class="time-select" required>
-                                    <option value="08:00">8:00 AM</option><option value="09:00">9:00 AM</option>
-                                    <option value="10:00">10:00 AM</option><option value="11:00">11:00 AM</option>
-                                    <option value="12:00" selected>12:00 PM</option><option value="13:00">1:00 PM</option>
-                                    <option value="14:00">2:00 PM</option><option value="15:00">3:00 PM</option>
-                                    <option value="16:00">4:00 PM</option><option value="17:00">5:00 PM</option>
+                                <input type="date" name="return_date" id="return_date" class="date-input" min="{{ date('Y-m-d', strtotime('+1 day')) }}" value="{{ date('Y-m-d', strtotime('+1 day')) }}" required>
+                                <select name="return_time" id="return_time" class="time-select" required>
+                                    <option value="09:00">9:00 AM</option>
+                                    <option value="10:00">10:00 AM</option>
+                                    <option value="11:00">11:00 AM</option>
+                                    <option value="12:00" selected>12:00 PM</option>
+                                    <option value="13:00">1:00 PM</option>
+                                    <option value="14:00">2:00 PM</option>
+                                    <option value="15:00">3:00 PM</option>
+                                    <option value="16:00">4:00 PM</option>
+                                    <option value="17:00">5:00 PM</option>
                                 </select>
                             </div>
                         </div>
@@ -352,70 +359,190 @@
     </main>
     
     <footer class="footer">
-    <div class="footer-container">
-        <div class="footer-section">
-            <div class="footer-logo">
-                <img src="{{ asset('img/hasta_logo.jpg') }}" alt="Hasta Logo">
-            </div>
-            <div class="social-icons">
-                <a href="#"><i class="fab fa-facebook-f"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-x-twitter"></i></a>
-                <a href="#"><i class="fab fa-youtube"></i></a>
-            </div>
-        </div>
-
-        <div class="footer-section contact-info">
-            <div class="contact-item">
-                <span class="contact-icon">📍</span>
-                <div class="contact-text">
-                    <span class="label">Address</span>
-                    <p>Student Mall UTM<br>Skudai, 81300, Johor Bahru</p>
+        <div class="footer-container">
+            <div class="footer-section">
+                <div class="footer-logo">
+                    <img src="{{ asset('img/hasta_logo.jpg') }}" alt="Hasta Logo">
+                </div>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-x-twitter"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
                 </div>
             </div>
-            <div class="contact-item">
-                <span class="contact-icon">✉️</span>
-                <div class="contact-text">
-                    <span class="label">Email</span>
-                    <p><a href="mailto:hastatravel@gmail.com">hastatravel@gmail.com</a></p>
+
+            <div class="footer-section contact-info">
+                <div class="contact-item">
+                    <span class="contact-icon">📍</span>
+                    <div class="contact-text">
+                        <span class="label">Address</span>
+                        <p>Student Mall UTM<br>Skudai, 81300, Johor Bahru</p>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <span class="contact-icon">✉️</span>
+                    <div class="contact-text">
+                        <span class="label">Email</span>
+                        <p><a href="mailto:hastatravel@gmail.com">hastatravel@gmail.com</a></p>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <span class="contact-icon">📞</span>
+                    <div class="contact-text">
+                        <span class="label">Phone</span>
+                        <p><a href="tel:01110900700">011-1090 0700</a></p>
+                    </div>
                 </div>
             </div>
-            <div class="contact-item">
-                <span class="contact-icon">📞</span>
-                <div class="contact-text">
-                    <span class="label">Phone</span>
-                    <p><a href="tel:01110900700">011-1090 0700</a></p>
-                </div>
+
+            <div class="footer-section links-column">
+                <h5>Useful links</h5>
+                <ul>
+                    <li><a href="#">About us</a></li>
+                    <li><a href="#">Contact us</a></li>
+                    <li><a href="#">Gallery</a></li>
+                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">F.A.Q</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section links-column">
+                <h5>Vehicles</h5>
+                <ul>
+                    <li><a href="#">Sedan</a></li>
+                    <li><a href="#">Hatchback</a></li>
+                    <li><a href="#">MPV</a></li>
+                    <li><a href="#">Minivan</a></li>
+                    <li><a href="#">SUV</a></li>
+                </ul>
             </div>
         </div>
-
-        <div class="footer-section links-column">
-            <h5>Useful links</h5>
-            <ul>
-                <li><a href="#">About us</a></li>
-                <li><a href="#">Contact us</a></li>
-                <li><a href="#">Gallery</a></li>
-                <li><a href="#">Blog</a></li>
-                <li><a href="#">F.A.Q</a></li>
-            </ul>
+        <div class="copyright">
+            © {{ date('Y') }} Hasta Travel & Tour. All rights reserved.
         </div>
-
-        <div class="footer-section links-column">
-            <h5>Vehicles</h5>
-            <ul>
-                <li><a href="#">Sedan</a></li>
-                <li><a href="#">Hatchback</a></li>
-                <li><a href="#">MPV</a></li>
-                <li><a href="#">Minivan</a></li>
-                <li><a href="#">SUV</a></li>
-            </ul>
-        </div>
-    </div>
-    <div class="copyright">
-        © {{ date('Y') }} Hasta Travel & Tour. All rights reserved.
-    </div>
-</footer>
+    </footer>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const pickupDateInput = document.getElementById('pickup_date');
+            const pickupTimeSelect = document.getElementById('pickup_time');
+            const returnDateInput = document.getElementById('return_date');
+            const returnTimeSelect = document.getElementById('return_time');
+            
+            // Set initial minimum return date (tomorrow)
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            returnDateInput.min = tomorrow.toISOString().split('T')[0];
+            
+            // Function to auto-set return date when pickup date changes
+            function updateReturnDate() {
+                if (pickupDateInput.value) {
+                    const pickupDate = new Date(pickupDateInput.value);
+                    const returnDate = new Date(pickupDate);
+                    returnDate.setDate(pickupDate.getDate() + 1);
+                    
+                    // Format date as YYYY-MM-DD
+                    const formattedReturnDate = returnDate.toISOString().split('T')[0];
+                    
+                    // Set min and value for return date
+                    returnDateInput.min = formattedReturnDate;
+                    returnDateInput.value = formattedReturnDate;
+                }
+            }
+            
+            // Function to validate and adjust return time based on pickup time
+            function updateReturnTimeOptions() {
+                const pickupTime = pickupTimeSelect.value;
+                const pickupHour = parseInt(pickupTime.split(':')[0]);
+                
+                // Clear current options
+                returnTimeSelect.innerHTML = '';
+                
+                // Generate time slots from 9 AM to 5 PM
+                const timeSlots = [
+                    '09:00', '10:00', '11:00', '12:00', 
+                    '13:00', '14:00', '15:00', '16:00', '17:00'
+                ];
+                
+                // Add options, disabling times earlier than or equal to pickup time for same day
+                timeSlots.forEach(time => {
+                    const option = document.createElement('option');
+                    option.value = time;
+                    option.textContent = formatTimeDisplay(time);
+                    
+                    // Check if pickup and return are on the same day
+                    const isSameDay = pickupDateInput.value === returnDateInput.value;
+                    
+                    if (isSameDay) {
+                        const returnHour = parseInt(time.split(':')[0]);
+                        // Disable return times that are before or equal to pickup time
+                        if (returnHour <= pickupHour) {
+                            option.disabled = true;
+                        }
+                    }
+                    
+                    // Set default selection to 12:00 PM if it's enabled
+                    if (time === '12:00' && !option.disabled) {
+                        option.selected = true;
+                    }
+                    
+                    returnTimeSelect.appendChild(option);
+                });
+                
+                // If no option is selected, select the first enabled option
+                if (!returnTimeSelect.value) {
+                    const firstEnabledOption = Array.from(returnTimeSelect.options).find(opt => !opt.disabled);
+                    if (firstEnabledOption) {
+                        firstEnabledOption.selected = true;
+                    }
+                }
+            }
+            
+            // Helper function to format time for display
+            function formatTimeDisplay(time) {
+                const [hour, minute] = time.split(':');
+                const hourNum = parseInt(hour);
+                const ampm = hourNum >= 12 ? 'PM' : 'AM';
+                const displayHour = hourNum % 12 || 12;
+                return `${displayHour}:${minute} ${ampm}`;
+            }
+            
+            // Event listeners
+            pickupDateInput.addEventListener('change', function() {
+                updateReturnDate();
+                updateReturnTimeOptions();
+            });
+            
+            pickupTimeSelect.addEventListener('change', updateReturnTimeOptions);
+            returnDateInput.addEventListener('change', updateReturnTimeOptions);
+            
+            // Initialize on page load
+            updateReturnTimeOptions();
+            
+            // Form validation
+            document.getElementById('bookingForm').addEventListener('submit', function(e) {
+                const pickupDate = new Date(pickupDateInput.value);
+                const returnDate = new Date(returnDateInput.value);
+                const pickupTime = pickupTimeSelect.value;
+                const returnTime = returnTimeSelect.value;
+                
+                // Check if return date is before pickup date
+                if (returnDate < pickupDate) {
+                    e.preventDefault();
+                    alert('Return date cannot be before pickup date!');
+                    return;
+                }
+                
+                // Check if return time is before pickup time on same day
+                if (pickupDate.toDateString() === returnDate.toDateString() && returnTime <= pickupTime) {
+                    e.preventDefault();
+                    alert('Return time must be after pickup time for same day rentals!');
+                    return;
+                }
+            });
+        });
+    </script>
 </body>
 </html>
