@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link href="{{ asset('css/header.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/header.css') }}" rel="stylesheet">
     <title>HASTA - Payment</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -532,6 +531,26 @@
             flex: 1;
         }
 
+        /* Payment Summary */
+        .payment-summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .payment-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .payment-row:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .header {
@@ -683,7 +702,7 @@
             </div>
             <div class="info-row">
                 <span class="info-label">Rental Price</span>
-                <span class="info-value">MYR {{ number_format($finalSubtotal, 2) }}</span>
+                <span class="info-value" id="rental_price_display">MYR {{ number_format($finalSubtotal, 2) }}</span>
             </div>
             @if($promotionDiscount > 0)
             <div class="info-row discount-row">
@@ -696,12 +715,32 @@
                 <span class="info-value" id="voucher_discount_display">- MYR 0.00</span>
             </div>
             <div class="info-row">
-                <span class="info-label">Deposit Payable (30%)</span>
-                <span class="info-value" id="deposit_display">MYR {{ number_format($deposit, 2) }}</span>
+                <span class="info-label">Fixed Deposit</span>
+                <span class="info-value" id="deposit_display">MYR 50.00</span>
             </div>
-            <div class="total-row">
-                <span class="info-label">Total Payable</span>
-                <span class="info-value" id="final_total_display">MYR {{ number_format($finalTotal, 2) }}</span>
+            
+            <!-- Payment Summary Section -->
+            <div class="payment-summary">
+                <div class="payment-row">
+                    <span>Subtotal (After Discounts)</span>
+                    <span id="subtotal_display">MYR {{ number_format($finalSubtotal - $promotionDiscount, 2) }}</span>
+                </div>
+                <div class="payment-row">
+                    <span>Deposit</span>
+                    <span id="summary_deposit_display">MYR 50.00</span>
+                </div>
+                <div class="payment-row" id="pay_now_section">
+                    <span>Pay Now (<span id="payment_type_label">Deposit Only</span>)</span>
+                    <span id="pay_now_display">MYR 50.00</span>
+                </div>
+                <div class="payment-row">
+                    <span>Remaining Balance</span>
+                    <span id="remaining_balance_display">MYR {{ number_format($finalSubtotal - $promotionDiscount - 50, 2) }}</span>
+                </div>
+                <div class="payment-row">
+                    <span>Total Vehicle Cost</span>
+                    <span id="total_vehicle_cost_display">MYR {{ number_format($finalSubtotal - $promotionDiscount + 50, 2) }}</span>
+                </div>
             </div>
         </div>
 
@@ -773,12 +812,12 @@
                 <label>Payment Type</label>
                 <div class="radio-group">
                     <label class="radio-option">
-                        <input type="radio" name="payAmount" value="full" checked>
-                        Full Payment
+                        <input type="radio" name="payAmount" value="deposit" checked>
+                        Pay Deposit Only (RM50)
                     </label>
                     <label class="radio-option">
-                        <input type="radio" name="payAmount" value="deposit">
-                        Deposit Only (50%)
+                        <input type="radio" name="payAmount" value="full">
+                        Pay Full Amount
                     </label>
                 </div>
             </div>
@@ -822,15 +861,13 @@
                 </div>
             </div>
 
-            <button type="submit" class="submit-btn">
+            <button type="submit" class="submit-btn" id="submitBtn">
                 <i class="fas fa-paper-plane"></i> Confirm Payment
             </button>
         </div>
     </div>
 </form>
 
-</body>
-</html>
 <!-- Terms Modal -->
 <div id="termsModal" class="modal">
     <div class="modal-content">
@@ -876,14 +913,13 @@
             Kindly trace your booking below.
         </p>
         <div class="modal-actions">
-    <button type="button" class="modal-btn btn-primary" id="viewBookings">
-        View My Bookings
-    </button>
-
-    <button type="button" class="modal-btn btn-secondary" id="closeSuccess">
-        Close
-    </button>
-</div>
+            <button type="button" class="modal-btn btn-primary" id="viewBookings">
+                View My Bookings
+            </button>
+            <button type="button" class="modal-btn btn-secondary" id="closeSuccess">
+                Close
+            </button>
+        </div>
     </div>
 </div>
 
@@ -905,9 +941,21 @@ const successModal = document.getElementById('successModal');
 const viewBookings = document.getElementById('viewBookings');
 const closeSuccess = document.getElementById('closeSuccess');
 
-// Initialize
-let originalTotal = {{ $finalTotal ?? 0 }};
+// Payment Calculation Variables
+const FIXED_DEPOSIT = 50;
+let originalRentalPrice = {{ $finalSubtotal ?? 0 }};
+let promotionDiscount = {{ $promotionDiscount ?? 0 }};
 let currentVoucherValue = 0;
+
+// Initialize payment calculations
+document.addEventListener('DOMContentLoaded', function() {
+    updatePaymentSummary();
+    
+    // Add payment type change listener
+    document.querySelectorAll('input[name="payAmount"]').forEach(radio => {
+        radio.addEventListener('change', updatePaymentSummary);
+    });
+});
 
 // Event Listeners
 if (browseBtn) {
@@ -950,87 +998,9 @@ if (viewBookings) {
 
 if (closeSuccess) {
     closeSuccess.addEventListener('click', () => {
-        successModal.style.display = 'none';
+        window.location.href = "/";
     });
 }
-
-// Form Submission
-document.getElementById('paymentForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    const termsCheckbox = document.getElementById('termsCheckbox');
-    if (termsCheckbox && !termsCheckbox.checked) {
-        alert('Please accept Terms and Conditions');
-        return;
-    }
-
-    if (!fileInput.files.length) {
-        showError('Please upload a payment receipt.');
-        return;
-    }
-    
-    const submitBtn = this.querySelector('.submit-btn');
-    if(submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = 'Processing...';
-    }
-
-    const formData = new FormData(this);
-
-    // Debug: Log what's being sent
-    console.log('Sending form data:');
-    for (let pair of formData.entries()) {
-        console.log(pair[0] + ': ' + pair[1]);
-    }
-
-    fetch("{{ route('booking.confirm') }}", {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        }
-    })
-    .then(response => {
-        console.log('Response status:', response.status);
-        console.log('Response headers:', response.headers);
-        return response.json();
-    })
-    .then(data => {
-        console.log('Response data:', data);
-        if (data.success) {
-            const successModal = document.getElementById('successModal');
-            if (successModal) successModal.style.display = 'block';
-        } else {
-            alert(data.message || 'Submission failed. Please try again.');
-            if(submitBtn) { 
-                submitBtn.disabled = false; 
-                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Confirm Payment'; 
-            }
-        }
-    })
-    .catch(error => {
-        console.error('Fetch error:', error);
-        alert('An error occurred. Please check console for details.');
-        if(submitBtn) { 
-            submitBtn.disabled = false; 
-            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Confirm Payment'; 
-        }
-    });
-});
-
-document.addEventListener('DOMContentLoaded', function () {
-
-    document.getElementById('viewBookings')
-        .addEventListener('click', function () {
-            window.location.href = "{{ route('bookingHistory') }}";
-        });
-
-    document.getElementById('closeSuccess')
-        .addEventListener('click', function () {
-            window.location.href = "/";
-        });
-
-});
 
 // Voucher Handling
 document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -1042,22 +1012,115 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     });
 });
 
-document.querySelectorAll('.voucher-item').forEach(item => {
-    item.addEventListener('click', () => {
-        document.querySelectorAll('.voucher-item').forEach(i => i.classList.remove('selected'));
-        item.classList.add('selected');
-        
-        const id = item.dataset.id;
-        const amount = parseFloat(item.dataset.val);
-        applyVoucherMath(id, amount);
-    });
-});
-
 if (document.getElementById('apply_voucher')) {
     document.getElementById('apply_voucher').addEventListener('click', applyVoucherCode);
 }
 
 // Functions
+function selectVoucher(element) {
+    document.querySelectorAll('.voucher-item').forEach(item => item.classList.remove('selected'));
+    element.classList.add('selected');
+    
+    const id = element.dataset.id;
+    const amount = parseFloat(element.dataset.val);
+    applyVoucherMath(id, amount);
+}
+
+function applyVoucherCode() {
+    const code = document.getElementById('voucher_code')?.value;
+    const msgEl = document.getElementById('voucher_message');
+    
+    if (!code) {
+        if (msgEl) msgEl.innerHTML = '<span style="color:red;">Please enter a code</span>';
+        return;
+    }
+    
+    fetch("{{ route('validate.voucher') }}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({ code: code })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (msgEl) {
+            if (data.valid) {
+                msgEl.innerHTML = '<span style="color:green;">' + data.message + '</span>';
+                applyVoucherMath(data.voucher_id, parseFloat(data.amount));
+            } else {
+                msgEl.innerHTML = '<span style="color:red;">' + (data.message || 'Invalid voucher') + '</span>';
+                resetVoucher();
+            }
+        }
+    })
+    .catch(() => {
+        if (msgEl) msgEl.innerHTML = '<span style="color:red;">Error validating voucher</span>';
+    });
+}
+
+function applyVoucherMath(id, amount) {
+    // Set voucher value
+    document.getElementById('selected_voucher_id').value = id;
+    currentVoucherValue = amount;
+    
+    // Update voucher discount display
+    const discountRow = document.getElementById('voucher_discount_row');
+    const discountDisplay = document.getElementById('voucher_discount_display');
+    
+    if (discountRow && discountDisplay) {
+        discountRow.style.display = 'flex';
+        discountDisplay.textContent = '- MYR ' + amount.toFixed(2);
+    }
+    
+    // Recalculate all payments
+    updatePaymentSummary();
+}
+
+function resetVoucher() {
+    document.getElementById('selected_voucher_id').value = '';
+    currentVoucherValue = 0;
+    
+    const discountRow = document.getElementById('voucher_discount_row');
+    if (discountRow) discountRow.style.display = 'none';
+    
+    updatePaymentSummary();
+}
+
+function updatePaymentSummary() {
+    // Calculate subtotal after all discounts
+    const subtotal = Math.max(0, originalRentalPrice - promotionDiscount - currentVoucherValue);
+    
+    // Get payment type
+    const paymentType = document.querySelector('input[name="payAmount"]:checked').value;
+    
+    // Calculate amounts
+    let payNow, remainingBalance;
+    let paymentTypeLabel = '';
+    
+    if (paymentType === 'deposit') {
+        // Pay deposit only
+        payNow = FIXED_DEPOSIT;
+        remainingBalance = subtotal - FIXED_DEPOSIT;
+        paymentTypeLabel = 'Deposit Only';
+    } else {
+        // Pay full amount
+        payNow = subtotal + FIXED_DEPOSIT;
+        remainingBalance = 0;
+        paymentTypeLabel = 'Full Amount';
+    }
+    
+    // Update display values
+    document.getElementById('rental_price_display').textContent = 'MYR ' + originalRentalPrice.toFixed(2);
+    document.getElementById('subtotal_display').textContent = 'MYR ' + subtotal.toFixed(2);
+    document.getElementById('summary_deposit_display').textContent = 'MYR ' + FIXED_DEPOSIT.toFixed(2);
+    document.getElementById('payment_type_label').textContent = paymentTypeLabel;
+    document.getElementById('pay_now_display').textContent = 'MYR ' + payNow.toFixed(2);
+    document.getElementById('remaining_balance_display').textContent = 'MYR ' + Math.max(0, remainingBalance).toFixed(2);
+    document.getElementById('total_vehicle_cost_display').textContent = 'MYR ' + (subtotal + FIXED_DEPOSIT).toFixed(2);
+}
+
 function handleFileSelect(e) {
     const file = e.target.files[0];
     if (file) validateAndPreview(file);
@@ -1114,131 +1177,28 @@ function validateAndPreview(file) {
     reader.readAsDataURL(file);
 }
 
-function applyVoucherCode() {
-    const code = document.getElementById('voucher_code')?.value;
-    const msgEl = document.getElementById('voucher_message');
-    
-    if (!code) {
-        if (msgEl) msgEl.innerHTML = '<span style="color:red;">Please enter a code</span>';
-        return;
-    }
-    
-    fetch("{{ route('validate.voucher') }}", {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: JSON.stringify({ code: code })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (msgEl) {
-            if (data.valid) {
-                msgEl.innerHTML = '<span style="color:green;">' + data.message + '</span>';
-                applyVoucherMath(data.voucher_id, parseFloat(data.amount));
-            } else {
-                msgEl.innerHTML = '<span style="color:red;">' + (data.message || 'Invalid voucher') + '</span>';
-                resetVoucher(); 
-            }
-        }
-    })
-    .catch(() => {
-        if (msgEl) msgEl.innerHTML = '<span style="color:red;">Error validating voucher</span>';
-    });
-}
-
-function applyVoucherMath(id, amount) {
-    // 1. Set the hidden input value
-    document.getElementById('selected_voucher_id').value = id;
-    currentVoucherValue = amount;
-    
-    // 2. Show the voucher discount row
-    const discountRow = document.getElementById('voucher_discount_row');
-    const discountDisplay = document.getElementById('voucher_discount_display');
-    
-    if (discountRow && discountDisplay) {
-        discountRow.style.display = 'flex';
-        discountDisplay.textContent = '- MYR ' + amount.toFixed(2);
-    }
-    
-    // 3. Recalculate Totals
-    updateGrandTotal();
-}
-
-function resetVoucher() {
-    document.getElementById('selected_voucher_id').value = '';
-    currentVoucherValue = 0;
-    const discountRow = document.getElementById('voucher_discount_row');
-    if (discountRow) discountRow.style.display = 'none';
-    updateGrandTotal();
-}
-
-function updateGrandTotal() {
-    // Calculate new total (Original Total from Controller - Voucher Value)
-    let newTotal = Math.max(0, originalTotal - currentVoucherValue);
-    let deposit = 50; 
-    
-    // Update the Total Display
-    const totalEl = document.getElementById('final_total_display');
-    if (totalEl) {
-        totalEl.textContent = 'MYR ' + newTotal.toFixed(2);
-    }
-
-    // Update the Deposit Display
-    const depositEl = document.getElementById('deposit_display');
-    if (depositEl) {
-        depositEl.textContent = 'MYR ' + deposit.toFixed(2);
-    }
-}
-
-function resetVoucher() {
-    document.getElementById('selected_voucher_id').value = '';
-    currentVoucherValue = 0;
-    const discountRow = document.getElementById('voucher_discount_row');
-    if (discountRow) discountRow.style.display = 'none';
-    updateGrandTotal();
-}
-
-function updateGrandTotal() {
-    let newTotal = Math.max(0, originalTotal - currentVoucherValue);
-    let deposit = 50; 
-    
-    const totalRows = document.querySelectorAll('.info-row .info-value, .total-row .info-value');
-    
-    if (totalRows.length >= 2) {
-        // Find deposit row and total row
-        const depositRow = Array.from(totalRows).find(el => 
-            el.parentElement.querySelector('.info-label')?.textContent.includes('Deposit')
-        );
-        const totalRow = document.querySelector('.total-row .info-value');
-        
-        if (depositRow) depositRow.textContent = 'MYR ' + deposit.toFixed(2);
-        if (totalRow) totalRow.textContent = 'MYR ' + newTotal.toFixed(2);
-    }
-}
-
-function handleFormSubmit(e) {
+// Form Submission
+document.getElementById('paymentForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    
+
     if (!termsCheckbox.checked) {
-        alert('Please accept the Terms and Conditions');
+        alert('Please accept Terms and Conditions');
         return;
     }
-    
+
     if (!fileInput.files.length) {
-        showError('Please upload your payment receipt');
+        showError('Please upload a payment receipt.');
         return;
     }
     
-    // Show loading state
-    if (submitBtn) {
+    // Disable submit button
+    if(submitBtn) {
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
     }
-    
-    const formData = new FormData(document.getElementById('paymentForm'));
-    
+
+    const formData = new FormData(this);
+
     fetch("{{ route('booking.confirm') }}", {
         method: 'POST',
         body: formData,
@@ -1252,19 +1212,21 @@ function handleFormSubmit(e) {
             successModal.style.display = 'block';
         } else {
             alert(data.message || 'Submission failed. Please try again.');
+            if(submitBtn) { 
+                submitBtn.disabled = false; 
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Confirm Payment'; 
+            }
         }
     })
     .catch(error => {
         console.error('Error:', error);
         alert('An error occurred. Please try again.');
-    })
-    .finally(() => {
-        if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Confirm Payment';
+        if(submitBtn) { 
+            submitBtn.disabled = false; 
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Confirm Payment'; 
         }
     });
-}
+});
 
 function showError(message) {
     if (fileError) {
@@ -1286,6 +1248,5 @@ window.addEventListener('click', (e) => {
     if (e.target === successModal) successModal.style.display = 'none';
 });
 </script>
-
 </body>
 </html>

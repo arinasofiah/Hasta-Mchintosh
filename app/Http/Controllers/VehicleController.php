@@ -15,6 +15,9 @@ class VehicleController extends Controller
      */
     public function index(Request $request)
     {
+        // First, update all vehicle statuses based on current active bookings
+        $this->updateAllVehicleStatuses();
+        
         // Get search parameters from request
         $searchParams = [
             'pickup_date' => $request->input('pickup_date', now()->toDateString()),
@@ -35,9 +38,8 @@ class VehicleController extends Controller
         session(['booking_search_params' => $searchParams]);
         
         // Get available vehicles based on dates
-        $vehicles = Vehicles::where('status', 'available')
-            ->whereDoesntHave('booking', function ($query) use ($pickupCarbon, $returnCarbon) {
-                $query->where('bookingStatus', 'confirmed')
+        $vehicles = Vehicles::whereDoesntHave('booking', function ($query) use ($pickupCarbon, $returnCarbon) {
+                $query->whereIn('bookingStatus', ['pending', 'confirmed', 'approved'])
                     ->where(function ($q) use ($pickupCarbon, $returnCarbon) {
                         $q->whereBetween('startDate', [$pickupCarbon, $returnCarbon])
                           ->orWhereBetween('endDate', [$pickupCarbon, $returnCarbon])
@@ -46,6 +48,10 @@ class VehicleController extends Controller
                                   ->where('endDate', '>=', $returnCarbon);
                           });
                     });
+            })
+            ->where(function($query) {
+                $query->where('status', 'available')
+                      ->orWhere('status', 'reserved');
             })
             ->get();
         
@@ -71,11 +77,47 @@ class VehicleController extends Controller
         ]);
     }
     
-   
+    /**
+     * Update all vehicle statuses based on current active bookings
+     */
+    private function updateAllVehicleStatuses()
+    {
+        $vehicles = Vehicles::all();
+        $now = Carbon::now();
+        
+        foreach ($vehicles as $vehicle) {
+            $hasActiveBooking = $vehicle->booking()
+                ->where('bookingStatus', 'approved')
+                ->where('startDate', '<=', $now)
+                ->where('endDate', '>=', $now)
+                ->exists();
+            
+            $hasFutureBooking = $vehicle->booking()
+                ->where('bookingStatus', 'approved')
+                ->where('startDate', '>', $now)
+                ->exists();
+            
+            if ($hasActiveBooking && $vehicle->status !== 'rented') {
+                $vehicle->status = 'rented';
+                $vehicle->save();
+            } elseif ($hasFutureBooking && $vehicle->status !== 'reserved') {
+                $vehicle->status = 'reserved';
+                $vehicle->save();
+            } elseif (!$hasActiveBooking && $vehicle->status === 'rented') {
+                $vehicle->status = 'available';
+                $vehicle->save();
+            } elseif (!$hasFutureBooking && $vehicle->status === 'reserved' && !$hasActiveBooking) {
+                $vehicle->status = 'available';
+                $vehicle->save();
+            }
+        }
+    }
+    
 
    public function select($id, Request $request)
 {
-    // NO authentication check here - allow guests to view
+    // Update vehicle statuses first
+    $this->updateAllVehicleStatuses();
     
     $pickupDate = $request->query('pickup_date', now()->toDateString());
     $pickupTime = $request->query('pickup_time', '08:00');
@@ -89,9 +131,8 @@ class VehicleController extends Controller
         return back()->withErrors(['error' => 'Return date must be after pickup date.']);
     }
 
-    $availableVehicles = Vehicles::where('status', 'available')
-        ->whereDoesntHave('booking', function ($query) use ($pickupCarbon, $returnCarbon) {
-            $query->where('bookingStatus', 'confirmed')
+    $availableVehicles = Vehicles::whereDoesntHave('booking', function ($query) use ($pickupCarbon, $returnCarbon) {
+            $query->whereIn('bookingStatus', ['pending', 'confirmed', 'approved'])
                 ->where(function ($q) use ($pickupCarbon, $returnCarbon) {
                     $q->whereBetween('startDate', [$pickupCarbon, $returnCarbon])
                       ->orWhereBetween('endDate', [$pickupCarbon, $returnCarbon])
@@ -100,6 +141,10 @@ class VehicleController extends Controller
                               ->where('endDate', '>=', $returnCarbon);
                       });
                 });
+        })
+        ->where(function($query) {
+            $query->where('status', 'available')
+                  ->orWhere('status', 'reserved');
         })
         ->get();
 
@@ -119,7 +164,6 @@ class VehicleController extends Controller
 
     public function reserveVehicle(Request $request, $vehicleID)
     {
-  
         if (auth()->check() && auth()->user()->isBlacklisted) {
             return redirect()->route('welcome')
                 ->with('error', 'You are blacklisted and cannot make bookings.');
@@ -132,19 +176,22 @@ class VehicleController extends Controller
             return back()->with('error', 'Sorry, this vehicle is no longer available.');
         }
 
-        $vehicle->status = 'reserved';
-        $vehicle->reservation_expires_at = now()->addMinutes(10);
-        $vehicle->save();
-
+        // Don't change vehicle status to reserved here
+        // Let the admin approval process handle it
+        
         $booking = Bookings::create([
             'vehicleID' => $vehicle->vehicleID,
-            'customerID' => $user->id, // ✅ Use standard 'id' instead of 'userID'
+            'customerID' => $user->id,
             'bookingStatus' => 'pending',
+            'startDate' => $request->pickup_date ?? now()->toDateString(),
+            'endDate' => $request->return_date ?? now()->addDay()->toDateString(),
+            'pickupTime' => $request->pickup_time ?? '08:00',
+            'returnTime' => $request->return_time ?? '08:00',
             'reservation_expires_at' => now()->addMinutes(10),
         ]);
 
         return redirect()->route('customer.payment', $booking->bookingID)
-            ->with('success', 'Vehicle reserved! Complete payment within 10 minutes.');
+            ->with('success', 'Booking created! Complete payment within 10 minutes.');
     }
 
  
@@ -174,18 +221,18 @@ class VehicleController extends Controller
         $pickupDateTime = Carbon::parse("$pickupDate $pickupTime");
         $returnDateTime = Carbon::parse("$returnDate $returnTime");
 
-        $availableVehicles = Vehicles::where('status', 'available')
-            ->whereDoesntHave('booking', function ($query) use ($pickupDateTime, $returnDateTime) {
-                $query->where('bookingStatus', 'confirmed')
+        $availableVehicles = Vehicles::whereDoesntHave('bookings', function ($query) use ($pickupDateTime, $returnDateTime) {
+                $query->whereIn('bookingStatus', ['pending', 'confirmed', 'approved'])
                     ->where(function ($q) use ($pickupDateTime, $returnDateTime) {
-                        $q->whereBetween('startDateTime', [$pickupDateTime, $returnDateTime])
-                          ->orWhereBetween('endDateTime', [$pickupDateTime, $returnDateTime])
+                        $q->whereBetween('startDate', [$pickupDateTime, $returnDateTime])
+                          ->orWhereBetween('endDate', [$pickupDateTime, $returnDateTime])
                           ->orWhere(function($q2) use ($pickupDateTime, $returnDateTime) {
-                              $q2->where('startDateTime', '<=', $pickupDateTime)
-                                  ->where('endDateTime', '>=', $returnDateTime);
+                              $q2->where('startDate', '<=', $pickupDateTime)
+                                  ->where('endDate', '>=', $returnDateTime);
                           });
                     });
             })
+            ->where('status', 'available')
             ->get();
 
         return response()->json($availableVehicles);

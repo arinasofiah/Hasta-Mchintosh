@@ -116,7 +116,8 @@ Route::post('/register-customer', [CustomerController::class, 'registerCustomer'
 // Payment-related routes (used during booking flow)
 Route::middleware(['auth'])->group(function () {
     Route::post('/payment-form', [BookingController::class, 'showPaymentForm'])->name('payment.form');
-    Route::post('/check-promotion', [BookingController::class, 'checkPromotion']);
+    // In routes/web.php
+Route::post('/booking/check-promotion', [BookingController::class, 'checkPromotion'])->name('booking.checkPromotion');
     Route::post('/validate-voucher', [BookingController::class, 'validateVoucher'])->name('validate.voucher'); 
 });
 
