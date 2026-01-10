@@ -433,40 +433,72 @@ class BookingController extends Controller
         }
     }
 
-    public function bookingHistory()
+  public function bookingHistory()
 {
     $userId = auth()->id();
     
-    // Get bookings with relationships
-    $bookings = Bookings::with(['vehicles', 'pickup', 'returnCar'])
-        ->where('customerID', $userId)
-        ->orWhere('userID', $userId)
-        ->orderBy('created_at', 'desc')
+    // Get bookings with explicit join to ensure vehicle data is loaded
+    $bookings = DB::table('booking')
+        ->join('vehicles', 'booking.vehicleID', '=', 'vehicles.vehicleID')
+        ->leftJoin('pickup', 'booking.bookingID', '=', 'pickup.bookingID')
+        ->leftJoin('return_car', 'booking.bookingID', '=', 'return_car.bookingID')
+        ->select(
+            'booking.*',
+            'vehicles.model',
+            'vehicles.vehicleType',
+            'vehicles.plateNumber',
+            'vehicles.vehiclePhoto',
+            'vehicles.pricePerDay',
+            'pickup.pickupLocation',
+            'pickup.pickupDate as pickup_date',
+            'pickup.pickupTime as pickup_time',
+            'return_car.returnLocation',
+            'return_car.returnDate as return_date',
+            'return_car.returnTime as return_time'
+        )
+        ->where(function($query) use ($userId) {
+            $query->where('booking.customerID', $userId)
+                  ->orWhere('booking.userID', $userId);
+        })
+        ->orderBy('booking.created_at', 'desc')
         ->get()
         ->map(function($booking) {
-            // Calculate totals
+            // Convert stdClass to object with vehicle property
+            $bookingObj = (object) (array) $booking;
+            
+            // Create vehicle object from the joined data
+            $bookingObj->vehicle = (object) [
+                'model' => $booking->model,
+                'vehicleType' => $booking->vehicleType,
+                'plateNumber' => $booking->plateNumber,
+                'vehiclePhoto' => $booking->vehiclePhoto,
+                'pricePerDay' => $booking->pricePerDay,
+                'vehicleID' => $booking->vehicleID
+            ];
+            
+            // Calculate payments
             $payments = DB::table('payments')
                 ->where('bookingID', $booking->bookingID)
                 ->where('paymentStatus', 'approved')
                 ->sum('amount');
             
             // Calculate totals
-            $booking->totalPaid = $payments;
-            $booking->totalCost = $booking->totalPrice + 50; // RM50 deposit
-            $booking->remainingBalance = max(0, $booking->totalCost - $payments);
-            $booking->isFullyPaid = $booking->remainingBalance <= 0;
+            $bookingObj->totalPaid = $payments;
+            $bookingObj->totalCost = $booking->totalPrice + 50; // RM50 deposit
+            $bookingObj->remainingBalance = max(0, $bookingObj->totalCost - $payments);
+            $bookingObj->isFullyPaid = $bookingObj->remainingBalance <= 0;
             
-            // Get pickup/return location from related tables
-            $booking->pickupLocation = $booking->pickup->pickupLocation ?? 'Not specified';
-            $booking->returnLocation = $booking->returnCar->returnLocation ?? 'Not specified';
+            // Pickup/return locations
+            $bookingObj->pickupLocation = $booking->pickupLocation ?? 'Not specified';
+            $bookingObj->returnLocation = $booking->returnLocation ?? 'Not specified';
             
             // Create datetime strings
-            $booking->pickupDateTime = ($booking->pickup->pickupDate ?? $booking->startDate) 
-                . ' ' . ($booking->pickup->pickupTime ?? '08:00:00');
-            $booking->returnDateTime = ($booking->returnCar->returnDate ?? $booking->endDate) 
-                . ' ' . ($booking->returnCar->returnTime ?? '16:00:00');
+            $bookingObj->pickupDateTime = ($booking->pickup_date ?? $booking->startDate) 
+                . ' ' . ($booking->pickup_time ?? '08:00:00');
+            $bookingObj->returnDateTime = ($booking->return_date ?? $booking->endDate) 
+                . ' ' . ($booking->return_time ?? '16:00:00');
             
-            return $booking;
+            return $bookingObj;
         });
 
     // Categorize bookings

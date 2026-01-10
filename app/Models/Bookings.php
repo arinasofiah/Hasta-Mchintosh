@@ -251,7 +251,8 @@ public function getIsFullyPaidAttribute()
 
     public function returnCar()
     {
-        return $this->hasOne(ReturnCar::class, 'bookingID', 'bookingID');
+        return $this->hasOne(ReturnCar::class, 'bookingID', 'bookingID')
+        ->from('return');
     }
 
     public function voucher()
