@@ -92,13 +92,25 @@ textarea.input {resize:vertical; min-height:100px;}
 .charge-row.grand {font-weight:800; font-size:15px; border-top:2px solid #333; padding-top:10px; margin-top:10px;}
 
 /* ====== Bottom Bar ====== */
-.bottom-bar {position:fixed; bottom:0; left:0; right:0; background:white; border-top:1px solid #eee; display:flex; justify-content:space-between; align-items:center; padding:15px 60px; box-shadow:0 -2px 10px rgba(0,0,0,0.05);}
+.bottom-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: white;
+    border-top: 1px solid #e0e0e0;
+}
+.total-and-button {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
 .selected-car {display:flex; align-items:center; gap:20px;}
 .car-badge {background:#ffe5e5; color:#d94242; font-size:11px; padding:5px 12px; border-radius:20px; font-weight:600; margin-bottom:5px;}
 .grand-total-bottom {text-align:right;}
 .grand-label {color:#999; font-size:14px; margin-bottom:5px;}
 .grand-amount {font-size:20px; font-weight:900;}
-.next-btn {background:#d94444; color:white; border:none; padding:12px 30px; border-radius:5px; font-size:16px; font-weight:600; cursor:pointer;}
+.next-btn {background:#d94444; color:white; border:none; padding:12px 24px; border-radius:6px; font-size:16px; font-weight:bold; cursor:pointer; min-width: 120px;} 
 .next-btn:hover {background:#c23535;}
 #profile-container {
     position: relative;
@@ -372,11 +384,11 @@ textarea.input {resize:vertical; min-height:100px;}
 
             <div class="charge-row">
                 <span>Price Per Day</span>
-                <span>MYR {{ number_format($vehicle->pricePerDay, 2) }}</span>
+                <span>RM {{ number_format($vehicle->pricePerDay, 2) }}</span>
             </div>
             <div class="charge-row">
                 <span>Price Per Hour</span>
-                <span>MYR {{ number_format($vehicle->pricePerHour, 2) }}</span>
+                <span>RM {{ number_format($vehicle->pricePerHour, 2) }}</span>
             </div>
             <div class="charge-row">
                 <span>Rental Duration</span>
@@ -384,19 +396,19 @@ textarea.input {resize:vertical; min-height:100px;}
             </div>
             <div class="charge-row">
                 <span>Delivery Charge</span>
-                <span id="deliveryCharge">MYR 0.00</span>
+                <span id="deliveryCharge">RM 0.00</span>
             </div>
             <div class="charge-row">
                 <span>Total Price (by hour)</span>
-                <span id="totalByHour">MYR 0.00</span>
+                <span id="totalByHour">RM 0.00</span>
             </div>
             <div class="charge-row" style="color: #28a745;">
                 <span>Promotion Discount</span>
-                <span id="promotionDiscount">- MYR 0.00</span>
+                <span id="promotionDiscount">- RM 0.00</span>
             </div>
             <div class="charge-row grand">
                 <span>Grand Total</span>
-                <span id="grandTotal">MYR 0.00</span>
+                <span id="grandTotal">RM 0.00</span>
             </div>
         </div>
     </div>
@@ -416,7 +428,7 @@ textarea.input {resize:vertical; min-height:100px;}
         </div>
         <div class="grand-total-bottom">
             <div class="grand-label">Grand Total</div>
-            <div class="grand-amount" id="bottomBarTotal">MYR 0.00</div>
+            <div class="grand-amount" id="bottomBarTotal">RM 0.00</div>
         </div>
         <div>
             <button type="button" class="next-btn" onclick="goToPayment()">Next →</button>

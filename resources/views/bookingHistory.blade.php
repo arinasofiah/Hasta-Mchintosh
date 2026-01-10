@@ -493,9 +493,9 @@
         }
 
         .detail-section {
-            margin-bottom: 25px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
         }
 
         .detail-section:last-child {
@@ -512,7 +512,7 @@
         .detail-row {
             display: flex;
             justify-content: space-between;
-            padding: 10px 0;
+            padding: 8px 0;
             border-bottom: 1px solid #f5f5f5;
         }
 
@@ -1244,11 +1244,11 @@
                         <span class="detail-value" id="detail-id">-</span>
                     </div>
                     <div class="detail-row">
-                        <span class="detail-label">Start Date</span>
+                        <span class="detail-label">Pick Up Date</span>
                         <span class="detail-value" id="detail-start">-</span>
                     </div>
                     <div class="detail-row">
-                        <span class="detail-label">End Date</span>
+                        <span class="detail-label">Return Date</span>
                         <span class="detail-value" id="detail-end">-</span>
                     </div>
                     <div class="detail-row">
@@ -1261,12 +1261,41 @@
                     </div>
                 </div>
 
+                <!-- Total Vehicle Cost -->
                 <div class="detail-section">
                     <h3><i class="fas fa-credit-card"></i> Payment Details</h3>
+                    <div class="detail-row">
+                        <span class="detail-label">Rental Price</span>
+                        <span class="detail-value" id="detail-rental-price">RM 0.00</span>
+                    </div>
+                    
+                    <!-- Delivery Charge (conditionally shown) -->
+                    <div class="detail-row" id="detail-delivery-row" style="display: none;">
+                        <span class="detail-label">Delivery Charge</span>
+                        <span class="detail-value" id="detail-delivery-charge">RM 0.00</span>
+                    </div>
+                    
+                    <!-- Discounts -->
+                    <div class="detail-row" id="detail-promo-row" style="display: none; color: #28a745;">
+                        <span class="detail-label">Promotion Discount</span>
+                        <span class="detail-value" id="detail-promo-discount">- RM 0.00</span>
+                    </div>
+                    
+                    <div class="detail-row" id="detail-voucher-row" style="display: none; color: #d94444;">
+                        <span class="detail-label">Voucher Discount</span>
+                        <span class="detail-value" id="detail-voucher-discount">- RM 0.00</span>
+                    </div>
+                    
+                    <!-- Subtotal -->
+                    <div class="detail-row">
+                        <span class="detail-label"><strong>Subtotal</strong></span>
+                        <span class="detail-value" id="detail-subtotal">RM 0.00</span>
+                    </div>
                     <div class="detail-row">
                         <span class="detail-label">Total Cost</span>
                         <span class="detail-value" id="detail-total-cost">RM 0.00</span>
                     </div>
+
                     <div class="detail-row">
                         <span class="detail-label">Amount Paid</span>
                         <span class="detail-value paid-amount" id="detail-paid">RM 0.00</span>
@@ -1339,7 +1368,7 @@
         </div>
     </div>
 
-   <script>
+<script>
 // Collect all booking data with proper vehicle information
 let bookingsData = [];
 
@@ -1392,10 +1421,16 @@ let bookingsData = [];
             totalPaid: {{ $booking->totalPaid ?? 0 }},
             totalCost: {{ $booking->totalCost ?? ($booking->totalPrice + 50) }},
             remainingBalance: {{ $booking->remainingBalance ?? 0 }},
-            depositAmount: {{ $booking->depositAmount ?? 0 }},
+            depositAmount: {{ $booking->depositAmount ?? 50 }},
             pay_amount_type: '{{ $booking->pay_amount_type ?? '' }}',
             penamaBank: '{{ $booking->penamaBank ?? '' }}',
             bookingDuration: {{ $booking->bookingDuration ?? 0 }},
+            rentalPrice: {{ $booking->rental_price ?? ($booking->totalPrice - ($booking->delivery_charge ?? 0)) }},
+            deliveryCharge: {{ $booking->delivery_charge ?? 0 }},
+            promotionDiscount: {{ $booking->promotion_discount ?? 0 }},
+            voucherDiscount: {{ $booking->voucher_discount ?? 0 }},
+            subtotal: {{ $booking->subtotal ?? (($booking->totalPrice - ($booking->delivery_charge ?? 0)) - ($booking->promotion_discount ?? 0) - ($booking->voucher_discount ?? 0)) }},
+            
             vehicle: {!! json_encode($vehicleData) !!}
         });
     @endforeach
@@ -1421,10 +1456,16 @@ let bookingsData = [];
             totalPaid: {{ $booking->totalPaid ?? 0 }},
             totalCost: {{ $booking->totalCost ?? ($booking->totalPrice + 50) }},
             remainingBalance: {{ $booking->remainingBalance ?? 0 }},
-            depositAmount: {{ $booking->depositAmount ?? 0 }},
+            depositAmount: {{ $booking->depositAmount ?? 50 }},
             pay_amount_type: '{{ $booking->pay_amount_type ?? '' }}',
             penamaBank: '{{ $booking->penamaBank ?? '' }}',
             bookingDuration: {{ $booking->bookingDuration ?? 0 }},
+            rentalPrice: {{ $booking->rental_price ?? ($booking->totalPrice - ($booking->delivery_charge ?? 0)) }},
+            deliveryCharge: {{ $booking->delivery_charge ?? 0 }},
+            promotionDiscount: {{ $booking->promotion_discount ?? 0 }},
+            voucherDiscount: {{ $booking->voucher_discount ?? 0 }},
+            subtotal: {{ $booking->subtotal ?? (($booking->totalPrice - ($booking->delivery_charge ?? 0)) - ($booking->promotion_discount ?? 0) - ($booking->voucher_discount ?? 0)) }},
+            
             vehicle: {!! json_encode($vehicleData) !!}
         });
     @endforeach
@@ -1498,7 +1539,7 @@ function showDetailsModal(bookingId) {
     document.getElementById('detail-end').textContent = formatDate(booking.endDate);
     document.getElementById('detail-status').textContent = booking.bookingStatus || '-';
     document.getElementById('detail-duration').textContent = 
-        booking.bookingDuration ? booking.bookingDuration + ' days' : 'N/A';
+    booking.bookingDuration ? booking.bookingDuration + ' days' : 'N/A';
 
     // Set payment details
     const totalCost = booking.totalCost || (booking.totalPrice + 50);
@@ -1517,6 +1558,53 @@ function showDetailsModal(bookingId) {
     
     document.getElementById('detail-deposit').textContent = 'RM' + depositAmount.toFixed(2);
     document.getElementById('detail-bank-name').textContent = booking.penamaBank || '-';
+
+    // Set detailed summary
+    const rentalPrice = booking.rentalPrice || (booking.totalPrice - booking.deliveryCharge);
+    const deliveryCharge = booking.deliveryCharge || 0;
+    const promoDiscount = booking.promotionDiscount || 0;
+    const voucherDiscount = booking.voucherDiscount || 0;
+    const calculatedSubtotal = rentalPrice + deliveryCharge - promoDiscount - voucherDiscount;
+    const depositAmount = booking.depositAmount || 50;
+    const totalVehicleCost = calculatedSubtotal + depositAmount;
+
+    // Update rental price
+    document.getElementById('detail-rental-price').textContent = 'RM' + rentalPrice.toFixed(2);
+
+    // Update delivery charge (show/hide)
+    const deliveryRow = document.getElementById('detail-delivery-row');
+    const deliveryChargeEl = document.getElementById('detail-delivery-charge');
+    if (deliveryCharge > 0) {
+        deliveryRow.style.display = 'flex';
+        deliveryChargeEl.textContent = 'RM' + deliveryCharge.toFixed(2);
+    } else {
+        deliveryRow.style.display = 'none';
+    }
+
+    // Update promotion discount (show/hide)
+    const promoRow = document.getElementById('detail-promo-row');
+    const promoDiscountEl = document.getElementById('detail-promo-discount');
+    if (promoDiscount > 0) {
+        promoRow.style.display = 'flex';
+        promoDiscountEl.textContent = '- RM' + promoDiscount.toFixed(2);
+    } else {
+        promoRow.style.display = 'none';
+    }
+
+    // Update voucher discount (show/hide)
+    const voucherRow = document.getElementById('detail-voucher-row');
+    const voucherDiscountEl = document.getElementById('detail-voucher-discount');
+    if (voucherDiscount > 0) {
+        voucherRow.style.display = 'flex';
+        voucherDiscountEl.textContent = '- RM' + voucherDiscount.toFixed(2);
+    } else {
+        voucherRow.style.display = 'none';
+    }
+
+    // Update subtotal and total vehicle cost
+    document.getElementById('detail-subtotal').textContent = 'RM' + calculatedSubtotal.toFixed(2);
+    document.getElementById('detail-deposit-amount').textContent = 'RM' + depositAmount.toFixed(2);
+    document.getElementById('detail-total-vehicle-cost').textContent = 'RM' + totalVehicleCost.toFixed(2);
 
     // Show/Hide Pay Balance button
     const payBalanceBtn = document.getElementById('modal-pay-balance-btn');
