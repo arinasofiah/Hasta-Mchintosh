@@ -9,45 +9,33 @@ use Carbon\Carbon;
 
 class VehicleController extends Controller
 {
+   
+    /**
+     * Show vehicle index page (grid of all available vehicles)
+     */
     public function index(Request $request)
     {
-        $query = Vehicles::where('status', 'available');
-
-        if ($request->filled('search')) {
-            $search = trim($request->search);
-            $query->where(function($q) use ($search) {
-                $q->where('model', 'like', '%' . $search . '%')
-                  ->orWhere('plateNumber', 'like', '%' . $search . '%');
-            });
-        }
-
-        if ($request->filled('category') && $request->category !== 'All') {
-            $query->where('vehicleType', trim($request->category));
-        }
-
-        $vehicles = $query->get();
-
-        return view('welcome', compact('vehicles'));
-    }
-
-    public function select($id, Request $request)
-    {
-        $this->checkBlacklist();
-        $pickupDate = $request->query('pickup_date', now()->toDateString());
-        $pickupTime = $request->query('pickup_time', '08:00');
-        $returnDate = $request->query('return_date', now()->addDay()->toDateString());
-        $returnTime = $request->query('return_time', '08:00');
-
-        // Use Carbon for date comparison (date-only)
-        $pickupCarbon = Carbon::parse("$pickupDate $pickupTime");
-        $returnCarbon = Carbon::parse("$returnDate $returnTime");
-
-        // Validate that return date is after pickup date
+        // Get search parameters from request
+        $searchParams = [
+            'pickup_date' => $request->input('pickup_date', now()->toDateString()),
+            'pickup_time' => $request->input('pickup_time', '12:00'),
+            'return_date' => $request->input('return_date', now()->addDay()->toDateString()),
+            'return_time' => $request->input('return_time', '12:00'),
+        ];
+        
+        // Validate dates
+        $pickupCarbon = Carbon::parse($searchParams['pickup_date'] . ' ' . $searchParams['pickup_time']);
+        $returnCarbon = Carbon::parse($searchParams['return_date'] . ' ' . $searchParams['return_time']);
+        
         if ($pickupCarbon >= $returnCarbon) {
             return back()->withErrors(['error' => 'Return date must be after pickup date.']);
         }
-
-        $availableVehicles = Vehicles::where('status', 'available')
+        
+        // Store in session for later use
+        session(['booking_search_params' => $searchParams]);
+        
+        // Get available vehicles based on dates
+        $vehicles = Vehicles::where('status', 'available')
             ->whereDoesntHave('booking', function ($query) use ($pickupCarbon, $returnCarbon) {
                 $query->where('bookingStatus', 'confirmed')
                     ->where(function ($q) use ($pickupCarbon, $returnCarbon) {
@@ -60,25 +48,73 @@ class VehicleController extends Controller
                     });
             })
             ->get();
-
-        if ($id) {
-            $featuredVehicle = $availableVehicles->where('vehicleID', $id)->first() ?? $availableVehicles->first();
+        
+        // Calculate duration for display
+        $diffHours = $pickupCarbon->diffInHours($returnCarbon);
+        $days = floor($diffHours / 24);
+        $hours = $diffHours % 24;
+        
+        $durationText = '';
+        if ($days > 0) {
+            $durationText = $days . ' day' . ($days > 1 ? 's' : '');
+            if ($hours > 0) {
+                $durationText .= ' ' . $hours . ' hour' . ($hours > 1 ? 's' : '');
+            }
         } else {
-            $featuredVehicle = $availableVehicles->first();
+            $durationText = $hours . ' hour' . ($hours != 1 ? 's' : '');
         }
-
-        // Other available vehicles
-        $otherVehicles = $availableVehicles->where('vehicleID', '!=', optional($featuredVehicle)->vehicleID);
-
-        return view('selectVehicle', compact(
-            'featuredVehicle',
-            'otherVehicles',
-            'pickupDate',
-            'pickupTime',
-            'returnDate',
-            'returnTime'
-        ));
+        
+        return view('vehiclesIndex', [
+            'vehicles' => $vehicles,
+            'searchParams' => $searchParams,
+            'durationText' => $durationText
+        ]);
     }
+    
+   
+
+   public function select($id, Request $request)
+{
+    // NO authentication check here - allow guests to view
+    
+    $pickupDate = $request->query('pickup_date', now()->toDateString());
+    $pickupTime = $request->query('pickup_time', '08:00');
+    $returnDate = $request->query('return_date', now()->addDay()->toDateString());
+    $returnTime = $request->query('return_time', '08:00');
+
+    $pickupCarbon = Carbon::parse("$pickupDate $pickupTime");
+    $returnCarbon = Carbon::parse("$returnDate $returnTime");
+
+    if ($pickupCarbon >= $returnCarbon) {
+        return back()->withErrors(['error' => 'Return date must be after pickup date.']);
+    }
+
+    $availableVehicles = Vehicles::where('status', 'available')
+        ->whereDoesntHave('booking', function ($query) use ($pickupCarbon, $returnCarbon) {
+            $query->where('bookingStatus', 'confirmed')
+                ->where(function ($q) use ($pickupCarbon, $returnCarbon) {
+                    $q->whereBetween('startDate', [$pickupCarbon, $returnCarbon])
+                      ->orWhereBetween('endDate', [$pickupCarbon, $returnCarbon])
+                      ->orWhere(function($q2) use ($pickupCarbon, $returnCarbon) {
+                          $q2->where('startDate', '<=', $pickupCarbon)
+                              ->where('endDate', '>=', $returnCarbon);
+                      });
+                });
+        })
+        ->get();
+
+    $featuredVehicle = $availableVehicles->where('vehicleID', $id)->first() ?? $availableVehicles->first();
+    $otherVehicles = $availableVehicles->where('vehicleID', '!=', optional($featuredVehicle)->vehicleID);
+
+    return view('selectVehicle', compact(
+        'featuredVehicle',
+        'otherVehicles',
+        'pickupDate',
+        'pickupTime',
+        'returnDate',
+        'returnTime'
+    ));
+}
     
 
     public function reserveVehicle(Request $request, $vehicleID)

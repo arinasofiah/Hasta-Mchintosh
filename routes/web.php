@@ -30,6 +30,13 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::get('/', function () {
+    return view('welcome');
+})->name('welcome');
+
+// Vehicle Index page (shows all available vehicles in grid)
+Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
+
 // Pickup & Return (public or auth? assuming auth later)
 Route::get('/pickup/{bookingID}', [PickUpController::class, 'show'])->name('pickup.show');
 Route::get('/pickup', [PickUpController::class, 'show']);
@@ -43,6 +50,21 @@ Route::get('/vehicles/{id}', [VehicleController::class, 'show'])->name('vehicles
 Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
 Route::get('/vehicles/select/{id}', [VehicleController::class, 'select'])->name('selectVehicle');
 Route::get('/vehicles/available', [VehicleController::class, 'getAvailableVehicles'])->name('vehicles.available');
+
+Route::post('/store-pending-booking', function (Request $request) {
+    session([
+        'pending_booking' => [
+            'vehicleID' => $request->vehicleID,
+            'pickup_date' => $request->pickup_date,
+            'pickup_time' => $request->pickup_time,
+            'return_date' => $request->return_date,
+            'return_time' => $request->return_time,
+            'timestamp' => now()
+        ]
+    ]);
+    return response()->json(['success' => true]);
+})->name('store.pending.booking');
+
 
 // Admin vehicle management
 Route::middleware(['auth'])->prefix('admin')->group(function () {

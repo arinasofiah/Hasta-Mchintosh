@@ -7,9 +7,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/selectVehicle.css') }}">
     <link href="{{ asset('css/header.css') }}" rel="stylesheet">
-     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
- <style>
+<style>
 /* General Styles */
 * {
     margin: 0;
@@ -96,66 +97,91 @@ body {
     background: #ddd;
 }
 
-/* Booking Form */
-.date-time-group {
-    display: flex;
-    gap: 15px;
-    width: 100%;
+/* Booking Summary (Updated - Read Only) */
+.booking-summary {
     max-width: 1200px;
-    margin: 0 auto;
-    justify-content: space-between;
-    align-items: flex-end;
-}
-
-.input-wrapper {
-    position: relative;
-    flex: 1;
-    min-width: 120px;
-}
-
-.booking-form {
-    width: 100%;
     margin: 0 auto 50px;
     padding: 0 50px;
-    display: flex;
-    justify-content: center;
 }
 
-.booking-form form {
-    width: 100%;
-    display: flex;
+.summary-container {
+    background-color: white;
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-.input-label {
+.summary-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.summary-title i {
+    color: #d94242;
+}
+
+.date-time-group {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+}
+
+.summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.summary-label {
     font-size: 12px;
     color: #666;
-    margin-bottom: 5px;
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-input[type="date"],
-input[type="time"] {
-    width: 100%;
-    padding: 12px 40px 12px 15px;
-    border: 1px solid #ddd;
+.summary-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    padding: 12px 15px;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
     border-radius: 5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.summary-value i {
+    color: #d94242;
+}
+
+.duration-display {
+    grid-column: span 2;
+    background-color: #eaf8ec;
+    border: 2px solid #4CAF50;
+    border-radius: 5px;
+    padding: 15px;
+    margin-top: 10px;
+}
+
+.duration-label {
     font-size: 14px;
-    font-family: 'Inter', sans-serif;
-    cursor: pointer;
+    color: #2E7D32;
+    font-weight: 600;
+    margin-bottom: 5px;
 }
 
-input[type="date"]:hover,
-input[type="time"]:hover {
-    border-color: #d94242;
-}
-
-.input-icon {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #999;
-    pointer-events: none;
+.duration-value {
+    font-size: 18px;
+    color: #2E7D32;
+    font-weight: 700;
 }
 
 /* Featured Vehicle */
@@ -177,6 +203,7 @@ input[type="time"]:hover {
 .vehicle-image img {
     width: 100%;
     max-width: 500px;
+    border-radius: 8px;
 }
 
 .vehicle-details {
@@ -261,6 +288,9 @@ input[type="time"]:hover {
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
 }
 
 .book-btn:hover {
@@ -297,6 +327,7 @@ input[type="time"]:hover {
 .card-image img {
     width: 100%;
     max-width: 250px;
+    border-radius: 5px;
 }
 
 .card-header {
@@ -366,30 +397,37 @@ input[type="time"]:hover {
     }
     
     .date-time-group {
-        flex-wrap: wrap;
+        grid-template-columns: 1fr;
+    }
+    
+    .duration-display {
+        grid-column: span 1;
     }
 }
 
 @media (max-width: 768px) {
-    .booking-form {
-        flex-direction: column;
+    .booking-summary {
+        padding: 0 20px;
     }
     
-    .date-time-group {
-        flex-direction: column;
-        width: 100%;
-    }
-    
-    .input-wrapper {
-        width: 100%;
-    }
-
     .featured-vehicle {
         flex-direction: column;
+        padding: 20px;
     }
 
     .vehicle-grid {
         grid-template-columns: 1fr;
+    }
+    
+    .availability-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .availability-badge,
+    .book-btn {
+        width: 100%;
+        text-align: center;
     }
 }
 </style>
@@ -458,32 +496,72 @@ input[type="time"]:hover {
         </div>
     </div>
 
-    <!-- Booking Form -->
-    <div class="booking-form">
-        <form id="bookingForm" action="{{ route('selectVehicle', $featuredVehicle->vehicleID) }}" method="GET">
+    <!-- Booking Summary (READ ONLY - No form) -->
+    <div class="booking-summary">
+        <div class="summary-container">
+            <div class="summary-title">
+                <i class="fas fa-calendar-alt"></i>
+                Your Trip Details
+            </div>
+            
             <div class="date-time-group">
-                <div class="input-wrapper">
-                    <div class="input-label">Pickup Date</div>
-                    <input type="date" name="pickup_date" value="{{ $pickupDate }}" onchange="this.form.submit()">
-                    <span class="input-icon"></span>
+                <div class="summary-item">
+                    <div class="summary-label">Pickup Date</div>
+                    <div class="summary-value">
+                        <i class="fas fa-calendar"></i>
+                        {{ \Carbon\Carbon::parse($pickupDate)->format('M d, Y') }}
+                    </div>
                 </div>
-                <div class="input-wrapper">
-                    <div class="input-label">Pickup Time</div>
-                    <input type="time" name="pickup_time" value="{{ $pickupTime }}" onchange="this.form.submit()">
-                    <span class="input-icon"></span>
+                
+                <div class="summary-item">
+                    <div class="summary-label">Pickup Time</div>
+                    <div class="summary-value">
+                        <i class="fas fa-clock"></i>
+                        {{ date('g:i A', strtotime($pickupTime)) }}
+                    </div>
                 </div>
-                <div class="input-wrapper">
-                    <div class="input-label">Return Date</div>
-                    <input type="date" name="return_date" value="{{ $returnDate }}" onchange="this.form.submit()">
-                    <span class="input-icon"></span>
+                
+                <div class="summary-item">
+                    <div class="summary-label">Return Date</div>
+                    <div class="summary-value">
+                        <i class="fas fa-calendar"></i>
+                        {{ \Carbon\Carbon::parse($returnDate)->format('M d, Y') }}
+                    </div>
                 </div>
-                <div class="input-wrapper">
-                    <div class="input-label">Return Time</div>
-                    <input type="time" name="return_time" value="{{ $returnTime }}" onchange="this.form.submit()">
-                    <span class="input-icon"></span>
+                
+                <div class="summary-item">
+                    <div class="summary-label">Return Time</div>
+                    <div class="summary-value">
+                        <i class="fas fa-clock"></i>
+                        {{ date('g:i A', strtotime($returnTime)) }}
+                    </div>
+                </div>
+                
+                @php
+                    // Calculate duration (same as vehiclesIndex)
+                    $pickupCarbon = \Carbon\Carbon::parse("$pickupDate $pickupTime");
+                    $returnCarbon = \Carbon\Carbon::parse("$returnDate $returnTime");
+                    $diffHours = $pickupCarbon->diffInHours($returnCarbon);
+                    $days = floor($diffHours / 24);
+                    $hours = $diffHours % 24;
+                    
+                    $durationText = '';
+                    if ($days > 0) {
+                        $durationText = $days . ' day' . ($days > 1 ? 's' : '');
+                        if ($hours > 0) {
+                            $durationText .= ' ' . $hours . ' hour' . ($hours > 1 ? 's' : '');
+                        }
+                    } else {
+                        $durationText = $hours . ' hour' . ($hours != 1 ? 's' : '');
+                    }
+                @endphp
+                
+                <div class="duration-display">
+                    <div class="duration-label">Trip Duration</div>
+                    <div class="duration-value">{{ $durationText }}</div>
                 </div>
             </div>
-        </form>
+        </div>
     </div>
 
     <!-- Featured Vehicle -->
@@ -507,26 +585,78 @@ input[type="time"]:hover {
             </div>
 
             <div class="vehicle-specs">
-                <span>Seats: {{ $featuredVehicle->seat }}</span>
-                <span>AC: {{ $featuredVehicle->ac == 1 ? 'Yes' : 'No' }}</span>
-                <span>Transmission: {{ $featuredVehicle->transmission }}</span>
-                <span>Fuel: {{ $featuredVehicle->fuelType }}</span>
+                <div class="spec-item">
+                    <div class="spec-icon"><i class="fas fa-user-friends"></i></div>
+                    <div class="spec-value">{{ $featuredVehicle->seat }} Seats</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-icon"><i class="fas fa-wind"></i></div>
+                    <div class="spec-value">{{ $featuredVehicle->ac == 1 ? 'AC' : 'No AC' }}</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-icon"><i class="fas fa-cog"></i></div>
+                    <div class="spec-value">{{ $featuredVehicle->transmission }}</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-icon"><i class="fas fa-gas-pump"></i></div>
+                    <div class="spec-value">{{ $featuredVehicle->fuelType }}</div>
+                </div>
             </div>
 
+            <!-- UPDATED BOOKING SECTION -->
             <div class="availability-section">
                 @if($featuredVehicle->status == 'available')
                     <button class="availability-badge">Available!</button>
-                    <button class="book-btn" onclick="handleBooking()">Book</button>
                     
-                    <script>
-                        function handleBooking(){
-                            @auth
-                                window.location.href = "{{ route('booking.form', ['vehicleID' => $featuredVehicle->vehicleID]) }}";
-                            @else
-                                window.location.href = "{{ route('login') }}";
-                            @endauth
-                        }
-                    </script>
+                    @auth
+                        <!-- Logged in users: Direct link to booking form -->
+                        <a href="{{ route('booking.form', [
+                            'vehicleID' => $featuredVehicle->vehicleID,
+                            'pickup_date' => $pickupDate,
+                            'pickup_time' => $pickupTime,
+                            'return_date' => $returnDate,
+                            'return_time' => $returnTime
+                        ]) }}" class="book-btn">Book Now</a>
+                    @else
+                        <!-- Guest users: Button that stores booking and redirects to login -->
+                        <button class="book-btn" onclick="handleGuestBooking()">Book Now</button>
+                        
+                        <script>
+                            function handleGuestBooking() {
+                                // Store booking details in session via AJAX
+                                fetch('/store-pending-booking', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                    },
+                                    body: JSON.stringify({
+                                        vehicleID: '{{ $featuredVehicle->vehicleID }}',
+                                        pickup_date: '{{ $pickupDate }}',
+                                        pickup_time: '{{ $pickupTime }}',
+                                        return_date: '{{ $returnDate }}',
+                                        return_time: '{{ $returnTime }}'
+                                    })
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    // Redirect to login page
+                                    window.location.href = "{{ route('login') }}";
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    // Fallback: redirect with URL parameters
+                                    const redirectUrl = "{{ route('booking.form', ['vehicleID' => $featuredVehicle->vehicleID]) }}" + 
+                                        "?pickup_date={{ $pickupDate }}" +
+                                        "&pickup_time={{ $pickupTime }}" +
+                                        "&return_date={{ $returnDate }}" +
+                                        "&return_time={{ $returnTime }}";
+                                    
+                                    window.location.href = "{{ route('login') }}?redirect=" + encodeURIComponent(redirectUrl);
+                                });
+                            }
+                        </script>
+                    @endauth
                 @else
                     <span class="availability-badge" style="border-color: #999; color: #999;">Not Available</span>
                 @endif
@@ -555,168 +685,134 @@ input[type="time"]:hover {
         
         <p class="card-type">{{ $vehicle->vehicleType }}</p>
 
-            <div class="card-specs">
-                <div class="car-features">
-                    <span class="feature-item"><i class="fas fa-user-friends"></i> {{ $vehicle->seats ?? 5 }} seats</span>
-                    <span class="feature-item"><i class="fas fa-wind"></i> {{ $vehicle->ac ? 'AC' : 'No AC' }}</span>
-                    <span class="feature-item"><i class="fas fa-cog"></i> {{ $vehicle->transmission ?? 'Auto' }}</span>
-                    <span class="feature-item"><i class="fas fa-gas-pump"></i> {{ $vehicle->fuelType ?? 'Petrol' }}</span>
-                </div>
+        <div class="card-specs">
+            <div class="car-features">
+                <span class="feature-item"><i class="fas fa-user-friends"></i> {{ $vehicle->seat ?? 5 }} seats</span>
+                <span class="feature-item"><i class="fas fa-wind"></i> {{ $vehicle->ac ? 'AC' : 'No AC' }}</span>
+                <span class="feature-item"><i class="fas fa-cog"></i> {{ $vehicle->transmission ?? 'Auto' }}</span>
+                <span class="feature-item"><i class="fas fa-gas-pump"></i> {{ $vehicle->fuelType ?? 'Petrol' }}</span>
             </div>
-
         </div>
-        @endforeach
+
+    </div>
+    @endforeach
     </div>
 
 <script>
-const pickupInput = document.getElementById('pickup_date');
-const pickupTimeInput = document.getElementById('pickup_time');
-const returnInput = document.getElementById('return_date');
-const returnTimeInput = document.getElementById('return_time');
+// No date/time editing functionality needed anymore
+// All dates are read-only and displayed from server
 
-let userEditedReturnDate = false;
-let userEditedReturnTime = false;
-
-// Defaults
-if (!pickupInput.value) pickupInput.value = new Date().toISOString().split('T')[0];
-if (!pickupTimeInput.value) pickupTimeInput.value = '08:00';
-
-function suggestReturnDateTime() {
-
-    // Stop overwriting if user already changed it manually
-    if (userEditedReturnDate || userEditedReturnTime) return;
-
-    const pickupDT = new Date(`${pickupInput.value}T${pickupTimeInput.value}`);
-    if (isNaN(pickupDT)) return;
-
-    pickupDT.setHours(pickupDT.getHours() + 24);
-
-    const returnDate = pickupDT.toISOString().split('T')[0];
-    const returnTime = pickupDT.toTimeString().slice(0, 5);
-
-    // Set min to prevent earlier selection
-    returnInput.min = returnDate;
-
-    // Auto-fill suggested values
-    returnInput.value = returnDate;
-    returnTimeInput.value = returnTime;
-}
-
-// Detect manual overrides
-returnInput.addEventListener('input', () => userEditedReturnDate = true);
-returnTimeInput.addEventListener('input', () => userEditedReturnTime = true);
-
-// Re-suggest when pickup changes
-pickupInput.addEventListener('change', () => {
-    userEditedReturnDate = false;
-    suggestReturnDateTime();
-});
-
-pickupTimeInput.addEventListener('change', () => {
-    userEditedReturnTime = false;
-    suggestReturnDateTime();
-});
-
-// Initial suggestion
-suggestReturnDateTime();
-
-// When pickup date OR time changes → auto update return
-[pickupInput, pickupTimeInput].forEach(el => {
-    el.addEventListener('change', () => {
-        syncReturnDateTime();
-        updateVehicles();
-    });
-});
-
-// When return manually changed → validate
-[returnInput, returnTimeInput].forEach(el => {
-    el.addEventListener('change', updateVehicles);
-});
-
-function updateVehicles() {
-    const pickupDT = new Date(`${pickupInput.value}T${pickupTimeInput.value}`);
-    const returnDT = new Date(`${returnInput.value}T${returnTimeInput.value}`);
-
-    if (returnDT <= pickupDT) {
-        alert('Return date/time must be after pickup date/time!');
-        return;
-    }
-
-    fetch(`/vehicles/available?pickup_date=${pickupInput.value}&pickup_time=${pickupTimeInput.value}&return_date=${returnInput.value}&return_time=${returnTimeInput.value}`)
-        .then(res => res.json())
-        .then(data => renderVehicles(data))
-        .catch(err => console.error(err));
-}
-
-function renderVehicles(vehicles) {
-    if(!vehicles || vehicles.length === 0) {
-        vehicleGrid.innerHTML = '<p>No vehicles available for the selected date/time.</p>';
-        featuredVehicleContainer.style.display = 'none';
-        return;
-    }
-
-    // Featured vehicle
-    const featured = vehicles[0];
-    featuredVehicleContainer.style.display = 'flex';
-    featuredVehicleContainer.querySelector('img').src = `/storage/${featured.image}`;
-    featuredVehicleContainer.querySelector('.vehicle-name').textContent = featured.model;
-    featuredVehicleContainer.querySelector('.vehicle-type').textContent = featured.vehicleType;
-    featuredVehicleContainer.querySelector('.price-amount').textContent = 'RM ' + featured.pricePerDay;
-    featuredVehicleContainer.querySelector('.vehicle-specs').innerHTML = `
-        <span class="feature-item"><i class="fas fa-user-friends"></i> ${featured.seat}</span>
-        <span class="feature-item"><i class="fas fa-wind"></i> ${featured.ac}</span>
-        <span class="feature-item"><i class="fas fa-cog"></i> ${featured.transmission}</span>
-        <span class="feature-item"><i class="fas fa-gas-pump"></i> ${featured.fuelType}</span>
-    `;
-                        
-
-    // Update Book button dynamically
-    const bookBtn = featuredVehicleContainer.querySelector('.book-btn');
-    if(bookBtn) {
-        if(featured.status === 'available') {
-            bookBtn.style.display = 'inline-block';
-            const availabilityBadge = featuredVehicleContainer.querySelector('.availability-badge');
-            if(availabilityBadge) availabilityBadge.textContent = 'Available!';
-
-            bookBtn.onclick = function() {
-                @auth
-                    window.location.href = `/booking/form/${featured.vehicleID}?pickup_date=${pickupInput.value}&pickup_time=${pickupTimeInput.value}&return_date=${returnInput.value}&return_time=${returnTimeInput.value}`;
-                @else
-                    window.location.href = "{{ route('login') }}";
-                @endauth
-            };
-        } else {
-            bookBtn.style.display = 'none';
-            const availabilityBadge = featuredVehicleContainer.querySelector('.availability-badge');
-            if(availabilityBadge) availabilityBadge.textContent = 'Not Available';
+// Only keep the booking functionality
+// Only the guest booking functionality remains
+function handleGuestBooking() {
+    // Show loading state
+    const bookBtn = document.querySelector('.book-btn');
+    const originalText = bookBtn.textContent;
+    bookBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    bookBtn.disabled = true;
+    
+    // Store booking details in session via AJAX
+    fetch('/store-pending-booking', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            vehicleID: '{{ $featuredVehicle->vehicleID }}',
+            pickup_date: '{{ $pickupDate }}',
+            pickup_time: '{{ $pickupTime }}',
+            return_date: '{{ $returnDate }}',
+            return_time: '{{ $returnTime }}'
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
         }
-    }
-
-    // Other vehicles
-    vehicleGrid.innerHTML = '';
-    vehicles.slice(1).forEach(v => {
-        vehicleGrid.innerHTML += `
-        <div class="vehicle-card">
-            <div class="card-image">
-                <img src="/storage/${v.image}" alt="${v.model}">
-            </div>
-            <div class="card-header">
-                <h3 class="card-name">${v.model}</h3>
-                <p class="card-type">${v.vehicleType}</p>
-                <div class="card-price">RM${v.pricePerDay}</div>
-            </div>
-            <div class="card-specs">
-                <span>Seats: ${v.seat}</span>
-                <span>AC: ${v.ac}</span>
-                <span>Transmission: ${v.transmission}</span>
-                <span>Fuel: ${v.fuelType}</span>
-            </div>
-        </div>`;
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Redirect to login page
+            window.location.href = "{{ route('login') }}";
+        } else {
+            throw new Error('Failed to store booking');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        // Restore button
+        bookBtn.textContent = originalText;
+        bookBtn.disabled = false;
+        
+        // Show error message
+        alert('There was an error processing your booking. Please try again.');
+        
+        // Fallback: redirect with URL parameters
+        const redirectUrl = "{{ route('booking.form', ['vehicleID' => $featuredVehicle->vehicleID]) }}" + 
+            "?pickup_date={{ $pickupDate }}" +
+            "&pickup_time={{ $pickupTime }}" +
+            "&return_date={{ $returnDate }}" +
+            "&return_time={{ $returnTime }}";
+        
+        // Ask user if they want to try the fallback method
+        if (confirm('Would you like to try an alternative method?')) {
+            window.location.href = "{{ route('login') }}?redirect=" + encodeURIComponent(redirectUrl);
+        }
     });
 }
 
-// Initial load
-updateVehicles();
+// Optional: Add a confirmation for guest users before redirecting to login
+document.addEventListener('DOMContentLoaded', function() {
+    // If there are guest booking buttons, add click handlers
+    const guestBookButtons = document.querySelectorAll('.book-btn[onclick]');
+    guestBookButtons.forEach(button => {
+        // Remove the inline onclick and replace with event listener
+        const originalOnclick = button.getAttribute('onclick');
+        button.removeAttribute('onclick');
+        
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Show confirmation dialog for guests
+            if (!{{ auth()->check() ? 'true' : 'false' }}) {
+                if (confirm('You need to login to book this vehicle. Do you want to continue to login?')) {
+                    handleGuestBooking();
+                }
+            }
+        });
+    });
+    
+    // Make other vehicle cards clickable to view their details
+    const otherVehicleCards = document.querySelectorAll('.vehicle-card:not(.featured-vehicle .vehicle-card)');
+    otherVehicleCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            // Extract vehicle ID from the card (you might need to add data-vehicle-id attribute)
+            const vehicleId = this.getAttribute('data-vehicle-id') || 
+                             this.querySelector('a[href*="/vehicles/select/"]')?.href?.match(/\/vehicles\/select\/(\d+)/)?.[1];
+            
+            if (vehicleId) {
+                // Redirect to this vehicle's select page with same dates
+                window.location.href = `/vehicles/select/${vehicleId}?pickup_date={{ $pickupDate }}&pickup_time={{ $pickupTime }}&return_date={{ $returnDate }}&return_time={{ $returnTime }}`;
+            }
+        });
+    });
+});
+
+// Optional: Add back button functionality to return to vehicles list
+function goBackToVehicles() {
+    // Return to vehicles index with the same search parameters
+    window.location.href = "{{ route('vehicles.index') }}?pickup_date={{ $pickupDate }}&pickup_time={{ $pickupTime }}&return_date={{ $returnDate }}&return_time={{ $returnTime }}";
+}
+
+// Add event listener for Escape key to go back
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        goBackToVehicles();
+    }
+});
 </script>
 
 </body>

@@ -1,161 +1,193 @@
-/* Search & Filter UI */
-* {
-    font-family: 'Poppins', sans-serif;
+/* vehicles.css */
+body { 
+    font-family: 'Poppins', sans-serif; 
+    margin: 0; 
+    padding: 0; 
+    background-color: #f8f9fa; 
 }
 
-.browse-header {
-    margin-bottom: 15px; /* Reduced to bring grid closer */
+/* Search Summary Section */
+.search-summary {
+    background: white;
+    padding: 25px;
+    margin: 30px auto;
+    max-width: 1200px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    border-left: 4px solid #E63946;
 }
 
-.search-container {
-    max-width: 500px;
-    margin: 0 auto 20px; /* Reduced bottom margin */
+.search-summary h3 {
+    color: #333;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
 }
 
-.search-input-wrapper {
+.search-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.search-detail-item {
     display: flex;
     align-items: center;
-    border: 1px solid #ddd;
-    border-radius: 50px;
-    padding: 10px 20px;
-    background: white;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
-.search-input-wrapper input {
-    border: none;
-    outline: none;
-    width: 100%;
-    margin-left: 10px;
-}
-
-.filter-container {
-    display: flex;
-    justify-content: center;
     gap: 10px;
-    flex-wrap: wrap;
-    margin-bottom: 20px; /* Ensures a small consistent gap before the grid */
+    padding: 8px 12px;
+    background: #f9f9f9;
+    border-radius: 6px;
+    font-size: 0.95rem;
 }
 
-.filter-pill {
-    border: 1px solid #eee;
-    background: #f8f8f8;
-    padding: 8px 18px;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: 0.3s;
+.search-detail-item i {
+    color: #E63946;
 }
 
-.filter-pill.active {
-    border-color: #bc3737;
-    color: #bc3737;
-    background: white;
-    font-weight: bold;
-}
-
-/* Background section container */
-.browse-section {
-    background: #000;
-    padding: 40px 20px 20px; /* Reduced top/bottom padding */
-    color: #fff;
-    text-align: center;
-}
-
-/* Car Grid Layout */
-.car-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(280px, 1fr));
-    gap: 30px;
-    margin-top: 10px; /* Move grid closer to filters */
-    margin-bottom: 80px; /* Pushes the footer further down */
-    margin-left: auto;
-    margin-right: auto; 
+/* Vehicles Layout */
+.vehicles-container {
     max-width: 1200px;
-    background-color: transparent; /* Changed from white to match flow */
+    margin: 0 auto;
+    padding: 0 20px 60px;
 }
 
-.car-card {
-    background: #eeeeee;
-    padding: 20px;
-    border-radius: 15px;
-    width: 100%;
+.vehicles-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.filter-btn {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-btn.active {
+    background: #E63946;
+    color: white;
+    border-color: #E63946;
+}
+
+/* 3 Vehicles Per Row Grid */
+.vehicles-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 25px;
+}
+
+/* Individual Vehicle Card */
+.vehicle-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    border: 1px solid #eee;
+    text-align: center;
     transition: transform 0.3s ease;
 }
 
-.car-card:hover {
-    transform: translateY(-5px); /* Adds a subtle lift on hover */
+.vehicle-card:hover {
+    transform: translateY(-5px);
 }
 
-.car-card img {
+.vehicle-image {
     width: 100%;
-    height: 180px;
+    height: 200px;
     object-fit: contain;
+    padding: 15px;
 }
 
-.car-card h3 {
-    color: #c62828;
-    margin: 10px 0;
+.vehicle-content {
+    padding: 0 15px 20px;
 }
 
-.specs-grid {
+.vehicle-name h4 {
+    margin-bottom: 15px;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #333;
+}
+
+/* Single Row Icons Section */
+.vehicle-details {
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     align-items: center;
-    background: #eeeeee;
-    padding: 12px 5px;
-    border-radius: 10px;
-    margin-top: 10px;
+    margin: 15px 0;
+    padding: 15px 0;
+    border-top: 1px solid #f0f0f0;
+    border-bottom: 1px solid #f0f0f0;
 }
 
-.spec-item {
+.detail-row {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
+    font-size: 0.7rem;
+    color: #777;
+    flex: 1; /* Distributes icons evenly */
 }
 
-.spec-item i {
-    font-size: 18px;
-    color: #4a5568; /* Darker slate color for icons */
+.detail-row i {
+    font-size: 1.1rem;
+    color: #E63946;
 }
 
-.spec-item span {
-    font-size: 13px;
-    color: black; /* Light blue color for the text as seen in your image */
-    font-weight: 500;
-}
-
-.btn {
-    display: block;
+/* Footer Section */
+.vehicle-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-top: 15px;
-    padding: 12px;
-    background: #bc3737;
-    color: #fff;
-    border-radius: 10px;
-    text-decoration: none;
+}
+
+.price-container {
+    text-align: left;
+}
+
+.currency {
+    color: #E63946;
     font-weight: 600;
+    font-size: 0.85rem;
 }
 
-/* Responsive adjustments */
-@media (max-width: 1100px) {
-    .car-grid {
-        grid-template-columns: repeat(3, minmax(250px, 1fr));
-        max-width: 900px;
-    }
+.price-value {
+    color: #E63946;
+    font-size: 1.35rem;
+    font-weight: 800;
 }
 
-@media (max-width: 900px) {
-    .car-grid {
-        grid-template-columns: repeat(2, minmax(250px, 1fr));
-        max-width: 600px;
-        margin-bottom: 60px;
-    }
+.btn-select {
+    background: #2c3e50;
+    color: white;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    transition: background 0.3s;
 }
 
-@media (max-width: 600px) {
-    .car-grid {
-        grid-template-columns: 1fr;
-        max-width: 400px;
-        margin-bottom: 40px;
-    }
+.btn-select:hover {
+    background: #1a252f;
+    color: white;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1024px) {
+    .vehicles-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+    .vehicles-grid { grid-template-columns: 1fr; }
+    .vehicles-header { flex-direction: column; text-align: center; }
 }
