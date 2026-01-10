@@ -38,12 +38,12 @@ Route::get('/', function () {
 Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
 
 // Pickup & Return (public or auth? assuming auth later)
+// Pickup
 Route::get('/pickup/{bookingID}', [PickUpController::class, 'show'])->name('pickup.show');
-Route::get('/pickup', [PickUpController::class, 'show']);
-Route::post('/pickup', [PickUpController::class, 'store'])->name('pickup.store');
+Route::post('/pickup/store', [PickUpController::class, 'store'])->name('pickup.store');
 
-Route::get('/return/{bookingID}', [ReturnController::class, 'show'])->name('return.show');
-Route::post('/return', [ReturnController::class, 'store'])->name('return.store');
+// Return
+Route::post('/return/store', [PickUpController::class, 'storeReturn'])->name('return.store');
 
 // Vehicle routes
 Route::get('/vehicles/{id}', [VehicleController::class, 'show'])->name('vehicles.select');

@@ -19,11 +19,10 @@
         <div class="vehicle-card">
             <p id="res_txt">Reserved Vehicle</p>
             <p id="car_name">{{$vehicle->model}}</p>
-            <p id="car_type">{{$vehicle->vehicleType}}</p>
 
-            <img src="{{ asset('img/redcar.png') }}" style="width: 100%; margin-bottom: 15px;">
+            <img src="{{ asset($vehicle->vehiclePhoto) }}"style="width: 100%; margin-bottom: 15px;">
 
-            <p id="car_det">Full Vehicle Details</p>
+            <p id="car_det">Vehicle Details</p>
             <ul class="features">
                 <li><i class="fas fa-car"></i><span>{{$vehicle->vehicleType}}</span></li>
                 <li><i class="fas fa-gas-pump"></i><span>{{$vehicle->fuelType}}</span></li>
@@ -31,7 +30,7 @@
                 <li><i class="fas fa-users"></i><span>{{$vehicle->seat}} Seat</span></li>
             </ul>
 
-            <p id="car_det">Full Pickup Details</p>
+            <p id="car_det">Pickup Details</p>
             <ul class="features">
                 <li><i class="fas fa-map-marker-alt"></i><span>{{$pickup->pickupLocation}}</span></li>
                 <li><i class="fas fa-calendar-alt"></i><span>{{$booking->startDate}}</span></li>
@@ -39,7 +38,7 @@
                 <li><i class="fas fa-gas-pump"></i><span>{{$vehicle->fuelLevel}}%</span></li>
             </ul>
 
-            <p id="car_det">Full Return Details</p>
+            <p id="car_det">Return Details</p>
             <ul class="features">
                 <li><i class="fas fa-map-marker-alt"></i><span>{{$return->returnLocation}}</span></li>
                 <li><i class="fas fa-calendar-alt"></i><span>{{$booking->endDate}}</span></li>
@@ -62,7 +61,7 @@
                     <div class="no-pay"><p>Before confirming Pick Up details, Please pay.</p></div>
                 @endif
 
-                <p id="form_name">Pick up vehicle Inspection</p>
+                <p id="form_name">Pick up vehicle form</p>
                 <p class="main_txt">Upload 4 Angle Photos</p>
                 <p class="sub_txt">Please provide clear photos of all sides of the vehicle.</p>
 
@@ -93,23 +92,141 @@
                     </div>
                 </div>
 
-                <p class="sub_txt">Please provide your signature below to confirm you agree with Terms and Conditions</p>
-                <div class="signature-container">
-                    <canvas id="signature-pad">  </canvas>
-                    <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
-                        <button type="button" id="clear-signature" style="background: none; border: none; color: #CB3737; text-decoration: underline; cursor: pointer;">Clear Signature</button>
+                <p class="sub_txt">
+                    Please provide your signature below to confirm you agree with 
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#tncModal" style="color: #CB3737; text-decoration: underline;">
+                        Terms and Conditions
+                    </a>
+                </p>
+                <div class="signature-section" style="display: flex; gap: 5px; align-items: flex-start; margin-top: 10px;">
+                    <div style="flex: 1;">
+                        <canvas id="signature-pad"></canvas>
+                        <div style="margin-top: 5px;">
+                            <button type="button" id="clear-signature" style="background: none; border: none; color: #CB3737; text-decoration: underline; cursor: pointer; font-size: 12px;">Clear Signature</button>
+                        </div>
+                        <input type="hidden" name="signature" id="signature-input">
                     </div>
-                    <input type="hidden" name="signature" id="signature-input" required>
-                </div>
 
+                    <div class="mini-drop-zone signature-upload-box" onclick="document.getElementById('imgSigDoc').click()" style="flex: 1;">
+                        <div id="upload-content">
+                            <p style="font-size: 11px; margin: 0;"><strong>OR Upload Signed Doc</strong></p>
+                            <i class="fas fa-file-signature" id="iconSigDoc" style="font-size: 1.2rem; color: #ccc; margin-top: 5px;"></i>
+                        </div>
+                        <input type="file" id="imgSigDoc" name="manual_signature_photo" accept="image/*" hidden onchange="preview(this, 'pSigDoc', 'iconSigDoc')">
+                        <img id="pSigDoc" class="preview-img">
+                    </div>
+                </div>
 
                 <div id="btn_div"> 
                     <button class="btn-primary" {{ $onlyDepositPaid ? 'disabled style=opacity:0.5;' : '' }}>Save Pick Up</button>
                 </div>
             </form>
+            <div class="return_form">
+    <form action="{{ route('return.store') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <input type="hidden" name="bookingID" value="{{ $booking->bookingID }}">
+
+        <p id="form_name">Return vehicle form</p>
+        <p class="main_txt">Upload 4 Angle Photos</p>
+
+        <div class="photo-grid">
+            <div class="mini-drop-zone" onclick="document.getElementById('imgRetFront').click()">
+                <p><strong>Front View</strong></p>
+                <img src="{{ asset('img/car_sides/front.png') }}" class="placeholder-img" id="iconFront">
+                <input type="file" id="imgRetFront" name="return_photo_front" accept="image/*" hidden onchange="preview(this, 'pRetFront', 'iconFront')">
+                <img id="pRetFront" class="preview-img">
+            </div>
+            <div class="mini-drop-zone" onclick="document.getElementById('imgRetBack').click()">
+                <p><strong>Back View</strong></p>
+                <img src="{{ asset('img/car_sides/back.png') }}" class="placeholder-img" id="iconBack">
+                <input type="file" id="imgRetBack" name="return_photo_back" accept="image/*" hidden onchange="preview(this, 'pRetBack', 'iconBack')">
+                <img id="pRetBack" class="preview-img">
+            </div>
+            <div class="mini-drop-zone" onclick="document.getElementById('imgRetLeft').click()">
+                <p><strong>Left Side</strong></p>
+                <img src="{{ asset('img/car_sides/left.png') }}" class="placeholder-img" id="iconLeft">
+                <input type="file" id="imgRetLeft" name="return_photo_left" accept="image/*" hidden onchange="preview(this, 'pRetLeft', 'iconLeft')">
+                <img id="pRetLeft" class="preview-img">
+            </div>
+            <div class="mini-drop-zone" onclick="document.getElementById('imgRetRight').click()">
+                <p><strong>Right Side</strong></p>
+                <img src="{{ asset('img/car_sides/right.png') }}" class="placeholder-img" id="iconRight">
+                <input type="file" id="imgRetRight" name="return_photo_right" accept="image/*" hidden onchange="preview(this, 'pRetRight', 'iconRight')">
+                <img id="pRetRight" class="preview-img">
+            </div>
         </div>
+
+        <p class="main_txt">Upload Dashboard Photos</p>
+        <div class="photo-grid">
+            <div class="mini-drop-zone" onclick="document.getElementById('imgDash').click()">
+                <p><strong>Dashboard</strong></p>
+                <img src="{{ asset('img/dashboard.jpg') }}" class="placeholder-img" id="iconDash">
+                <input type="file" id="imgDash" name="return_photo_dashboard" accept="image/*" hidden onchange="preview(this, 'pDash', 'iconDash')">
+                <img id="pDash" class="preview-img">
+            </div>
+            <div class="mini-drop-zone" onclick="document.getElementById('imgKeys').click()">
+                <p><strong>Keys</strong></p>
+                <img src="{{ asset('img/keys.jpg') }}" class="placeholder-img" id="iconKeys">
+                <input type="file" id="imgKeys" name="return_photo_keys" accept="image/*" hidden onchange="preview(this, 'pKeys', 'iconKeys')">
+                <img id="pKeys" class="preview-img">
+            </div>
+        </div>
+
+        <div class="radio-section">
+            <span>Were any traffic tickets received?</span>
+            <label class="radio-label">
+                <input type="radio" name="isFined" value="yes" onchange="toggleTicketBox(this)"> <span>Yes</span>
+            </label>
+            <label class="radio-label">
+                <input type="radio" name="isFined" value="no" onchange="toggleTicketBox(this)" checked> <span>No</span>
+            </label>
+        </div>
+
+        <div id="ticket-upload-wrapper" style="display: none; margin-top: 15px;">
+            <p class="sub_txt">Please provide clear photos of traffic ticket(s).</p>
+            <div class="mini-drop-zone" onclick="document.getElementById('imgTicket').click()">
+                <p><strong>Traffic ticket photos</strong></p>
+                <i class="fas fa-file-circle-minus" id="iconTicket" style="font-size: 1.6rem; color: #ccc; margin-top: 5px;"></i>
+                <input type="file" id="imgTicket" name="trafficTicketPhoto" accept="image/*" hidden onchange="preview(this, 'pTicket', 'iconTicket')">
+                <img id="pTicket" class="preview-img">
+            </div>
+        </div>
+        
+        <!--<p class="main_txt">Return information</p>
+        <p class="sub_txt">Please provide information about the return</p>
+        <div class="return_info">
+        <label for="feed">Feedback</label>
+                   <textarea id="feed" name="feedback" rows="5"></textarea>
+        </div>-->
+
+        <div id="btn_div"> 
+            <button type="submit" class="btn-primary">Save Return</button>
+        </div>
+    </form>
+</div>
     </div>
 </div>
+    </div>
+</div>
+</div>
+<div class="modal fade" id="tncModal" tabindex="-1" aria-labelledby="tncModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tncModalLabel">Terms and Conditions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="{{ asset('img/terms_temp.jpg') }}" alt="Terms and Conditions" style="width: 100%; height: auto;">
+            </div>
+            <div class="modal-footer">
+                <a href="{{ asset('img/terms_temp.jpg') }}" download="Terms_and_Conditions.png" class="btn btn-primary">
+                    <i class="fas fa-download"></i> Download T&C
+                </a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -205,7 +322,20 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         input.value = "";
     });
+    
 });
+function toggleTicketBox(radio) {
+    const ticketBox = document.getElementById('ticket-upload-wrapper');
+    if (radio.value === 'yes') {
+        ticketBox.style.display = 'block';
+    } else {
+        ticketBox.style.display = 'none';
+        // Optional: Clear the file input if they switch back to "No"
+        document.getElementById('imgTicket').value = "";
+        document.getElementById('pTicket').style.display = "none";
+        document.getElementById('iconTicket').style.display = "block";
+    }
+}
 </script>
 </body>
 </html>
