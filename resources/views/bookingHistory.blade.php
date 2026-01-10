@@ -6,6 +6,7 @@
     <title>My Booking History - Hasta Travel & Tour</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     {{-- Custom CSS --}}
     <link href="{{ asset('css/header.css') }}" rel="stylesheet">
@@ -22,65 +23,66 @@
             min-height: 100vh;
         }
 
-.content-with-sidebar {
-    display: flex;
-    min-height: calc(100vh - 180px);
-    max-width: 1200px;
-    margin: 30px auto;
-    padding: 0 20px;
-    gap: 30px;
-}
+        .content-with-sidebar {
+            display: flex;
+            min-height: calc(100vh - 180px);
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+            gap: 30px;
+        }
 
-.sidebar {
-    width: 250px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    padding: 25px 0;
-    flex-shrink: 0;
-    height: fit-content;
-}
+        .sidebar {
+            width: 250px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 25px 0;
+            flex-shrink: 0;
+            height: fit-content;
+        }
 
-.sidebar-menu {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
 
-.sidebar-menu li {
-    margin: 0;
-}
+        .sidebar-menu li {
+            margin: 0;
+        }
 
-.sidebar-menu a {
-    display: flex;
-    align-items: center;
-    padding: 15px 25px;
-    color: #555;
-    text-decoration: none;
-    transition: all 0.3s;
-    border-left: 4px solid transparent;
-    font-size: 15px;
-}
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            color: #555;
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+            font-size: 15px;
+        }
 
-.sidebar-menu a:hover {
-    background-color: #f8f9fa;
-    color: #bc3737;
-    border-left-color: #bc3737;
-}
+        .sidebar-menu a:hover {
+            background-color: #f8f9fa;
+            color: #bc3737;
+            border-left-color: #bc3737;
+        }
 
-.sidebar-menu a.active {
-    background-color: #f8f9fa;
-    color: #bc3737;
-    font-weight: 600;
-    border-left-color: #bc3737;
-}
+        .sidebar-menu a.active {
+            background-color: #f8f9fa;
+            color: #bc3737;
+            font-weight: 600;
+            border-left-color: #bc3737;
+        }
 
-.sidebar-icon {
-    margin-right: 12px;
-    font-size: 18px;
-    width: 24px;
-    text-align: center;
-}
+        .sidebar-icon {
+            margin-right: 12px;
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
         /* ===== Booking History Page Styles ===== */
         .booking-history-page {
             flex: 1;
@@ -226,6 +228,49 @@
             color: #f39c12;
         }
 
+        .status.confirmed {
+            background-color: #e8f4fc;
+            color: #2980b9;
+        }
+
+        .payment-status {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 5px;
+        }
+
+        .payment-status.paid {
+            background-color: #d4efdf;
+            color: #27ae60;
+        }
+
+        .payment-status.partial {
+            background-color: #fef5e7;
+            color: #f39c12;
+        }
+
+        .payment-status.unpaid {
+            background-color: #fdecea;
+            color: #e74c3c;
+        }
+
+        .payment-info {
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .payment-info .paid {
+            color: #27ae60;
+        }
+
+        .payment-info .remaining {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
         .action-btn {
             padding: 10px 25px;
             border-radius: 5px;
@@ -286,6 +331,27 @@
             background-color: #e74c3c;
             color: white;
             border-color: #e74c3c;
+        }
+
+        .action-btn-success {
+            padding: 10px 25px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            background-color: white;
+            color: #27ae60;
+            border: 2px solid #27ae60;
+            margin-right: 10px;
+        }
+
+        .action-btn-success:hover {
+            background-color: #27ae60;
+            color: white;
+            border-color: #27ae60;
         }
 
         .action-btn-link {
@@ -466,6 +532,15 @@
             font-size: 14px;
         }
 
+        .detail-value.remaining-balance {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .detail-value.paid-amount {
+            color: #27ae60;
+        }
+
         .car-detail-image {
             width: 100%;
             max-width: 400px;
@@ -541,6 +616,17 @@
             border-color: #c0392b;
         }
 
+        .btn-success {
+            background-color: #27ae60;
+            color: white;
+            border: 2px solid #27ae60;
+        }
+
+        .btn-success:hover {
+            background-color: #219653;
+            border-color: #219653;
+        }
+
         .form-group {
             margin-bottom: 20px;
         }
@@ -578,6 +664,23 @@
             border-radius: 4px;
             color: #721c24;
             font-size: 14px;
+        }
+
+        .info-message {
+            background-color: #e8f4fc;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+
+        .payment-actions {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            text-align: center;
         }
 
         /* ===== Responsive Design ===== */
@@ -710,6 +813,8 @@
     </style>
 </head>
 <body class="has-scrollable-content">
+  
+<body class="has-scrollable-content">
     
     {{-- Header --}}
     <div id="header">
@@ -749,22 +854,26 @@
             <ul class="sidebar-menu">
                 <li>
                     <a href="{{ route('customer.profile') }}">
+                        <span class="sidebar-icon"><i class="fas fa-user"></i></span>
                         My Profile
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('bookingHistory') }}" class="active">
+                        <span class="sidebar-icon"><i class="fas fa-history"></i></span>
                         My Bookings
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('customer.loyaltycard') }}">
+                        <span class="sidebar-icon"><i class="fas fa-id-card"></i></span>
                         Loyalty Card
                     </a>
                 </li>
                <li>
-                    <a href="{{ route('customer.documents') }}" >
-                         Upload Documents
+                    <a href="{{ route('customer.documents') }}">
+                        <span class="sidebar-icon"><i class="fas fa-file-upload"></i></span>
+                        Upload Documents
                     </a>
                 </li>
             </ul>
@@ -774,69 +883,104 @@
         <div class="booking-history-page">
             <h1 class="profile-title">My Booking History</h1>
 
-            <!-- Active/Ongoing Bookings Section (SHOW FIRST) -->
+            <!-- Active/Ongoing Bookings Section -->
             <div class="booking-section">
                 <div class="section-title active">Active Bookings</div>
                 
                 @forelse($active as $booking)
+                    @php
+                        $vehicle = $booking->vehicle ?? null;
+                        $canPayBalance = ($booking->pay_amount_type == 'deposit' || (isset($booking->depositAmount) && $booking->depositAmount > 0)) 
+                                        && $booking->remainingBalance > 0 
+                                        && $booking->bookingStatus === 'approved';
+                        $routeExists = Route::has('payment.remaining');
+                    @endphp
+                    
                     <div class="booking-card">
-                        @if($booking->vehiclePhoto)
-                            <img src="{{ Storage::url($booking->vehiclePhoto) }}" 
-                                 alt="{{ $booking->model }}"
+                        @if($vehicle && $vehicle->vehiclePhoto)
+                            <img src="{{ Storage::url($vehicle->vehiclePhoto) }}" 
+                                 alt="{{ $vehicle->model }}"
                                  class="car-image"
                                  onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.jpg') }}'">
                         @else
-                            <img src="{{ asset('img/vehicles/'.$booking->vehicleID.'.png') }}" 
-                                 alt="{{ $booking->model }}"
-                                 class="car-image"
-                                 onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.jpg') }}'">
+                            <img src="{{ asset('img/vehicles/default.jpg') }}" 
+                                 alt="Vehicle"
+                                 class="car-image">
                         @endif
 
                         <div class="booking-details">
                             <div class="car-info">
-                                <h3>{{ $booking->model ?? 'Car Model' }}</h3>
-                                <p>{{ $booking->vehicleType ?? 'Vehicle Type' }}</p>
+                                <h3>{{ $vehicle->model ?? 'Car Model' }}</h3>
+                                <p>{{ $vehicle->vehicleType ?? 'Vehicle Type' }}</p>
+                                
+                                <!-- Payment Information -->
+                                <div class="payment-info">
+                                    @if(($booking->pay_amount_type == 'deposit' || (isset($booking->depositAmount) && $booking->depositAmount > 0)) && $booking->remainingBalance > 0)
+                                        <div class="paid">Paid: RM{{ number_format($booking->totalPaid, 2) }}</div>
+                                        <div class="remaining">Balance: RM{{ number_format($booking->remainingBalance, 2) }}</div>
+                                    @elseif($booking->isFullyPaid)
+                                        <div class="paid">Fully Paid</div>
+                                    @endif
+                                </div>
                             </div>
 
-                            <div class="price">RM{{ number_format($booking->totalPrice ?? 0, 2) }}</div>
+                            <div class="price">
+                                RM{{ number_format($booking->totalPrice ?? 0, 2) }}
+                            </div>
 
-                           <div class="dates">
-    {{ date('d M Y', strtotime($booking->startDate)) }} - 
-    {{ date('d M Y', strtotime($booking->endDate)) }}
-    
-    @if($booking->bookingStatus === 'approved')
-        <div class="action-buttons" style="margin-top: 10px;">
-            {{-- Pickup Button --}}
-            <a href="{{ route('pickup.form', ['bookingID' => $booking->bookingID]) }}" 
-               class="btn btn-primary btn-sm"
-               title="Process vehicle pickup">
-                <i class="fas fa-car"></i> Pickup
-            </a>
-            
-            {{-- Return Button (show only if pickup likely completed) --}}
-            @if(strtotime($booking->startDate) <= time()) {{-- If pickup date has passed --}}
-                <a href="{{ route('return.form', ['bookingID' => $booking->bookingID]) }}" 
-                   class="btn btn-warning btn-sm"
-                   title="Process vehicle return">
-                    <i class="fas fa-undo"></i> Return
-                </a>
-            @endif
-        </div>
-    @endif
-</div>
+                            <div class="dates">
+                                {{ date('d M Y', strtotime($booking->startDate)) }} - 
+                                {{ date('d M Y', strtotime($booking->endDate)) }}
+                                
+                                @if($booking->bookingStatus === 'approved')
+                                    <div class="action-buttons">
+                                        {{-- Pickup Button --}}
+                                        <a href="{{ route('pickup.form', ['bookingID' => $booking->bookingID]) }}" 
+                                           class="btn btn-primary btn-sm"
+                                           title="Process vehicle pickup">
+                                            <i class="fas fa-car"></i> Pickup
+                                        </a>
+                                        
+                                        {{-- Return Button (show only if pickup likely completed) --}}
+                                        @if(strtotime($booking->startDate) <= time())
+                                            <a href="{{ route('return.form', ['bookingID' => $booking->bookingID]) }}" 
+                                               class="btn btn-warning btn-sm"
+                                               title="Process vehicle return">
+                                                <i class="fas fa-undo"></i> Return
+                                            </a>
+                                        @endif
+                                    </div>
+                                @endif
+                            </div>
 
                             <div class="status active">Active</div>
 
-                            <div style="display: flex; gap: 10px;">
+                            <div class="action-buttons-container">
                                 <button class="action-btn" 
                                         onclick="showDetailsModal({{ $booking->bookingID }})">
-                                    View Details
+                                    <i class="fas fa-eye"></i> Details
                                 </button>
+                                
+                                {{-- Pay Remaining Balance Button --}}
+                                @if($canPayBalance)
+                                    @if($routeExists)
+                                        <a href="{{ route('payment.remaining', $booking->bookingID) }}" 
+                                           class="action-btn-success">
+                                            <i class="fas fa-credit-card"></i> Pay Balance (RM{{ number_format($booking->remainingBalance, 2) }})
+                                        </a>
+                                    @else
+                                        <button class="action-btn-success" 
+                                                onclick="alert('Payment feature coming soon.\\n\\nPlease contact admin to pay remaining balance:\\nRM{{ number_format($booking->remainingBalance, 2) }}');">
+                                            <i class="fas fa-credit-card"></i> Pay Balance (RM{{ number_format($booking->remainingBalance, 2) }})
+                                        </button>
+                                    @endif
+                                @endif
                             </div>
                         </div>
                     </div>
                 @empty
                     <div class="empty-state">
+                        <i class="fas fa-calendar-check"></i><br>
                         No active bookings currently.
                     </div>
                 @endforelse
@@ -847,23 +991,25 @@
                 <div class="section-title pending">Pending Bookings</div>
                 
                 @forelse($pending as $booking)
+                    @php
+                        $vehicle = $booking->vehicle ?? null;
+                    @endphp
                     <div class="booking-card">
-                        @if($booking->vehiclePhoto)
-                            <img src="{{ Storage::url($booking->vehiclePhoto) }}" 
-                                 alt="{{ $booking->model }}"
+                        @if($vehicle && $vehicle->vehiclePhoto)
+                            <img src="{{ Storage::url($vehicle->vehiclePhoto) }}" 
+                                 alt="{{ $vehicle->model }}"
                                  class="car-image"
                                  onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.jpg') }}'">
                         @else
-                            <img src="{{ asset('img/vehicles/'.$booking->vehicleID.'.png') }}" 
-                                 alt="{{ $booking->model }}"
-                                 class="car-image"
-                                 onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.jpg') }}'">
+                            <img src="{{ asset('img/vehicles/default.jpg') }}" 
+                                 alt="Vehicle"
+                                 class="car-image">
                         @endif
 
                         <div class="booking-details">
                             <div class="car-info">
-                                <h3>{{ $booking->model ?? 'Car Model' }}</h3>
-                                <p>{{ $booking->vehicleType ?? 'Vehicle Type' }}</p>
+                                <h3>{{ $vehicle->model ?? 'Car Model' }}</h3>
+                                <p>{{ $vehicle->vehicleType ?? 'Vehicle Type' }}</p>
                             </div>
 
                             <div class="price">RM{{ number_format($booking->totalPrice ?? 0, 2) }}</div>
@@ -875,66 +1021,69 @@
 
                             <div class="status pending">Pending</div>
 
-                            <div style="display: flex; gap: 10px;">
+                            <div class="action-buttons-container">
                                 <button class="action-btn-secondary" 
                                         onclick="showDetailsModal({{ $booking->bookingID }})">
-                                    View Details
+                                    <i class="fas fa-eye"></i> Details
                                 </button>
                                 <button class="action-btn-danger" 
                                         onclick="showCancelModal({{ $booking->bookingID }})">
-                                    Cancel
+                                    <i class="fas fa-times"></i> Cancel
                                 </button>
                             </div>
                         </div>
                     </div>
                 @empty
                     <div class="empty-state">
+                        <i class="fas fa-clock"></i><br>
                         No pending bookings.
                     </div>
                 @endforelse
             </div>
 
-            <!-- Past Bookings Section - Combined Completed and Cancelled -->
+            <!-- Past Bookings Section -->
             <div class="booking-section">
                 <div class="section-title past">Past Bookings</div>
                 
                 <div class="past-bookings-grid">
                     <!-- Completed Bookings Column -->
                     <div class="past-bookings-section">
-                        <h4>Completed</h4>
+                        <h4><i class="fas fa-check-circle"></i> Completed</h4>
                         @forelse($completed as $booking)
-                            <div class="booking-card" style="margin-bottom: 10px; padding: 15px;">
-                                <div style="display: flex; align-items: center; width: 100%;">
-                                    @if($booking->vehiclePhoto)
-                                        <img src="{{ Storage::url($booking->vehiclePhoto) }}" 
-                                             alt="{{ $booking->model }}"
-                                             style="width: 80px; height: 60px; border-radius: 4px; margin-right: 15px; object-fit: cover;"
+                            @php
+                                $vehicle = $booking->vehicle ?? null;
+                            @endphp
+                            <div class="booking-card past-booking">
+                                <div class="past-booking-content">
+                                    @if($vehicle && $vehicle->vehiclePhoto)
+                                        <img src="{{ Storage::url($vehicle->vehiclePhoto) }}" 
+                                             alt="{{ $vehicle->model }}"
+                                             class="past-car-image"
                                              onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.jpg') }}'">
                                     @else
-                                        <img src="{{ asset('img/vehicles/'.$booking->vehicleID.'.png') }}" 
-                                             alt="{{ $booking->model }}"
-                                             style="width: 80px; height: 60px; border-radius: 4px; margin-right: 15px; object-fit: cover;"
-                                             onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.jpg') }}'">
+                                        <img src="{{ asset('img/vehicles/default.jpg') }}" 
+                                             alt="Vehicle"
+                                             class="past-car-image">
                                     @endif
                                     
-                                    <div style="flex: 1;">
-                                        <div style="font-weight: 600; font-size: 14px;">{{ $booking->model }}</div>
-                                        <div style="font-size: 12px; color: #666;">{{ $booking->vehicleType }}</div>
-                                        <div style="font-size: 12px; color: #666; margin-top: 5px;">
+                                    <div class="past-booking-info">
+                                        <div class="past-booking-title">{{ $vehicle->model ?? 'Car Model' }}</div>
+                                        <div class="past-booking-type">{{ $vehicle->vehicleType ?? 'Vehicle Type' }}</div>
+                                        <div class="past-booking-dates">
                                             {{ date('d M Y', strtotime($booking->startDate)) }} - 
                                             {{ date('d M Y', strtotime($booking->endDate)) }}
                                         </div>
                                     </div>
                                     
-                                    <button class="action-btn" 
-                                            onclick="showDetailsModal({{ $booking->bookingID }})"
-                                            style="padding: 5px 10px; font-size: 12px;">
-                                        View
+                                    <button class="action-btn view-btn" 
+                                            onclick="showDetailsModal({{ $booking->bookingID }})">
+                                        <i class="fas fa-eye"></i> View
                                     </button>
                                 </div>
                             </div>
                         @empty
-                            <div style="text-align: center; color: #666; font-size: 14px; padding: 20px;">
+                            <div class="empty-past-state">
+                                <i class="fas fa-check-circle"></i><br>
                                 No completed bookings
                             </div>
                         @endforelse
@@ -942,47 +1091,50 @@
 
                     <!-- Cancelled Bookings Column -->
                     <div class="past-bookings-section">
-                        <h4>Cancelled</h4>
+                        <h4><i class="fas fa-times-circle"></i> Cancelled</h4>
                         @forelse($cancelled as $booking)
-                            <div class="booking-card" style="margin-bottom: 10px; padding: 15px;">
-                                <div style="display: flex; align-items: center; width: 100%;">
-                                    @if($booking->vehiclePhoto)
-                                        <img src="{{ Storage::url($booking->vehiclePhoto) }}" 
-                                             alt="{{ $booking->model }}"
-                                             style="width: 80px; height: 60px; border-radius: 4px; margin-right: 15px; object-fit: cover;"
+                            @php
+                                $vehicle = $booking->vehicles ?? null;
+                            @endphp
+                            <div class="booking-card past-booking">
+                                <div class="past-booking-content">
+                                    @if($vehicle && $vehicles->vehiclePhoto)
+                                        <img src="{{ Storage::url($vehicles->vehiclePhoto) }}" 
+                                             alt="{{ $vehicles->model }}"
+                                             class="past-car-image"
                                              onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.jpg') }}'">
                                     @else
-                                        <img src="{{ asset('img/vehicles/'.$booking->vehicleID.'.png') }}" 
-                                             alt="{{ $booking->model }}"
-                                             style="width: 80px; height: 60px; border-radius: 4px; margin-right: 15px; object-fit: cover;"
-                                             onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.jpg') }}'">
+                                        <img src="{{ asset('img/vehicles/default.jpg') }}" 
+                                             alt="Vehicle"
+                                             class="past-car-image">
                                     @endif
                                     
-                                    <div style="flex: 1;">
-                                        <div style="font-weight: 600; font-size: 14px;">{{ $booking->model }}</div>
-                                        <div style="font-size: 12px; color: #666;">{{ $booking->vehicleType }}</div>
-                                        <div style="font-size: 12px; color: #666; margin-top: 5px;">
+                                    <div class="past-booking-info">
+                                        <div class="past-booking-title">{{ $vehicles->model ?? 'Car Model' }}</div>
+                                        <div class="past-booking-type">{{ $vehicles->vehicleType ?? 'Vehicle Type' }}</div>
+                                        <div class="past-booking-dates">
                                             {{ date('d M Y', strtotime($booking->startDate)) }} - 
                                             {{ date('d M Y', strtotime($booking->endDate)) }}
                                         </div>
                                     </div>
                                     
-                                    <div style="display: flex; flex-direction: column; gap: 5px;">
-                                        <button class="action-btn" 
-                                                onclick="showDetailsModal({{ $booking->bookingID }})"
-                                                style="padding: 5px 10px; font-size: 12px;">
-                                            View
+                                    <div class="past-booking-actions">
+                                        <button class="action-btn view-btn" 
+                                                onclick="showDetailsModal({{ $booking->bookingID }})">
+                                            <i class="fas fa-eye"></i> View
                                         </button>
-                                        <a href="{{ route('customer.booking.form', ['vehicleId' => $booking->vehicleID]) }}" 
-                                           class="action-btn-link"
-                                           style="padding: 5px 10px; font-size: 12px;">
-                                            Rebook
-                                        </a>
+                                        @if($vehicle)
+                                            <a href="{{ route('customer.booking.form', ['vehicleId' => $vehicle->vehicleID]) }}" 
+                                               class="action-btn-link rebook-btn">
+                                                <i class="fas fa-redo"></i> Rebook
+                                            </a>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
                         @empty
-                            <div style="text-align: center; color: #666; font-size: 14px; padding: 20px;">
+                            <div class="empty-past-state">
+                                <i class="fas fa-times-circle"></i><br>
                                 No cancelled bookings
                             </div>
                         @endforelse
@@ -996,18 +1148,17 @@
     <div id="detailsModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Booking Details</h2>
+                <h2><i class="fas fa-info-circle"></i> Booking Details</h2>
                 <button class="close-btn" onclick="closeModal('detailsModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <div id="detail-image-container">
-                    <!-- Image will be dynamically loaded here -->
                     <img id="detail-car-image" src="" alt="Vehicle" class="car-detail-image"
                          onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.jpg') }}'">
                 </div>
                 
                 <div class="detail-section">
-                    <h3>Vehicle Information</h3>
+                    <h3><i class="fas fa-car"></i> Vehicle Information</h3>
                     <div class="detail-row">
                         <span class="detail-label">Model</span>
                         <span class="detail-value" id="detail-model">-</span>
@@ -1023,7 +1174,7 @@
                 </div>
 
                 <div class="detail-section">
-                    <h3>Booking Details</h3>
+                    <h3><i class="fas fa-calendar-alt"></i> Booking Details</h3>
                     <div class="detail-row">
                         <span class="detail-label">Booking ID</span>
                         <span class="detail-value" id="detail-id">-</span>
@@ -1047,22 +1198,38 @@
                 </div>
 
                 <div class="detail-section">
-                    <h3>Payment Details</h3>
+                    <h3><i class="fas fa-credit-card"></i> Payment Details</h3>
                     <div class="detail-row">
-                        <span class="detail-label">Total Price</span>
-                        <span class="detail-value" id="detail-total">-</span>
+                        <span class="detail-label">Total Cost</span>
+                        <span class="detail-value" id="detail-total-cost">RM 0.00</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Amount Paid</span>
+                        <span class="detail-value paid-amount" id="detail-paid">RM 0.00</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Remaining Balance</span>
+                        <span class="detail-value remaining-balance" id="detail-remaining">RM 0.00</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Payment Type</span>
+                        <span class="detail-value" id="detail-payment-type">-</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Deposit Amount</span>
-                        <span class="detail-value" id="detail-deposit">-</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Bank Number</span>
-                        <span class="detail-value" id="detail-bank">-</span>
+                        <span class="detail-value" id="detail-deposit">RM 0.00</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Bank Name</span>
                         <span class="detail-value" id="detail-bank-name">-</span>
+                    </div>
+                    
+                    <div class="payment-actions">
+                        <a href="#" id="modal-pay-balance-btn" 
+                           class="btn btn-success" 
+                           style="display: none;">
+                            <i class="fas fa-credit-card me-2"></i> Pay Remaining Balance
+                        </a>
                     </div>
                 </div>
             </div>
@@ -1076,7 +1243,7 @@
     <div id="cancelModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Cancel Booking</h2>
+                <h2><i class="fas fa-times-circle"></i> Cancel Booking</h2>
                 <button class="close-btn" onclick="closeModal('cancelModal')">&times;</button>
             </div>
             <form id="cancelForm" method="POST">
@@ -1087,14 +1254,14 @@
                     <input type="hidden" id="cancelBookingId" name="booking_id">
                     
                     <div class="info-message">
-                        <strong>Current Booking Details:</strong>
+                        <strong><i class="fas fa-info-circle"></i> Current Booking Details:</strong>
                         <div id="cancel-booking-details">
                             <!-- Will be populated by JavaScript -->
                         </div>
                     </div>
 
                     <div class="warning-message">
-                        <strong>Cancellation Policy:</strong><br>
+                        <strong><i class="fas fa-exclamation-triangle"></i> Cancellation Policy:</strong><br>
                         • Refund only for cancellation made in 24 hours before pickup<br>
                         • No refund if cancelled less than 24 hours before pickup<br>
                         • Refund will make in 2 weeks of working days
@@ -1130,16 +1297,17 @@
 
         // Set vehicle image dynamically
         const carImage = document.getElementById('detail-car-image');
-        if (booking.vehiclePhoto) {
-            carImage.src = "{{ Storage::url('') }}" + booking.vehiclePhoto;
+        const vehicle = booking.vehicle || {};
+        if (vehicle.vehiclePhoto) {
+            carImage.src = "{{ Storage::url('') }}" + vehicle.vehiclePhoto;
         } else {
-            carImage.src = "{{ asset('img/vehicles/') }}/" + booking.vehicleID + ".png";
+            carImage.src = "{{ asset('img/vehicles/default.jpg') }}";
         }
 
         // Set other booking details
-        document.getElementById('detail-model').textContent = booking.model ?? '-';
-        document.getElementById('detail-type').textContent = booking.vehicleType ?? '-';
-        document.getElementById('detail-plate').textContent = booking.plateNumber ?? '-';
+        document.getElementById('detail-model').textContent = vehicle.model ?? '-';
+        document.getElementById('detail-type').textContent = vehicle.vehicleType ?? '-';
+        document.getElementById('detail-plate').textContent = vehicle.plateNumber ?? '-';
         document.getElementById('detail-id').textContent = booking.bookingID ?? '-';
         document.getElementById('detail-start').textContent = formatDate(booking.startDate);
         document.getElementById('detail-end').textContent = formatDate(booking.endDate);
@@ -1147,14 +1315,43 @@
         document.getElementById('detail-duration').textContent =
             booking.bookingDuration ? booking.bookingDuration + ' days' : 'N/A';
 
-        document.getElementById('detail-total').textContent =
-            'RM' + Number(booking.totalPrice ?? 0).toFixed(2);
-
-        document.getElementById('detail-deposit').textContent =
-            'RM' + Number(booking.depositAmount ?? 0).toFixed(2);
-
-        document.getElementById('detail-bank').textContent = booking.bankNum ?? '-';
+        // Set payment details using the calculated fields from controller
+        const totalCost = booking.totalCost || (booking.totalPrice + 50); // Rental + deposit
+        const totalPaid = booking.totalPaid || 0;
+        const remainingBalance = booking.remainingBalance || Math.max(0, totalCost - totalPaid);
+        const depositAmount = booking.depositAmount || 0;
+        
+        document.getElementById('detail-total-cost').textContent = 'RM' + totalCost.toFixed(2);
+        document.getElementById('detail-paid').textContent = 'RM' + totalPaid.toFixed(2);
+        document.getElementById('detail-remaining').textContent = 'RM' + remainingBalance.toFixed(2);
+        
+        // Set payment type - using pay_amount_type column
+        const paymentType = booking.pay_amount_type === 'deposit' ? 'Deposit Only' : 
+                           booking.pay_amount_type === 'full' ? 'Full Payment' : '-';
+        document.getElementById('detail-payment-type').textContent = paymentType;
+        
+        document.getElementById('detail-deposit').textContent = 'RM' + depositAmount.toFixed(2);
         document.getElementById('detail-bank-name').textContent = booking.penamaBank ?? '-';
+
+        // Show/Hide Pay Balance button
+        const payBalanceBtn = document.getElementById('modal-pay-balance-btn');
+        const canPayBalance = (booking.pay_amount_type === 'deposit' || (booking.depositAmount && booking.depositAmount > 0)) 
+                              && remainingBalance > 0 
+                              && booking.bookingStatus === 'approved';
+        
+        if (canPayBalance) {
+            payBalanceBtn.style.display = 'inline-block';
+            payBalanceBtn.onclick = function(e) {
+                e.preventDefault();
+                @if(Route::has('payment.remaining'))
+                    window.location.href = "{{ route('payment.remaining', ['bookingID' => $booking->bookingID]) }}";
+                @else
+                    alert('Payment feature coming soon.\n\nPlease contact admin to pay remaining balance:\nRM' + remainingBalance.toFixed(2));
+                @endif
+            };
+        } else {
+            payBalanceBtn.style.display = 'none';
+        }
 
         // Store booking ID for receipt download
         document.getElementById('cancelBookingId').value = booking.bookingID;
@@ -1168,6 +1365,8 @@
             return;
         }
 
+        const vehicle = booking.vehicle || {};
+
         // Set form action dynamically
         const cancelForm = document.getElementById('cancelForm');
         cancelForm.action = `/customer/booking/${bookingId}/cancel`;
@@ -1177,7 +1376,7 @@
         
         // Populate booking details
         document.getElementById('cancel-booking-details').innerHTML = `
-            <strong>Vehicle:</strong> ${booking.model ?? '-'}<br>
+            <strong>Vehicle:</strong> ${vehicle.model ?? '-'}<br>
             <strong>Dates:</strong> ${formatDate(booking.startDate)} - ${formatDate(booking.endDate)}<br>
             <strong>Total:</strong> RM${Number(booking.totalPrice ?? 0).toFixed(2)}<br>
             <strong>Status:</strong> ${booking.bookingStatus ?? 'Pending'}
@@ -1200,8 +1399,8 @@
 
         // Show loading state
         const cancelBtn = document.querySelector('#cancelModal .btn-danger');
-        const originalText = cancelBtn.textContent;
-        cancelBtn.textContent = 'Processing...';
+        const originalText = cancelBtn.innerHTML;
+        cancelBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
         cancelBtn.disabled = true;
 
         // Submit the form
@@ -1227,9 +1426,7 @@
         }
     };
 
-    // Add error handling for fetch requests
     document.addEventListener('DOMContentLoaded', function() {
-        // Console log for debugging
         console.log('Bookings data loaded:', bookingsData.length, 'bookings');
     });
     </script>

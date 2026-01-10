@@ -147,6 +147,24 @@ Route::middleware(['auth'])->prefix('staff')->name('staff.')->group(function () 
     Route::post('/payment/approve/{id}', [StaffController::class, 'approvePayment'])->name('payment.approve');
 });
 
+// Payment routes
+// Payment routes for remaining balance
+Route::middleware(['auth'])->group(function () {
+    Route::get('/payment/remaining/{bookingID}', [PaymentController::class, 'showRemainingPayment'])
+        ->name('payment.remaining');
+    Route::post('/payment/remaining/{bookingID}', [PaymentController::class, 'processRemainingPayment']);
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/payment/remaining/{bookingID}', [PaymentController::class, 'showRemainingPayment'])
+        ->name('payment.remaining');
+    
+    Route::post('/payment/remaining/{bookingID}', [PaymentController::class, 'processRemainingPayment']);
+    
+    Route::get('/payment/history/{bookingID}', [PaymentController::class, 'paymentHistory'])
+        ->name('payment.history');
+});
+
 Route::get('/select-vehicle', function () {
     return view('selectVehicle');
 })->name('vehicle.select');
