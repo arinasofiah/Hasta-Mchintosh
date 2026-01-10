@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link href="{{ asset('css/header.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/header.css') }}" rel="stylesheet">
     <title>HASTA - Payment</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -532,6 +531,26 @@
             flex: 1;
         }
 
+        /* Payment Summary */
+        .payment-summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .payment-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .payment-row:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .header {
@@ -683,32 +702,160 @@
             </div>
             <div class="info-row">
                 <span class="info-label">Rental Price</span>
-                <span class="info-value">MYR {{ number_format($finalSubtotal, 2) }}</span>
+                <span class="info-value" id="rental_price_display">RM {{ number_format($finalSubtotal, 2) }}</span>
             </div>
+            
+            @if(($deliveryCharge ?? 0) > 0)
+            <div class="info-row">
+                <span class="info-label">Delivery Charge</span>
+                <span class="info-value" id="delivery_charge_display">RM {{ number_format($deliveryCharge, 2) }}</span>
+            </div>
+            @endif
+            <input type="hidden" name="delivery_charge" value="{{ $deliveryCharge ?? 0 }}">
+            <input type="hidden" name="base_rental_price" value="{{ $originalRentalPrice ?? 0 }}">
+
             @if($promotionDiscount > 0)
             <div class="info-row discount-row">
                 <span class="info-label">Promotion Discount</span>
-                <span class="info-value">- MYR {{ number_format($promotionDiscount, 2) }}</span>
+                <span class="info-value">- RM {{ number_format($promotionDiscount, 2) }}</span>
             </div>
             @endif
+
             <div class="info-row" id="voucher_discount_row" style="display:none; color: #d94444;">
                 <span class="info-label">Voucher Discount</span>
-                <span class="info-value" id="voucher_discount_display">- MYR 0.00</span>
+                <span class="info-value" id="voucher_discount_display">- RM 0.00</span>
             </div>
             <div class="info-row">
-                <span class="info-label">Deposit Payable (30%)</span>
-                <span class="info-value" id="deposit_display">MYR {{ number_format($deposit, 2) }}</span>
+                <span class="info-label">Fixed Deposit</span>
+                <span class="info-value" id="deposit_display">RM 50.00</span>
             </div>
-            <div class="total-row">
-                <span class="info-label">Total Payable</span>
-                <span class="info-value" id="final_total_display">MYR {{ number_format($finalTotal, 2) }}</span>
+            
+            <!-- Payment Summary Section -->
+            <div class="payment-summary">
+                <div class="payment-row total-row">
+                    <span><strong>Total Vehicle Cost</strong></span>
+                    <span id="total_vehicle_cost_display">RM {{ number_format(($finalSubtotal + ($deliveryCharge ?? 0)) - $promotionDiscount + 50, 2) }}</span>
+                </div>
+                
+                <div class="payment-row">
+                    <span>Subtotal (After Discounts)</span>
+                    <span id="subtotal_display">RM {{ number_format(($finalSubtotal + ($deliveryCharge ?? 0)) - $promotionDiscount, 2) }}</span>
+                </div>
+                
+                <div class="payment-row">
+                    <span>Deposit</span>
+                    <span id="summary_deposit_display">RM 50.00</span>
+                </div>
+                
+                <div class="payment-row" id="pay_now_section">
+                    <span>Pay Now (<span id="payment_type_label">Deposit Only</span>)</span>
+                    <span id="pay_now_display">RM 50.00</span>
+                </div>
+                
+                <div class="payment-row">
+                    <span>Remaining Balance</span>
+                    <span id="remaining_balance_display">RM {{ number_format(($finalSubtotal + ($deliveryCharge ?? 0)) - $promotionDiscount - 50, 2) }}</span>
+                </div>
             </div>
         </div>
 
         <!-- Payment Details -->
         <div class="section">
             <h2><i class="fas fa-credit-card"></i> Payment Details</h2>
-            
+
+            <!-- Loyalty Stamp Tracker -->
+            <div class="form-group">
+                <label><i class="fas fa-gift"></i> Hasta Rewards</label>
+                <div style="background: linear-gradient(135deg, #fff8f0 0%, #fefefe 100%); padding:18px; border-radius:14px; font-size:14px; border:1px solid #ffe0cc; box-shadow: 0 2px 8px rgba(217, 68, 68, 0.08);">
+                    
+                    @if($loyaltyCard)
+                        @php
+                            $rewardTiers = [
+                                1 => 'RM10', 2 => 'RM10', 3 => 'RM20',
+                                4 => 'RM10', 5 => 'RM10', 6 => 'RM30',
+                                7 => 'RM10', 8 => 'RM10', 9 => 'RM20',
+                                10 => 'RM10', 11 => 'RM10', 12 => 'HALFDAY'
+                            ];
+                            $next = $loyaltyCard->stampCount + 1;
+                            $nextReward = ($next <= 12 && isset($rewardTiers[$next])) ? $rewardTiers[$next] : null;
+                        @endphp
+
+                        <!-- Progress Header -->
+                        <div style="display:flex; justify-content:space-between; margin-bottom:12px; align-items:center;">
+                            <strong style="color:#d94444;">{{ $loyaltyCard->stampCount }}/12 Stamps</strong>
+                            @if($nextReward)
+                                <span style="font-weight:600; font-size:14px; color:#28a745;">
+                                    @if($nextReward == 'HALFDAY')
+                                        🎁 Final Reward!
+                                    @else
+                                        ➕ {{ $nextReward }}
+                                    @endif
+                                </span>
+                            @else
+                                <span style="color:#6c757d; font-style:italic;">Completed!</span>
+                            @endif
+                        </div>
+
+                        <!-- Fancy Stamp Circles -->
+                        <div style="display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:10px 0;">
+                            @for($i = 1; $i <= 12; $i++)
+                                @php
+                                    $isFilled = $i <= $loyaltyCard->stampCount;
+                                    $color = '#e9e9e9'; // default empty
+                                    $textColor = '#aaa';
+
+                                    if ($isFilled) {
+                                        if ($i == 3) {
+                                            $color = '#4CAF50'; // green
+                                            $textColor = 'white';
+                                        } elseif ($i == 6) {
+                                            $color = '#2196F3'; // blue
+                                            $textColor = 'white';
+                                        } elseif ($i == 9) {
+                                            $color = '#9C27B0'; // purple
+                                            $textColor = 'white';
+                                        } elseif ($i == 12) {
+                                            $color = 'gold';
+                                            $textColor = '#5a3a00';
+                                        } else {
+                                            $color = '#d94444'; // red for normal stamps
+                                            $textColor = 'white';
+                                        }
+                                    }
+                                @endphp
+
+                                <div style="
+                                    width:24px; height:24px;
+                                    border-radius:50%;
+                                    background:{{ $color }};
+                                    display:flex; align-items:center; justify-content:center;
+                                    font-size:10px; color:{{ $textColor }};
+                                    font-weight:bold;
+                                    box-shadow: {{ $i == 12 ? '0 0 6px rgba(255,215,0,0.8)' : ($isFilled ? '0 0 4px rgba(0,0,0,0.2)' : 'none') }};
+                                    transition: transform 0.2s ease;
+                                " title="Stamp {{ $i }}: {{ $rewardTiers[$i] ?? 'RM10' }}">
+                                    @if($i == 12)
+                                        ★
+                                    @else
+                                        {{ $i }}
+                                    @endif
+                                </div>
+                            @endfor
+                        </div>
+
+                        <!-- Info Message -->
+                        <div style="margin-top:10px; font-size:12px; color:#555; text-align:center; line-height:1.5;">
+                            🎟️ <strong>Every booking ≥7 hours</strong> earns you a <strong style="color:#d94444;">RM10 voucher</strong>!<br>
+                            Special rewards at stamps 3, 6, 9 & 12!
+                        </div>
+                    @else
+                        <div style="text-align:center; color:#666; font-style:italic; padding:10px;">
+                            Complete your profile to unlock Hasta Rewards! 🎁
+                        </div>
+                    @endif
+                </div>
+            </div>
+
             <!-- Voucher Section -->
             <div class="form-group">
                 <label>Apply Voucher (Optional)</label>
@@ -773,12 +920,12 @@
                 <label>Payment Type</label>
                 <div class="radio-group">
                     <label class="radio-option">
-                        <input type="radio" name="payAmount" value="full" checked>
-                        Full Payment
+                        <input type="radio" name="payAmount" value="deposit" checked>
+                        Pay Deposit Only (RM50)
                     </label>
                     <label class="radio-option">
-                        <input type="radio" name="payAmount" value="deposit">
-                        Deposit Only (50%)
+                        <input type="radio" name="payAmount" value="full">
+                        Pay Full Amount
                     </label>
                 </div>
             </div>
@@ -822,15 +969,13 @@
                 </div>
             </div>
 
-            <button type="submit" class="submit-btn">
+            <button type="submit" class="submit-btn" id="submitBtn">
                 <i class="fas fa-paper-plane"></i> Confirm Payment
             </button>
         </div>
     </div>
 </form>
 
-</body>
-</html>
 <!-- Terms Modal -->
 <div id="termsModal" class="modal">
     <div class="modal-content">
@@ -876,14 +1021,13 @@
             Kindly trace your booking below.
         </p>
         <div class="modal-actions">
-    <button type="button" class="modal-btn btn-primary" id="viewBookings">
-        View My Bookings
-    </button>
-
-    <button type="button" class="modal-btn btn-secondary" id="closeSuccess">
-        Close
-    </button>
-</div>
+            <button type="button" class="modal-btn btn-primary" id="viewBookings">
+                View My Bookings
+            </button>
+            <button type="button" class="modal-btn btn-secondary" id="closeSuccess">
+                Close
+            </button>
+        </div>
     </div>
 </div>
 
@@ -905,9 +1049,23 @@ const successModal = document.getElementById('successModal');
 const viewBookings = document.getElementById('viewBookings');
 const closeSuccess = document.getElementById('closeSuccess');
 
-// Initialize
-let originalTotal = {{ $finalTotal ?? 0 }};
+// Payment Calculation Variables
+const FIXED_DEPOSIT = 50;
+let baseRentalPrice = {{ $originalRentalPrice ?? 0 }}; 
+let deliveryCharge = {{ $deliveryCharge ?? 0 }}; 
+let promotionDiscount = {{ $promotionDiscount ?? 0 }};
 let currentVoucherValue = 0;
+let originalRentalPrice = baseRentalPrice + deliveryCharge;
+
+// Initialize payment calculations
+document.addEventListener('DOMContentLoaded', function() {
+    updatePaymentSummary();
+    
+    // Add payment type change listener
+    document.querySelectorAll('input[name="payAmount"]').forEach(radio => {
+        radio.addEventListener('change', updatePaymentSummary);
+    });
+});
 
 // Event Listeners
 if (browseBtn) {
@@ -950,87 +1108,9 @@ if (viewBookings) {
 
 if (closeSuccess) {
     closeSuccess.addEventListener('click', () => {
-        successModal.style.display = 'none';
+        window.location.href = "/";
     });
 }
-
-// Form Submission
-document.getElementById('paymentForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    const termsCheckbox = document.getElementById('termsCheckbox');
-    if (termsCheckbox && !termsCheckbox.checked) {
-        alert('Please accept Terms and Conditions');
-        return;
-    }
-
-    if (!fileInput.files.length) {
-        showError('Please upload a payment receipt.');
-        return;
-    }
-    
-    const submitBtn = this.querySelector('.submit-btn');
-    if(submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = 'Processing...';
-    }
-
-    const formData = new FormData(this);
-
-    // Debug: Log what's being sent
-    console.log('Sending form data:');
-    for (let pair of formData.entries()) {
-        console.log(pair[0] + ': ' + pair[1]);
-    }
-
-    fetch("{{ route('booking.confirm') }}", {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        }
-    })
-    .then(response => {
-        console.log('Response status:', response.status);
-        console.log('Response headers:', response.headers);
-        return response.json();
-    })
-    .then(data => {
-        console.log('Response data:', data);
-        if (data.success) {
-            const successModal = document.getElementById('successModal');
-            if (successModal) successModal.style.display = 'block';
-        } else {
-            alert(data.message || 'Submission failed. Please try again.');
-            if(submitBtn) { 
-                submitBtn.disabled = false; 
-                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Confirm Payment'; 
-            }
-        }
-    })
-    .catch(error => {
-        console.error('Fetch error:', error);
-        alert('An error occurred. Please check console for details.');
-        if(submitBtn) { 
-            submitBtn.disabled = false; 
-            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Confirm Payment'; 
-        }
-    });
-});
-
-document.addEventListener('DOMContentLoaded', function () {
-
-    document.getElementById('viewBookings')
-        .addEventListener('click', function () {
-            window.location.href = "{{ route('bookingHistory') }}";
-        });
-
-    document.getElementById('closeSuccess')
-        .addEventListener('click', function () {
-            window.location.href = "/";
-        });
-
-});
 
 // Voucher Handling
 document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -1042,22 +1122,121 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     });
 });
 
-document.querySelectorAll('.voucher-item').forEach(item => {
-    item.addEventListener('click', () => {
-        document.querySelectorAll('.voucher-item').forEach(i => i.classList.remove('selected'));
-        item.classList.add('selected');
-        
-        const id = item.dataset.id;
-        const amount = parseFloat(item.dataset.val);
-        applyVoucherMath(id, amount);
-    });
-});
-
 if (document.getElementById('apply_voucher')) {
     document.getElementById('apply_voucher').addEventListener('click', applyVoucherCode);
 }
 
 // Functions
+function selectVoucher(element) {
+    document.querySelectorAll('.voucher-item').forEach(item => item.classList.remove('selected'));
+    element.classList.add('selected');
+    
+    const id = element.dataset.id;
+    const amount = parseFloat(element.dataset.val);
+    applyVoucherMath(id, amount);
+}
+
+function applyVoucherCode() {
+    const code = document.getElementById('voucher_code')?.value;
+    const msgEl = document.getElementById('voucher_message');
+    
+    if (!code) {
+        if (msgEl) msgEl.innerHTML = '<span style="color:red;">Please enter a code</span>';
+        return;
+    }
+    
+    fetch("{{ route('validate.voucher') }}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({ code: code })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (msgEl) {
+            if (data.valid) {
+                msgEl.innerHTML = '<span style="color:green;">' + data.message + '</span>';
+                applyVoucherMath(data.voucher_id, parseFloat(data.amount));
+            } else {
+                msgEl.innerHTML = '<span style="color:red;">' + (data.message || 'Invalid voucher') + '</span>';
+                resetVoucher();
+            }
+        }
+    })
+    .catch(() => {
+        if (msgEl) msgEl.innerHTML = '<span style="color:red;">Error validating voucher</span>';
+    });
+}
+
+function applyVoucherMath(id, amount) {
+    // Set voucher value
+    document.getElementById('selected_voucher_id').value = id;
+    currentVoucherValue = amount;
+    
+    // Update voucher discount display
+    const discountRow = document.getElementById('voucher_discount_row');
+    const discountDisplay = document.getElementById('voucher_discount_display');
+    
+    if (discountRow && discountDisplay) {
+        discountRow.style.display = 'flex';
+        discountDisplay.textContent = '- MYR ' + amount.toFixed(2);
+    }
+    
+    // Recalculate all payments
+    updatePaymentSummary();
+}
+
+function resetVoucher() {
+    document.getElementById('selected_voucher_id').value = '';
+    currentVoucherValue = 0;
+    
+    const discountRow = document.getElementById('voucher_discount_row');
+    if (discountRow) discountRow.style.display = 'none';
+    
+    updatePaymentSummary();
+}
+
+function updatePaymentSummary() {
+    // Calculate subtotal after all discounts
+    const subtotal = Math.max(0, originalRentalPrice - promotionDiscount - currentVoucherValue);
+    
+    // Get payment type
+    const paymentType = document.querySelector('input[name="payAmount"]:checked').value;
+    
+    // Calculate amounts
+    let payNow, remainingBalance;
+    let paymentTypeLabel = '';
+    
+    if (paymentType === 'deposit') {
+        // Pay deposit only
+        payNow = FIXED_DEPOSIT;
+        remainingBalance = subtotal - FIXED_DEPOSIT;
+        paymentTypeLabel = 'Deposit Only';
+    } else {
+        // Pay full amount
+        payNow = subtotal + FIXED_DEPOSIT;
+        remainingBalance = 0;
+        paymentTypeLabel = 'Full Amount';
+    }
+    
+    // Update display values
+    document.getElementById('rental_price_display').textContent = 'RM ' + baseRentalPrice.toFixed(2);
+    document.getElementById('subtotal_display').textContent = 'RM ' + subtotal.toFixed(2);
+    document.getElementById('summary_deposit_display').textContent = 'RM ' + FIXED_DEPOSIT.toFixed(2);
+    document.getElementById('payment_type_label').textContent = paymentTypeLabel;
+    document.getElementById('pay_now_display').textContent = 'RM ' + payNow.toFixed(2);
+    document.getElementById('remaining_balance_display').textContent = 'RM ' + Math.max(0, remainingBalance).toFixed(2);
+    document.getElementById('total_vehicle_cost_display').textContent = 'RM ' + (subtotal + FIXED_DEPOSIT).toFixed(2);
+
+    // Update delivery charge display if it exists
+    const deliveryChargeDisplay = document.getElementById('delivery_charge_display');
+    if (deliveryChargeDisplay) {
+        deliveryChargeDisplay.textContent = 'RM ' + deliveryCharge.toFixed(2);
+    }
+}
+
 function handleFileSelect(e) {
     const file = e.target.files[0];
     if (file) validateAndPreview(file);
@@ -1114,131 +1293,28 @@ function validateAndPreview(file) {
     reader.readAsDataURL(file);
 }
 
-function applyVoucherCode() {
-    const code = document.getElementById('voucher_code')?.value;
-    const msgEl = document.getElementById('voucher_message');
-    
-    if (!code) {
-        if (msgEl) msgEl.innerHTML = '<span style="color:red;">Please enter a code</span>';
-        return;
-    }
-    
-    fetch("{{ route('validate.voucher') }}", {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: JSON.stringify({ code: code })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (msgEl) {
-            if (data.valid) {
-                msgEl.innerHTML = '<span style="color:green;">' + data.message + '</span>';
-                applyVoucherMath(data.voucher_id, parseFloat(data.amount));
-            } else {
-                msgEl.innerHTML = '<span style="color:red;">' + (data.message || 'Invalid voucher') + '</span>';
-                resetVoucher(); 
-            }
-        }
-    })
-    .catch(() => {
-        if (msgEl) msgEl.innerHTML = '<span style="color:red;">Error validating voucher</span>';
-    });
-}
-
-function applyVoucherMath(id, amount) {
-    // 1. Set the hidden input value
-    document.getElementById('selected_voucher_id').value = id;
-    currentVoucherValue = amount;
-    
-    // 2. Show the voucher discount row
-    const discountRow = document.getElementById('voucher_discount_row');
-    const discountDisplay = document.getElementById('voucher_discount_display');
-    
-    if (discountRow && discountDisplay) {
-        discountRow.style.display = 'flex';
-        discountDisplay.textContent = '- MYR ' + amount.toFixed(2);
-    }
-    
-    // 3. Recalculate Totals
-    updateGrandTotal();
-}
-
-function resetVoucher() {
-    document.getElementById('selected_voucher_id').value = '';
-    currentVoucherValue = 0;
-    const discountRow = document.getElementById('voucher_discount_row');
-    if (discountRow) discountRow.style.display = 'none';
-    updateGrandTotal();
-}
-
-function updateGrandTotal() {
-    // Calculate new total (Original Total from Controller - Voucher Value)
-    let newTotal = Math.max(0, originalTotal - currentVoucherValue);
-    let deposit = 50; 
-    
-    // Update the Total Display
-    const totalEl = document.getElementById('final_total_display');
-    if (totalEl) {
-        totalEl.textContent = 'MYR ' + newTotal.toFixed(2);
-    }
-
-    // Update the Deposit Display
-    const depositEl = document.getElementById('deposit_display');
-    if (depositEl) {
-        depositEl.textContent = 'MYR ' + deposit.toFixed(2);
-    }
-}
-
-function resetVoucher() {
-    document.getElementById('selected_voucher_id').value = '';
-    currentVoucherValue = 0;
-    const discountRow = document.getElementById('voucher_discount_row');
-    if (discountRow) discountRow.style.display = 'none';
-    updateGrandTotal();
-}
-
-function updateGrandTotal() {
-    let newTotal = Math.max(0, originalTotal - currentVoucherValue);
-    let deposit = 50; 
-    
-    const totalRows = document.querySelectorAll('.info-row .info-value, .total-row .info-value');
-    
-    if (totalRows.length >= 2) {
-        // Find deposit row and total row
-        const depositRow = Array.from(totalRows).find(el => 
-            el.parentElement.querySelector('.info-label')?.textContent.includes('Deposit')
-        );
-        const totalRow = document.querySelector('.total-row .info-value');
-        
-        if (depositRow) depositRow.textContent = 'MYR ' + deposit.toFixed(2);
-        if (totalRow) totalRow.textContent = 'MYR ' + newTotal.toFixed(2);
-    }
-}
-
-function handleFormSubmit(e) {
+// Form Submission
+document.getElementById('paymentForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    
+
     if (!termsCheckbox.checked) {
-        alert('Please accept the Terms and Conditions');
+        alert('Please accept Terms and Conditions');
         return;
     }
-    
+
     if (!fileInput.files.length) {
-        showError('Please upload your payment receipt');
+        showError('Please upload a payment receipt.');
         return;
     }
     
-    // Show loading state
-    if (submitBtn) {
+    // Disable submit button
+    if(submitBtn) {
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
     }
-    
-    const formData = new FormData(document.getElementById('paymentForm'));
-    
+
+    const formData = new FormData(this);
+
     fetch("{{ route('booking.confirm') }}", {
         method: 'POST',
         body: formData,
@@ -1252,19 +1328,21 @@ function handleFormSubmit(e) {
             successModal.style.display = 'block';
         } else {
             alert(data.message || 'Submission failed. Please try again.');
+            if(submitBtn) { 
+                submitBtn.disabled = false; 
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Confirm Payment'; 
+            }
         }
     })
     .catch(error => {
         console.error('Error:', error);
         alert('An error occurred. Please try again.');
-    })
-    .finally(() => {
-        if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Confirm Payment';
+        if(submitBtn) { 
+            submitBtn.disabled = false; 
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Confirm Payment'; 
         }
     });
-}
+});
 
 function showError(message) {
     if (fileError) {
@@ -1286,6 +1364,5 @@ window.addEventListener('click', (e) => {
     if (e.target === successModal) successModal.style.display = 'none';
 });
 </script>
-
 </body>
 </html>

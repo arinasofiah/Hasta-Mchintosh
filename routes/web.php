@@ -116,7 +116,8 @@ Route::post('/register-customer', [CustomerController::class, 'registerCustomer'
 // Payment-related routes (used during booking flow)
 Route::middleware(['auth'])->group(function () {
     Route::post('/payment-form', [BookingController::class, 'showPaymentForm'])->name('payment.form');
-    Route::post('/check-promotion', [BookingController::class, 'checkPromotion']);
+    // In routes/web.php
+Route::post('/booking/check-promotion', [BookingController::class, 'checkPromotion'])->name('booking.checkPromotion');
     Route::post('/validate-voucher', [BookingController::class, 'validateVoucher'])->name('validate.voucher'); 
 });
 
@@ -144,6 +145,24 @@ Route::middleware(['auth'])->prefix('staff')->name('staff.')->group(function () 
     Route::put('/commission/update', [StaffController::class, 'updateBank'])->name('commission.update');
     Route::post('/commission/redeem', [StaffController::class, 'redeem'])->name('commission.redeem');
     Route::post('/payment/approve/{id}', [StaffController::class, 'approvePayment'])->name('payment.approve');
+});
+
+// Payment routes
+// Payment routes for remaining balance
+Route::middleware(['auth'])->group(function () {
+    Route::get('/payment/remaining/{bookingID}', [PaymentController::class, 'showRemainingPayment'])
+        ->name('payment.remaining');
+    Route::post('/payment/remaining/{bookingID}', [PaymentController::class, 'processRemainingPayment']);
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/payment/remaining/{bookingID}', [PaymentController::class, 'showRemainingPayment'])
+        ->name('payment.remaining');
+    
+    Route::post('/payment/remaining/{bookingID}', [PaymentController::class, 'processRemainingPayment']);
+    
+    Route::get('/payment/history/{bookingID}', [PaymentController::class, 'paymentHistory'])
+        ->name('payment.history');
 });
 
 Route::get('/select-vehicle', function () {

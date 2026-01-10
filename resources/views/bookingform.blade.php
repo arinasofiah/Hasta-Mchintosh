@@ -4,57 +4,56 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>HASTA – Booking Details</title>
+<title>HASTA - Booking Details</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="{{ asset('css/header.css') }}" rel="stylesheet">
- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
 /* ====== Reset & Body ====== */
 * {margin:0;padding:0;box-sizing:border-box;}
 body {font-family:'Inter',sans-serif;background:#f5f5f5;color:#333;padding-bottom:120px;}
 
-
 .progress-container { 
-            max-width: 1200px; 
-            margin: 40px auto; 
-            padding: 0 20px; 
-        }
-        .steps { 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 8px; 
-            margin-bottom: 40px; 
-            flex-wrap: wrap;
-        }
-        .step {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 25px;
-            border-radius: 50px;
-            font-size: 14px;
-            font-weight: 600;
-            min-width: 140px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-        .step.filled { 
-            background: #d94444; 
-            color: white; 
-            border: none;
-        }
-        .step.active { 
-            border: 2px solid #d94444; 
-            color: #d94444; 
-            background: white;
-        }
-        .step-connector { 
-            width: 80px; 
-            height: 2px; 
-            background: #ddd;
-        }
+    max-width: 1200px; 
+    margin: 40px auto; 
+    padding: 0 20px; 
+}
+.steps { 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 8px; 
+    margin-bottom: 40px; 
+    flex-wrap: wrap;
+}
+.step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 25px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 600;
+    min-width: 140px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+.step.filled { 
+    background: #d94444; 
+    color: white; 
+    border: none;
+}
+.step.active { 
+    border: 2px solid #d94444; 
+    color: #d94444; 
+    background: white;
+}
+.step-connector { 
+    width: 80px; 
+    height: 2px; 
+    background: #ddd;
+}
 
 /* ====== Container ====== */
 .container {max-width:1200px; margin:0 auto; padding:0 20px; display:grid; grid-template-columns:1fr; gap:20px;}
@@ -93,13 +92,25 @@ textarea.input {resize:vertical; min-height:100px;}
 .charge-row.grand {font-weight:800; font-size:15px; border-top:2px solid #333; padding-top:10px; margin-top:10px;}
 
 /* ====== Bottom Bar ====== */
-.bottom-bar {position:fixed; bottom:0; left:0; right:0; background:white; border-top:1px solid #eee; display:flex; justify-content:space-between; align-items:center; padding:15px 60px; box-shadow:0 -2px 10px rgba(0,0,0,0.05);}
+.bottom-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: white;
+    border-top: 1px solid #e0e0e0;
+}
+.total-and-button {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
 .selected-car {display:flex; align-items:center; gap:20px;}
 .car-badge {background:#ffe5e5; color:#d94242; font-size:11px; padding:5px 12px; border-radius:20px; font-weight:600; margin-bottom:5px;}
 .grand-total-bottom {text-align:right;}
 .grand-label {color:#999; font-size:14px; margin-bottom:5px;}
 .grand-amount {font-size:20px; font-weight:900;}
-.next-btn {background:#d94242; color:white; border:none; padding:12px 30px; border-radius:5px; font-size:16px; font-weight:600; cursor:pointer;}
+.next-btn {background:#d94444; color:white; border:none; padding:12px 24px; border-radius:6px; font-size:16px; font-weight:bold; cursor:pointer; min-width: 120px;} 
 .next-btn:hover {background:#c23535;}
 #profile-container {
     position: relative;
@@ -147,34 +158,34 @@ textarea.input {resize:vertical; min-height:100px;}
         <button class="head_button">Contact Us</button>
     </div>
 
-   <div id="profile">
-    <div id="profile-container" aria-haspopup="true" aria-expanded="false">
-        <img id="pfp" src="{{ asset('img/racc_icon.png') }}" alt="Profile Picture" role="button" tabindex="0">
-        
-        <div id="profile-dropdown" role="menu" aria-label="User menu">
-            @guest
-                <a href="{{ route('login') }}" class="dropdown-item" role="menuitem">Login</a>
-                <a href="{{ route('register') }}" class="dropdown-item" role="menuitem">Register</a>
-            @endguest
+    <div id="profile">
+        <div id="profile-container" aria-haspopup="true" aria-expanded="false">
+            <img id="pfp" src="{{ asset('img/racc_icon.png') }}" alt="Profile Picture" role="button" tabindex="0">
             
-            @auth
-                <a href="{{ route('customer.profile') }}" class="dropdown-item" role="menuitem">My Profile</a>
-                <form method="POST" action="{{ route('logout') }}" class="dropdown-form">
-                    @csrf
-                    <button type="submit" class="dropdown-item" role="menuitem">Logout</button>
-                </form>
-            @endauth
+            <div id="profile-dropdown" role="menu" aria-label="User menu">
+                @guest
+                    <a href="{{ route('login') }}" class="dropdown-item" role="menuitem">Login</a>
+                    <a href="{{ route('register') }}" class="dropdown-item" role="menuitem">Register</a>
+                @endguest
+                
+                @auth
+                    <a href="{{ route('customer.profile') }}" class="dropdown-item" role="menuitem">My Profile</a>
+                    <form method="POST" action="{{ route('logout') }}" class="dropdown-form">
+                        @csrf
+                        <button type="submit" class="dropdown-item" role="menuitem">Logout</button>
+                    </form>
+                @endauth
+            </div>
         </div>
-    </div>
 
-    @guest
-        <a id="username" href="{{ route('login') }}">Log in</a>
-    @endguest
-    
-    @auth
-        <span id="username">{{ Auth::user()->name }}</span>
-    @endauth
-</div>
+        @guest
+            <a id="username" href="{{ route('login') }}">Log in</a>
+        @endguest
+        
+        @auth
+            <span id="username">{{ Auth::user()->name }}</span>
+        @endauth
+    </div>
 </div>
 
 <!-- Progress Steps -->
@@ -198,36 +209,36 @@ textarea.input {resize:vertical; min-height:100px;}
 </div>
 
 <!-- FORM START -->
-<form id="bookingForm" action="{{ route('payment.form', $vehicle->vehicleID )}}" method="POST">
+<form id="bookingForm" action="{{ route('payment.form') }}" method="POST">
     @csrf
     <input type="hidden" name="vehicleID" value="{{ $vehicle->vehicleID }}">
     
     <div class="container">
         <!-- Booking Details Card -->
         <div class="card">
-           <div class="section-title">Pickup</div>
-<div class="row2">
-    <div>
-        <p><b>Date:</b> {{ $pickupDate ?? '' }}</p>
-        <input type="hidden" name="pickup_date" value="{{ $pickupDate ?? '' }}">
-    </div>
-    <div>
-        <p><b>Time:</b> {{ $pickupTime ?? '' }}</p>
-        <input type="hidden" name="pickup_time" value="{{ $pickupTime ?? '' }}">
-    </div>
-</div>
+            <div class="section-title">Pickup</div>
+            <div class="row2">
+                <div>
+                    <p><b>Date:</b> {{ $pickupDate ?? '' }}</p>
+                    <input type="hidden" name="pickup_date" value="{{ $pickupDate ?? '' }}">
+                </div>
+                <div>
+                    <p><b>Time:</b> {{ $pickupTime ?? '' }}</p>
+                    <input type="hidden" name="pickup_time" value="{{ $pickupTime ?? '' }}">
+                </div>
+            </div>
 
-<div class="section-title">Return</div>
-<div class="row2">
-    <div>
-        <p><b>Date:</b> {{ $returnDate ?? '' }}</p>
-        <input type="hidden" name="return_date" value="{{ $returnDate ?? '' }}">
-    </div>
-    <div>
-        <p><b>Time:</b> {{ $returnTime ?? '' }}</p>
-        <input type="hidden" name="return_time" value="{{ $returnTime ?? '' }}">
-    </div>
-</div>
+            <div class="section-title">Return</div>
+            <div class="row2">
+                <div>
+                    <p><b>Date:</b> {{ $returnDate ?? '' }}</p>
+                    <input type="hidden" name="return_date" value="{{ $returnDate ?? '' }}">
+                </div>
+                <div>
+                    <p><b>Time:</b> {{ $returnTime ?? '' }}</p>
+                    <input type="hidden" name="return_time" value="{{ $returnTime ?? '' }}">
+                </div>
+            </div>
 
             <div class="row2">
                 <div>
@@ -244,13 +255,13 @@ textarea.input {resize:vertical; min-height:100px;}
                     </div>
 
                     <div id="pickupOthersFields" style="display: none; margin-top: 10px;">
-                        <select id="pickupCategory" class="input" required>
+                        <select id="pickupCategory" class="input">
                             <option value="">-- Faculty / College / Office --</option>
                             <option value="faculty">Faculty</option>
                             <option value="college">College</option>
                             <option value="office">Office</option>
                         </select>
-                        <input type="text" id="pickupDetails" class="input" placeholder="e.g., K01, Kolej Tun Razak" style="margin-top: 5px;" required>
+                        <input type="text" id="pickupDetails" class="input" placeholder="e.g., K01, Kolej Tun Razak" style="margin-top: 5px;">
                     </div>
                 </div>
 
@@ -263,11 +274,11 @@ textarea.input {resize:vertical; min-height:100px;}
                             <option value="others">Others (within UTM)</option>
                         </select>
 
-                        <input type="hidden" id="returnLocation" name="returnLocation">
+                    <input type="hidden" id="returnLocation" name="returnLocation">
 
-                        <div id="returnDeliveryNotice" style="color: #d9534f; font-size: 0.9em; margin-top: 5px; display: none;">
-                            ⚠️ Delivery charge of RM15 applies.
-                        </div>
+                    <div id="returnDeliveryNotice" style="color: #d9534f; font-size: 0.9em; margin-top: 5px; display: none;">
+                        ⚠️ Delivery charge of RM15 applies.
+                    </div>
 
                         <div id="returnOthersFields" style="display: none; margin-top: 10px;">
                             <select id="returnCategory" class="input" required>
@@ -373,11 +384,11 @@ textarea.input {resize:vertical; min-height:100px;}
 
             <div class="charge-row">
                 <span>Price Per Day</span>
-                <span>MYR {{ number_format($vehicle->pricePerDay, 2) }}</span>
+                <span>RM {{ number_format($vehicle->pricePerDay, 2) }}</span>
             </div>
             <div class="charge-row">
                 <span>Price Per Hour</span>
-                <span>MYR {{ number_format($vehicle->pricePerHour, 2) }}</span>
+                <span>RM {{ number_format($vehicle->pricePerHour, 2) }}</span>
             </div>
             <div class="charge-row">
                 <span>Rental Duration</span>
@@ -385,19 +396,19 @@ textarea.input {resize:vertical; min-height:100px;}
             </div>
             <div class="charge-row">
                 <span>Delivery Charge</span>
-                <span id="deliveryCharge">MYR 0.00</span>
+                <span id="deliveryCharge">RM 0.00</span>
             </div>
             <div class="charge-row">
                 <span>Total Price (by hour)</span>
-                <span id="totalByHour">MYR 0.00</span>
+                <span id="totalByHour">RM 0.00</span>
             </div>
             <div class="charge-row" style="color: #28a745;">
                 <span>Promotion Discount</span>
-                <span id="promotionDiscount">- MYR 0.00</span>
+                <span id="promotionDiscount">- RM 0.00</span>
             </div>
             <div class="charge-row grand">
                 <span>Grand Total</span>
-                <span id="grandTotal">MYR 0.00</span>
+                <span id="grandTotal">RM 0.00</span>
             </div>
         </div>
     </div>
@@ -417,7 +428,7 @@ textarea.input {resize:vertical; min-height:100px;}
         </div>
         <div class="grand-total-bottom">
             <div class="grand-label">Grand Total</div>
-            <div class="grand-amount" id="bottomBarTotal">MYR 0.00</div>
+            <div class="grand-amount" id="bottomBarTotal">RM 0.00</div>
         </div>
         <div>
             <button type="button" class="next-btn" onclick="goToPayment()">Next →</button>
@@ -429,7 +440,7 @@ textarea.input {resize:vertical; min-height:100px;}
 // ===== GLOBAL VARIABLES =====
 let baseGrandTotal = 0;
 let promotionDiscount = 0;
-let deliveryCharge = 0; // ← Now global
+let deliveryCharge = 0;
 
 const pricePerHour = {{ $vehicle->pricePerHour }};
 const pricePerDay = {{ $vehicle->pricePerDay }};
@@ -440,8 +451,10 @@ function handleLocationChange(type) {
     const notice = document.getElementById(`${type}DeliveryNotice`);
     const othersFields = document.getElementById(`${type}OthersFields`);
     const hiddenInput = document.getElementById(`${type}Location`);
-
-    hiddenInput.value = '';
+    
+    // Get the "Others" fields
+    const categoryField = document.getElementById(`${type}Category`);
+    const detailsField = document.getElementById(`${type}Details`);
 
     if (locType === 'hasta') {
         hiddenInput.value = 'HASTA Office';
@@ -451,14 +464,45 @@ function handleLocationChange(type) {
         hiddenInput.value = 'Student Mall';
         notice.style.display = 'none';
         othersFields.style.display = 'none';
+        
+        // Remove required from "Others" fields
+        if (categoryField) {
+            categoryField.removeAttribute('required');
+            categoryField.value = '';
+        }
+        if (detailsField) {
+            detailsField.removeAttribute('required');
+            detailsField.value = '';
+        }
+        
     } else if (locType === 'others') {
+        // Show fields and make them required
+        hiddenInput.value = 'Waiting for details...';
         notice.style.display = 'block';
         othersFields.style.display = 'block';
+        
+        // Add required to "Others" fields
+        if (categoryField) categoryField.setAttribute('required', 'required');
+        if (detailsField) detailsField.setAttribute('required', 'required');
+        
     } else {
+        hiddenInput.value = '';
         notice.style.display = 'none';
         othersFields.style.display = 'none';
+        
+        // Remove required from "Others" fields
+        if (categoryField) {
+            categoryField.removeAttribute('required');
+            categoryField.value = '';
+        }
+        if (detailsField) {
+            detailsField.removeAttribute('required');
+            detailsField.value = '';
+        }
     }
 
+    console.log(`${type} location changed to: ${locType}`);
+    console.log(`${type}Location value: ${hiddenInput.value}`);
     updateDeliveryCharge();
 }
 
@@ -471,7 +515,14 @@ function updateDeliveryCharge() {
     if (returnType === 'others') charge += 15;
 
     deliveryCharge = charge;
-    recalculateTotal(); // Update total whenever delivery changes
+    
+    // Update delivery charge display immediately
+    const deliveryChargeEl = document.getElementById('deliveryCharge');
+    if (deliveryChargeEl) {
+        deliveryChargeEl.textContent = `MYR ${deliveryCharge.toFixed(2)}`;
+    }
+    
+    recalculateTotal();
 }
 
 // Update hidden location input when user types details
@@ -559,47 +610,75 @@ function calculateDurationAndPrice() {
 
     console.log('Duration Hours:', diffHours);
     console.log('Base Grand Total:', baseGrandTotal);
+    console.log('Vehicle ID:', '{{ $vehicle->vehicleID }}');
 
     // Trigger promotion check AFTER base total is set
     checkPromotion();
 }
 
 function checkPromotion() {
-    const today = new Date();
-    const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
+    const durationInput = document.getElementById('durationInput');
+    if (!durationInput || !durationInput.value) {
+        console.error('Duration not calculated yet');
+        promotionDiscount = 0;
+        recalculateTotal();
+        return;
+    }
 
-    fetch('/check-promotion', {
+    // Extract days from duration text
+    const durationText = durationInput.value;
+    let days = 0;
+    
+    // Parse days from text like "2 days 3 hours" or "5 hours"
+    const dayMatch = durationText.match(/(\d+)\s*day/);
+    if (dayMatch) {
+        days = parseInt(dayMatch[1]);
+    } else {
+        // If no days mentioned, check if hours exceed 24
+        const hourMatch = durationText.match(/(\d+)\s*hour/);
+        if (hourMatch) {
+            const hours = parseInt(hourMatch[1]);
+            days = Math.ceil(hours / 24);
+        }
+    }
+
+    if (days < 1) days = 1;
+
+    console.log('Checking promotion for days:', days, 'Amount:', baseGrandTotal);
+
+    fetch("/booking/check-promotion", {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
         },
         body: JSON.stringify({
-            day: dayName,
+            duration: days,
             amount: baseGrandTotal
         })
     })
     .then(response => response.json())
     .then(data => {
+        console.log('Promotion response:', data);
+        
         promotionDiscount = data.hasPromotion ? data.discount : 0;
 
         const promoDiscountEl = document.getElementById('promotionDiscount');
         if (promoDiscountEl) {
             promoDiscountEl.textContent = data.hasPromotion 
-                ? `- MYR ${promotionDiscount.toFixed(2)}` 
-                : '- MYR 0.00';
+                ? `- RM ${promotionDiscount.toFixed(2)}` 
+                : '- RM 0.00';
             promoDiscountEl.style.color = data.hasPromotion ? '#28a745' : '#333';
         }
 
         // Set promo ID if exists
-        let promoInput = document.getElementById('appliedPromoId');
+        let promoInput = document.querySelector('input[name="promo_id"]');
         if (data.hasPromotion) {
             if (!promoInput) {
                 promoInput = document.createElement('input');
                 promoInput.type = 'hidden';
-                promoInput.id = 'appliedPromoId';
                 promoInput.name = 'promo_id';
-                document.querySelector('form').appendChild(promoInput);
+                document.getElementById('bookingForm').appendChild(promoInput);
             }
             promoInput.value = data.promoID;
         } else if (promoInput) {
@@ -624,17 +703,17 @@ function recalculateTotal() {
         deliveryChargeEl.textContent = `MYR ${deliveryCharge.toFixed(2)}`;
     }
 
-    // Update grand total
+    // Update grand total displays
     const grandTotalEl = document.getElementById('grandTotal');
     const bottomBarTotalEl = document.getElementById('bottomBarTotal');
     if (grandTotalEl) grandTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
     if (bottomBarTotalEl) bottomBarTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
 
     window.finalTotal = finalTotal;
-    console.log('Final Total (with delivery & promo):', finalTotal);
+    console.log('Final Total:', finalTotal, 'Base:', baseGrandTotal, 'Delivery:', deliveryCharge, 'Promo:', promotionDiscount);
 }
 
-// ===== OTHER FUNCTIONS (toggleDriverInfo, registerDriver, goToPayment) =====
+// ===== DRIVER INFO FUNCTIONS =====
 function toggleDriverInfo() {
     const checkbox = document.getElementById('forSomeoneElse');
     const section = document.getElementById('driverInfoSection');
@@ -721,46 +800,227 @@ function showMessage(text, type) {
     message.style.border = type === 'success' ? '1px solid #c3e6cb' : '1px solid #f5c6cb';
 }
 
+// ===== GO TO PAYMENT FUNCTION =====
 function goToPayment() {
+    console.log('=== GO TO PAYMENT DEBUG START ===');
+    
     const form = document.getElementById('bookingForm');
-    if (!form.checkValidity()) {
-        form.reportValidity();
+    
+    // Debug: Log all form data
+    console.log('Form action:', form.action);
+    console.log('Form method:', form.method);
+    
+    // First, validate "Others" locations
+    console.log('\n=== Validating "Others" locations ===');
+    if (!validateOtherLocations()) {
         return;
     }
-    if (!document.getElementById('pickupLocation').value || !document.getElementById('returnLocation').value) {
-        alert('Please fill in both pickup and return locations');
+    
+    // Debug: Check all required fields (skip hidden "Others" fields)
+    console.log('\n=== Checking required fields ===');
+    const allInputs = form.querySelectorAll('input, select, textarea');
+    let missingFields = [];
+    
+    allInputs.forEach(input => {
+        // Skip "Others" fields that are hidden
+        const isOthersField = ['pickupCategory', 'pickupDetails', 'returnCategory', 'returnDetails'].includes(input.id);
+        const isOthersFieldVisible = !isOthersField || input.closest('div[id$="OthersFields"]')?.style.display !== 'none';
+        
+        if (input.required && !input.value.trim() && isOthersFieldVisible) {
+            missingFields.push(input.name || input.id || input.type);
+            console.log(`❌ Missing: ${input.name || input.id} = "${input.value}"`);
+        } else if (input.required && isOthersFieldVisible) {
+            console.log(`✓ OK: ${input.name || input.id} = "${input.value}"`);
+        }
+    });
+    
+    if (missingFields.length > 0) {
+        console.log('Missing fields:', missingFields);
+        alert(`Please fill in all required fields`);
         return;
     }
+    
+    // Validate location fields specifically
+    console.log('\n=== Checking location fields ===');
+    const pickupLocation = document.getElementById('pickupLocation').value;
+    const returnLocation = document.getElementById('returnLocation').value;
+    
+    console.log('Pickup Location:', pickupLocation);
+    console.log('Return Location:', returnLocation);
+    
+    if (!pickupLocation || pickupLocation.trim() === '' || pickupLocation === 'Waiting for details...') {
+        alert('Please select a pickup location');
+        document.getElementById('pickupLocationType').focus();
+        return;
+    }
+    
+    if (!returnLocation || returnLocation.trim() === '' || returnLocation === 'Waiting for details...') {
+        alert('Please select a return location');
+        document.getElementById('returnLocationType').focus();
+        return;
+    }
+    
+    // Check if duration is calculated
+    console.log('\n=== Checking calculated values ===');
+    const durationValue = document.getElementById('durationInput').value;
+    console.log('Duration:', durationValue);
+    
+    if (!durationValue || durationValue === '-') {
+        alert('Please wait for duration calculation to complete');
+        return;
+    }
+    
+    // Ensure totals are calculated
     if (typeof window.finalTotal === 'undefined') {
-        alert('Please wait for pricing calculation to complete');
-        return;
+        console.log('Final total not calculated yet, recalculating...');
+        recalculateTotal();
     }
-    document.querySelectorAll('input.dynamic-field').forEach(el => el.remove());
+    
+    console.log('Base Grand Total:', baseGrandTotal);
+    console.log('Promotion Discount:', promotionDiscount);
+    console.log('Delivery Charge:', deliveryCharge);
+    console.log('Final Total:', window.finalTotal);
+    
+    // Add hidden fields for calculated values
+    console.log('\n=== Adding dynamic fields ===');
     const hiddenFields = [
         { name: 'subtotal', value: baseGrandTotal || 0 },
         { name: 'promotionDiscount', value: promotionDiscount || 0 },
         { name: 'deliveryCharge', value: deliveryCharge || 0 },
         { name: 'total', value: window.finalTotal || 0 },
-        { name: 'duration', value: document.getElementById('durationInput').value },
-        { name: 'promo_id', value: document.getElementById('appliedPromoId')?.value || '' }
+        { name: 'duration', value: document.getElementById('durationInput').value || '' }
     ];
+    
+    // Remove any existing dynamic fields
+    document.querySelectorAll('input.dynamic-field').forEach(el => {
+        console.log('Removing old field:', el.name, '=', el.value);
+        el.remove();
+    });
+    
+    // Add new dynamic fields
     hiddenFields.forEach(field => {
-        let input = document.createElement('input');
+        const input = document.createElement('input');
         input.type = 'hidden';
         input.name = field.name;
         input.value = field.value;
         input.classList.add('dynamic-field');
         form.appendChild(input);
+        console.log(`Added field: ${field.name} = ${field.value}`);
     });
-    console.log('Submitting form with calculated data');
+    
+    console.log('\n=== Form ready to submit ===');
+    console.log('Total fields in form:', form.querySelectorAll('input, select, textarea').length);
+    
+    // Log all form data before submission
+    const formData = new FormData(form);
+    console.log('\n=== Form Data to be sent ===');
+    for (let [key, value] of formData.entries()) {
+        console.log(`${key}: ${value}`);
+    }
+    
+    console.log('\n=== Submitting form ===');
+    console.log('URL:', form.action);
+    
+    // Submit the form
     form.submit();
+    
+    console.log('=== Form submission triggered ===');
+    console.log('=== GO TO PAYMENT DEBUG END ===');
+}
+
+function validateOtherLocations() {
+    console.log('Validating "Others" locations...');
+    
+    const pickupType = document.getElementById('pickupLocationType').value;
+    const returnType = document.getElementById('returnLocationType').value;
+    
+    let isValid = true;
+    
+    // Validate pickup if "Others"
+    if (pickupType === 'others') {
+        const pickupCategory = document.getElementById('pickupCategory').value;
+        const pickupDetails = document.getElementById('pickupDetails').value.trim();
+        
+        console.log('Pickup Others - Category:', pickupCategory, 'Details:', pickupDetails);
+        
+        if (!pickupCategory || !pickupDetails) {
+            alert('Please fill in pickup location details (both category and details)');
+            if (!pickupCategory) {
+                document.getElementById('pickupCategory').focus();
+            } else {
+                document.getElementById('pickupDetails').focus();
+            }
+            isValid = false;
+        } else {
+            // Set the final location value
+            const labels = { faculty: 'Faculty', college: 'College', office: 'Office' };
+            const fullLocation = `${labels[pickupCategory]}: ${pickupDetails}`;
+            document.getElementById('pickupLocation').value = fullLocation;
+            console.log('Set pickup location to:', fullLocation);
+        }
+    }
+    
+    // Validate return if "Others"
+    if (returnType === 'others') {
+        const returnCategory = document.getElementById('returnCategory').value;
+        const returnDetails = document.getElementById('returnDetails').value.trim();
+        
+        console.log('Return Others - Category:', returnCategory, 'Details:', returnDetails);
+        
+        if (!returnCategory || !returnDetails) {
+            alert('Please fill in return location details (both category and details)');
+            if (!returnCategory) {
+                document.getElementById('returnCategory').focus();
+            } else {
+                document.getElementById('returnDetails').focus();
+            }
+            isValid = false;
+        } else {
+            // Set the final location value
+            const labels = { faculty: 'Faculty', college: 'College', office: 'Office' };
+            const fullLocation = `${labels[returnCategory]}: ${returnDetails}`;
+            document.getElementById('returnLocation').value = fullLocation;
+            console.log('Set return location to:', fullLocation);
+        }
+    }
+    
+    return isValid;
 }
 
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Document loaded, initializing...');
+    console.log('Vehicle ID from PHP:', '{{ $vehicle->vehicleID }}');
+    
     calculateDurationAndPrice();
+    
+    // Add form submission debug
+    document.getElementById('bookingForm').addEventListener('submit', function(e) {
+        console.log('Form submitted!');
+        console.log('Form action:', this.action);
+        console.log('Form method:', this.method);
+        
+        // Let it submit normally
+    });
+});
+
+// Profile dropdown functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const profileContainer = document.getElementById('profile-container');
+    const profileDropdown = document.getElementById('profile-dropdown');
+    
+    if (profileContainer && profileDropdown) {
+        profileContainer.addEventListener('click', function(e) {
+            e.stopPropagation();
+            profileDropdown.style.display = profileDropdown.style.display === 'block' ? 'none' : 'block';
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function() {
+            profileDropdown.style.display = 'none';
+        });
+    }
 });
 </script>
-
 </body>
 </html>

@@ -17,6 +17,25 @@
 <body>
     @include('profile.partials.header')
 
+ <div class="progress-container">
+        <div class="steps">
+            <div class="step active">
+                <i class="fas fa-car"></i>
+                <span>Vehicle</span>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step">
+                <i class="fas fa-calendar-check"></i>
+                <span>Booking Details</span>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step">
+                <i class="fas fa-credit-card"></i>
+                <span>Payment</span>
+            </div>
+        </div>
+    </div>
+    
     <main>
         <div class="search-summary">
             <h3>Your Trip Details</h3>
@@ -81,20 +100,22 @@
                                 <div class="detail-row"><i class="fas fa-car-side"></i><span>{{ $vehicle->vehicleType }}</span></div>
                             </div>
                             
-                           <!-- In your vehicles-grid section -->
                             <div class="vehicle-footer">
                                 <div class="price-container">
                                     <span class="currency">MYR</span>
                                     <span class="price-value">{{ number_format($vehicle->pricePerDay, 2) }}</span>
+                                    <span class="price-period">/day</span>
                                 </div>
-                                <!-- CHANGE THIS LINE: Book Now → Select Vehicle -->
-                                <a href="{{ route('selectVehicle', [
-                                    'id' => $vehicle->vehicleID,
+                                <!-- CHANGED: Book Now button -->
+                                <a href="{{ route('booking.form', [
+                                    'vehicleID' => $vehicle->vehicleID,
                                     'pickup_date' => $searchParams['pickup_date'] ?? '',
                                     'pickup_time' => $searchParams['pickup_time'] ?? '',
                                     'return_date' => $searchParams['return_date'] ?? '',
                                     'return_time' => $searchParams['return_time'] ?? ''
-                                ]) }}" class="btn-select">Select Vehicle</a>
+                                ]) }}" class="btn-book-now">
+                                    <i class="fas fa-calendar-check"></i> BOOK NOW
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -105,7 +126,7 @@
                     <i class="fas fa-car"></i>
                     <h3>No Vehicles Available</h3>
                     <p>Try different dates or contact us for assistance.</p>
-                    <a href="{{ url('/') }}" class="btn-select">Back to Search</a>
+                    <a href="{{ url('/') }}" class="btn-book-now">Back to Search</a>
                 </div>
             @endif
         </div>
