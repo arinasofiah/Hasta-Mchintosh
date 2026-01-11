@@ -505,19 +505,22 @@ class BookingController extends Controller
             });
 
         // Categorize bookings
-        $active = $bookings->filter(function($booking) {
-            if (!in_array($booking->bookingStatus, ['approved', 'confirmed'])) {
-                return false;
-            }
-            
-            $now = Carbon::now();
-            $start = Carbon::parse($booking->pickupDateTime);
-            $end = Carbon::parse($booking->returnDateTime);
-            
-            return $now->between($start, $end);
+        $now = Carbon::now();
+
+        $active = $bookings->filter(function($booking) use ($now) {
+            return in_array($booking->bookingStatus, ['approved', 'confirmed'])
+                && $now->gte(Carbon::parse($booking->pickupDateTime))
+                && $now->lte(Carbon::parse($booking->returnDateTime));
         });
-        
-        $pending = $bookings->where('bookingStatus', 'pending');
+
+        $pending = $bookings->filter(function($booking) use ($now) {
+            return $booking->bookingStatus === 'pending'
+                || (
+                    in_array($booking->bookingStatus, ['approved', 'confirmed'])
+                    && $now->lt(Carbon::parse($booking->pickupDateTime))
+                );
+        });
+
         $completed = $bookings->where('bookingStatus', 'completed');
         $cancelled = $bookings->where('bookingStatus', 'cancelled');
 
