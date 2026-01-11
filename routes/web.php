@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 use App\Http\Controllers\OcrController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\VehicleController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\PromotionController;
 use App\Http\Controllers\LoyaltyController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\PaymentController;
 
 // Public routes
 Route::view('/signup', 'signup');
@@ -99,6 +101,13 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     // Commission
     Route::post('/commission/reset/{id}', [PromotionController::class, 'resetCommission'])->name('admin.commission.reset');
     Route::put('/commission/update/{id}', [PromotionController::class, 'updateCommission'])->name('admin.commission.update');
+
+    Route::get('/bookings', [AdminController::class, 'bookings'])->name('admin.bookings');
+    // Route::get('/bookings/{id}', [AdminController::class, 'showBooking'])->name('bookings.show');    
+    Route::post('/payment/{id}/approve', [AdminController::class, 'approvePayment'])->name('admin.payment.approve');
+    Route::post('/bookings/{id}/approve', [AdminController::class, 'approveBooking'])->name('admin.bookings.approve');
+    Route::post('/bookings/{id}/reject', [AdminController::class, 'rejectBooking'])->name('admin.bookings.reject');
+    Route::post('/bookings/{id}/complete', [AdminController::class, 'completeReturn'])->name('admin.bookings.complete');
 });
 
 //  Booking routes (customer)
