@@ -8,134 +8,46 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="{{ asset('css/header.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     <style>
         body { font-family: 'Poppins', sans-serif; background-color: #f8f9fa; }
-        
         .sidebar { width: 250px; height: 100vh; background: #fff; position: fixed; padding: 20px; border-right: 1px solid #eee; }
         .nav-item { padding: 12px 15px; border-radius: 8px; color: #333; text-decoration: none; display: flex; align-items: center; margin-bottom: 5px; }
         .nav-item.active { background-color: #fff5f5; color: #bc3737; font-weight: 600; border-right: 4px solid #bc3737; }
-        
         .main-content { margin-left: 250px; padding: 40px; }
-        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         
-        .staff-card { 
-            background: #fff; 
-            border-radius: 15px; 
-            padding: 20px; 
-            margin-bottom: 20px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.03); 
-        }
-        
+        /* Staff Card */
+        .staff-card { background: #fff; border-radius: 15px; padding: 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
         .staff-info { flex-grow: 1; }
         
-        .action-btn { 
-            background: #eee; 
-            border: none; 
-            padding: 8px 12px; 
-            border-radius: 8px; 
-            margin-left: 10px; 
-            transition: 0.3s; 
-            cursor: pointer; 
-        }
+        /* Action Buttons */
+        .action-btn { background: #eee; border: none; padding: 8px 12px; border-radius: 8px; margin-left: 10px; transition: 0.3s; cursor: pointer; }
         .action-btn:hover { background: #e0e0e0; }
         .action-btn.delete:hover { background: #ffebee; color: #d32f2f; }
         
+        /* Header */
+        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .tab-menu { border-bottom: 1px solid #eee; margin-bottom: 20px; }
-        .tab-link { padding: 10px 20px; text-decoration: none; color: #666; display: inline-block; }
-        .tab-link.active { color: #000; border-bottom: 2px solid #000; font-weight: 600; }
         
-        .alert-floating { 
-            margin-bottom: 25px; 
-            border-radius: 10px; 
-            border: none; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
-        }
+        /* Alerts */
+        .alert-floating { margin-bottom: 25px; border-radius: 10px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         
-        .activity-log { 
-            max-height: 300px; 
-            overflow-y: auto; 
-            border: 1px solid #eee; 
-            border-radius: 10px; 
-            padding: 15px;
-        }
-        .activity-item { 
-            padding: 10px 0; 
-            border-bottom: 1px solid #f0f0f0; 
-        }
+        /* Modal Styles */
+        .activity-log { max-height: 300px; overflow-y: auto; border: 1px solid #eee; border-radius: 10px; padding: 15px; }
+        .activity-item { padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
         .activity-item:last-child { border-bottom: none; }
-        
-        .commission-badge {
-            background: #e7f4e4;
-            color: #2e7d32;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-        
-        .commission-amount {
-            color: #1a8f36;
-            font-weight: 600;
-            font-size: 1.2rem;
-        }
-        
-        .commission-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .commission-list li {
-            padding: 8px 0;
-            border-bottom: 1px solid #f0f0f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .commission-list li:last-child {
-            border-bottom: none;
-        }
-        
-        .commission-type {
-            font-weight: 500;
-            color: #333;
-        }
-        
-        .commission-status {
-            font-size: 12px;
-            padding: 2px 8px;
-            border-radius: 12px;
-        }
-        
-        .status-pending {
-            background: #fff3cd;
-            color: #856404;
-        }
-        
-        .status-approved {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .status-rejected {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        
-        .commission-date {
-            font-size: 12px;
-            color: #666;
-        }
-        
-        .no-commissions {
-            text-align: center;
-            padding: 30px;
-            color: #999;
-        }
+        .commission-badge { background: #e7f4e4; color: #2e7d32; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+        .commission-amount { color: #1a8f36; font-weight: 600; font-size: 1.2rem; }
+        .commission-list { list-style: none; padding: 0; margin: 0; }
+        .commission-list li { padding: 8px 0; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+        .commission-list li:last-child { border-bottom: none; }
+        .commission-type { font-weight: 500; color: #333; }
+        .commission-status { font-size: 12px; padding: 2px 8px; border-radius: 12px; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-approved { background: #d4edda; color: #155724; }
+        .status-rejected { background: #f8d7da; color: #721c24; }
+        .commission-date { font-size: 12px; color: #666; }
+        .no-commissions { text-align: center; padding: 30px; color: #999; }
     </style>
 </head>
 <body>
@@ -179,77 +91,80 @@
             </div>
         @endif
 
+        @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show alert-floating" role="alert">
+                <strong>Error!</strong> {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
         <div class="header-flex">
             <h2>Staff Management</h2>
             <a href="{{ route('admin.staff.create')}}" class="btn btn-success" style="border-radius: 20px; background-color: #1a8f36; text-decoration: none;">
                 + Add New Staff
             </a>
+
         </div>
 
-        <div class="tab-menu">
+        <!-- <div class="tab-menu">
             <span class="float-end text-muted">Total <b>{{ $staffs->count() }}</b></span>
-        </div>
+        </div> -->
 
         @foreach($staffs as $staff)
-            <!-- In your staff-card loop, add invitation status -->
-<div class="staff-card">
-    <div class="staff-info">
-        <h4 class="mb-2">{{ $staff->name ?? 'Pending Registration' }}</h4>
-        
-        <!-- Add invitation status badge -->
-        @if($staff->invitation_status === 'pending')
-            <span class="badge bg-warning mb-2">Invitation Sent</span>
-        @elseif($staff->invitation_status === 'accepted')
-            <span class="badge bg-success mb-2">Active</span>
-        @elseif($staff->invitation_status === 'expired')
-            <span class="badge bg-danger mb-2">Expired</span>
-        @elseif($staff->invitation_status === 'cancelled')
-            <span class="badge bg-secondary mb-2">Cancelled</span>
-        @endif
-        
-        <div class="text-muted small mt-3">
-            <p class="mb-1">Email: {{ $staff->email }}</p>
-            <p class="mb-0">Phone: {{ $staff->phoneNumber ?? 'Not registered yet' }}</p>
-        </div>
-    </div>
+            <div class="staff-card">
+                <div class="staff-info">
+                    <h4 class="mb-2">{{ $staff->name ?? 'Pending Registration' }}</h4>
+                    
+                    @if($staff->invitation_status === 'pending')
+                        <span class="badge bg-warning mb-2">Invitation Sent</span>
+                    @elseif($staff->invitation_status === 'accepted')
+                        <span class="badge bg-success mb-2">Active</span>
+                    @elseif($staff->invitation_status === 'expired')
+                        <span class="badge bg-danger mb-2">Expired</span>
+                    @elseif($staff->invitation_status === 'cancelled')
+                        <span class="badge bg-secondary mb-2">Cancelled</span>
+                    @endif
+                    
+                    <div class="text-muted small mt-3">
+                        <p class="mb-1">Email: {{ $staff->email }}</p>
+                        <p class="mb-0">Phone: {{ $staff->phoneNumber ?? 'Not registered yet' }}</p>
+                    </div>
+                </div>
 
-    <div class="d-flex gap-2">
-        <!-- Add invitation action buttons -->
-        @if($staff->invitation_status === 'pending')
-            <form action="{{ route('admin.staff.resendInvitation', $staff->userID) }}" method="POST" class="d-inline">
-                @csrf
-                <button type="submit" class="action-btn" title="Resend Invitation">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
-            </form>
-            <form action="{{ route('admin.staff.cancelInvitation', $staff->userID) }}" method="POST" class="d-inline">
-                @csrf
-                <button type="submit" class="action-btn delete" title="Cancel Invitation" onclick="return confirm('Cancel this invitation?')">
-                    <i class="fas fa-ban"></i>
-                </button>
-            </form>
-        @endif
-        
-        <!-- Only show edit/delete for registered staff -->
-        @if($staff->invitation_status === 'accepted' || $staff->invitation_status === 'none')
-            <button type="button" class="action-btn view" data-bs-toggle="modal" data-bs-target="#profileModal{{ $staff->userID }}" title="View Profile">
-                <i class="fas fa-user"></i>
-            </button>
-            
-            <button type="button" class="action-btn edit" data-bs-toggle="modal" data-bs-target="#editModal{{ $staff->userID }}" title="Edit Staff">
-                <i class="fas fa-edit"></i>
-            </button>
+                <div class="d-flex gap-2">
+                    @if($staff->invitation_status === 'pending')
+                        <form action="{{ route('admin.staff.resendInvitation', $staff->userID) }}" method="POST" class="d-inline">
+                            @csrf
+                            <button type="submit" class="action-btn" title="Resend Invitation">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </form>
+                        <form action="{{ route('admin.staff.cancelInvitation', $staff->userID) }}" method="POST" class="d-inline">
+                            @csrf
+                            <button type="submit" class="action-btn delete" title="Cancel Invitation" onclick="return confirm('Cancel this invitation?')">
+                                <i class="fas fa-ban"></i>
+                            </button>
+                        </form>
+                    @endif
+                    
+                    @if($staff->invitation_status === 'accepted' || $staff->invitation_status === 'none')
+                        <button type="button" class="action-btn view" data-bs-toggle="modal" data-bs-target="#profileModal{{ $staff->userID }}" title="View Profile">
+                            <i class="fas fa-user"></i>
+                        </button>
+                        
+                        <button type="button" class="action-btn edit" data-bs-toggle="modal" data-bs-target="#editModal{{ $staff->userID }}" title="Edit Staff">
+                            <i class="fas fa-edit"></i>
+                        </button>
 
-            <form action="{{ route('admin.staff.destroy', $staff->userID) }}" method="POST" onsubmit="return confirm('Are you sure?')">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="action-btn delete" title="Delete Staff">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-            </form>
-        @endif
-    </div>
-</div>
+                        <form action="{{ route('admin.staff.destroy', $staff->userID) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this staff?')" class="d-inline">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="action-btn delete" title="Delete Staff">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </form>
+                    @endif
+                </div>
             </div>
 
             <!-- Profile Modal -->
@@ -279,12 +194,44 @@
                                         </tr>
                                         <tr>
                                             <th>Phone:</th>
-                                            <td>{{ $staff->phoneNumber }}</td>
+                                            <td>{{ $staff->phoneNumber ?? 'N/A' }}</td>
                                         </tr>
                                         <tr>
                                             <th>Position:</th>
-                                            <td>{{ $staff->position }}</td>
+                                            <td>{{ $staff->staff->position ?? 'Not set' }}</td>
                                         </tr>
+                                        <tr>
+                                            <th>Role:</th>
+                                            <td style="text-transform: capitalize;">{{ $staff->userType }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Invitation Status:</th>
+                                            <td>
+                                                @if($staff->invitation_status === 'pending')
+                                                    <span class="badge bg-warning">Invitation Sent</span>
+                                                    @if($staff->invitation_expires_at)
+                                                        <br><small>Expires: {{ $staff->invitation_expires_at->format('M d, Y') }}</small>
+                                                    @endif
+                                                @elseif($staff->invitation_status === 'accepted')
+                                                    <span class="badge bg-success">Registered</span>
+                                                    @if($staff->invitation_accepted_at)
+                                                        <br><small>Accepted: {{ $staff->invitation_accepted_at->format('M d, Y') }}</small>
+                                                    @endif
+                                                @elseif($staff->invitation_status === 'expired')
+                                                    <span class="badge bg-danger">Expired</span>
+                                                @elseif($staff->invitation_status === 'cancelled')
+                                                    <span class="badge bg-secondary">Cancelled</span>
+                                                @else
+                                                    <span class="badge bg-info">Direct Registration</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        @if($staff->invited_by && $staff->inviter)
+                                        <tr>
+                                            <th>Invited By:</th>
+                                            <td>{{ $staff->inviter->name }}</td>
+                                        </tr>
+                                        @endif
                                         <tr>
                                             <th>Member Since:</th>
                                             <td>{{ \Carbon\Carbon::parse($staff->created_at)->format('d M Y') }}</td>
@@ -294,7 +241,7 @@
                                 <div class="col-md-6">
                                     <div style="background: #f0f9ff; border: 2px solid #1a8f36; border-radius: 10px; padding: 20px;">
                                         <h6 class="mb-3">Commission Summary</h6>
-                                        <h3 class="commission-amount mb-3">RM {{ number_format($staff->commissionCount ?? 0, 2) }}</h3>
+                                        <h3 class="commission-amount mb-3">RM {{ number_format($staff->staff->commissionCount ?? 0, 2) }}</h3>
                                         <p class="text-muted small mb-0">Total Commission Approved</p>
                                     </div>
                                 </div>
@@ -344,7 +291,7 @@
                 </div>
             </div>
 
-            <!-- Edit Modal - Updated to include CommissionCount -->
+            <!-- Edit Modal -->
             <div class="modal fade" id="editModal{{ $staff->userID }}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-lg">
                     <form action="{{ route('admin.staff.update', $staff->userID) }}" method="POST" class="modal-content">
@@ -367,7 +314,7 @@
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Position</label>
-                                        <input type="text" name="position" class="form-control" value="{{ $staff->position }}" required>
+                                        <input type="text" name="position" class="form-control" value="{{ $staff->staff->position ?? '' }}" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -377,8 +324,15 @@
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Commission Count (RM)</label>
-                                        <input type="number" name="commissionCount" class="form-control" value="{{ $staff->commissionCount ?? 0 }}" step="0.01" min="0" required>
+                                        <input type="number" name="commissionCount" class="form-control" value="{{ $staff->staff->commissionCount ?? 0 }}" step="0.01" min="0" required>
                                         <small class="text-muted">Total approved commission amount</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Role</label>
+                                        <select name="userType" class="form-select">
+                                            <option value="staff" {{ $staff->userType == 'staff' ? 'selected' : '' }}>Staff</option>
+                                            <option value="admin" {{ $staff->userType == 'admin' ? 'selected' : '' }}>Admin</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -431,7 +385,6 @@
     <script>
         function approveCommission(commissionId, amount) {
             if (confirm('Approve this commission claim of RM ' + amount.toFixed(2) + '?')) {
-                // AJAX call to approve commission
                 fetch('/admin/commission/' + commissionId + '/approve', {
                     method: 'POST',
                     headers: {
@@ -452,7 +405,6 @@
         
         function rejectCommission(commissionId) {
             if (confirm('Reject this commission claim?')) {
-                // AJAX call to reject commission
                 fetch('/admin/commission/' + commissionId + '/reject', {
                     method: 'POST',
                     headers: {
