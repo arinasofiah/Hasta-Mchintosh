@@ -819,11 +819,11 @@ class AdminController extends Controller
         ));
     }
 
-    // public function showBooking($id)
-    // {
-    //     $booking = Bookings::with('customer', 'vehicle', 'payment')->findOrFail($id);
-    //     return view('admin.bookings.show', compact('booking'));
-    // }
+    public function showBooking($id)
+    {
+        $booking = Bookings::with('customer', 'vehicle', 'payment')->findOrFail($id);
+        return view('admin.bookings.show', compact('booking'));
+    }
 
 
     public function approvePayment($id)

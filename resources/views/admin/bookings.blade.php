@@ -125,6 +125,7 @@
                                         <span class="status-badge bg-yellow">{{ ucfirst($booking->bookingStatus) }}</span>
                                     @endif
                                 </td>
+                                <td><a href="{{ route('admin.bookings.show', $booking->bookingID) }}" class="action-btn">Details</a></td>
                                 <td>
                                     <div class="d-flex gap-2">
                                         <form action="{{ route('admin.bookings.approve', $booking->bookingID) }}" method="POST">
@@ -160,6 +161,7 @@
                                 <td>#{{ $booking->bookingID }}</td>
                                 <td>{{ \Carbon\Carbon::parse($booking->pickupDate)->format('d M Y, h:i A') }}</td>
                                 <td>{{ $booking->customer->name ?? 'Unknown' }}</td>
+                                <td><a href="{{ route('admin.bookings.show', $booking->bookingID) }}" class="action-btn">Details</a></td>
                             </tr>
                             @empty <tr><td colspan="4" class="text-center p-4 text-muted">No upcoming pickups.</td></tr>
                             @endforelse
@@ -207,6 +209,7 @@
                                         {{ ucfirst($booking->bookingStatus) }}
                                     </span>
                                 </td>
+                                <td><a href="{{ route('admin.bookings.show', $booking->bookingID) }}" class="action-btn">Details</a></td>
                             </tr>
                             @empty <tr><td colspan="5" class="text-center p-4 text-muted">No history found.</td></tr>
                             @endforelse
