@@ -25,6 +25,7 @@
         .status-available { background: #c1f2c7; color: #2e7d32; }
         .status-rented { background: #e3f2fd; color: #1565c0; }
         .status-maintenance { background: #ffebee; color: #c62828; }
+        .status-reserved { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
         
         .action-btn { background: #eee; border: none; padding: 8px 12px; border-radius: 8px; margin-left: 10px; transition: 0.3s; cursor: pointer; }
         .action-btn:hover { background: #e0e0e0; }
@@ -50,6 +51,11 @@
         .available-count { background: #c1f2c7; color: #2e7d32; }
         .rented-count { background: #e3f2fd; color: #1565c0; }
         .maintenance-count { background: #ffebee; color: #c62828; }
+        .reserved-count { background: #fff3cd; color: #856404; }
+        
+        /* Booking info */
+        .booking-info { font-size: 0.85rem; margin-top: 5px; }
+        .booking-info .text-warning { color: #d39e00 !important; }
     </style>
 </head>
 <body>
@@ -102,13 +108,17 @@
 
         <div class="tab-menu">
             <a href="?status=available" class="tab-link {{ $status == 'available' ? 'active' : '' }}">
-                Active 
+                Available 
+                <span class="count-badge available-count">{{ $availableCount }}</span>
+              
             </a>
             <a href="?status=rented" class="tab-link {{ $status == 'rented' ? 'active' : '' }}">
                 On Rent 
+                <span class="count-badge rented-count">{{ $onRentCount }}</span>
             </a>
             <a href="?status=maintenance" class="tab-link {{ $status == 'maintenance' ? 'active' : '' }}">
                 Inactive 
+                <span class="count-badge maintenance-count">{{ $maintenanceCount }}</span>
             </a>
             
             <div class="stats-counter">
@@ -120,23 +130,65 @@
             @foreach($vehicles as $vehicle)
                 <div class="vehicle-card">
                     @if($vehicle->vehiclePhoto)
-                            <img src="{{ Storage::url($vehicle->vehiclePhoto) }}" class="vehicle-img" alt="Car">
-                        @else
-                            <img src="{{ asset('img/vehicles/' . $vehicle->vehicleID . '.png') }}" class="vehicle-img" alt="Car" 
-                                onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.png') }}'">
-                        @endif
+                        <img src="{{ Storage::url($vehicle->vehiclePhoto) }}" class="vehicle-img" alt="Car">
+                    @else
+                        <img src="{{ asset('img/vehicles/' . $vehicle->vehicleID . '.png') }}" class="vehicle-img" alt="Car" 
+                            onerror="this.onerror=null; this.src='{{ asset('img/vehicles/default.png') }}'">
+                    @endif
+                    
                     <div class="vehicle-info">
                         <h4 class="mb-1">{{ $vehicle->model }}</h4>
                         <p class="text-muted mb-1">
                             {{ $vehicle->vehicleType }} • 
                             {{ $vehicle->plateNumber }} 
                         </p>
+                        
+                        {{-- Show booking info if reserved --}}
+                        @if($vehicle->status == 'reserved')
+                            @php
+                                // Get the upcoming booking for this vehicle
+                                $upcomingBooking = DB::table('booking')
+                                    ->where('vehicleID', $vehicle->vehicleID)
+                                    ->whereIn('bookingStatus', ['confirmed', 'approved'])
+                                    ->where('startDate', '>', now())
+                                    ->orderBy('startDate', 'asc')
+                                    ->first();
+                            @endphp
+                            @if($upcomingBooking)
+                                <div class="booking-info">
+                                    <small class="text-warning">
+                                        <i class="fas fa-calendar-alt me-1"></i>
+                                        Reserved from {{ \Carbon\Carbon::parse($upcomingBooking->startDate)->format('M d, Y') }}
+                                        @if($upcomingBooking->customerID)
+                                            @php
+                                                $customer = DB::table('users')->where('userID', $upcomingBooking->customerID)->first();
+                                            @endphp
+                                            @if($customer)
+                                                for {{ $customer->name }}
+                                            @endif
+                                        @endif
+                                    </small>
+                                </div>
+                            @endif
+                        @endif
                     </div>
 
                     <div>
-                        <span class="status-badge status-{{ $vehicle->status }}">
-                            {{ ucfirst($vehicle->status) }}
-                        </span>
+                        @if($vehicle->status == 'reserved')
+                            <span class="status-badge status-reserved">
+                                <i class="fas fa-clock me-1"></i> Reserved
+                            </span>
+                        @else
+                            <span class="status-badge status-{{ $vehicle->status }}">
+                                @if($vehicle->status == 'available')
+                                    Available
+                                @elseif($vehicle->status == 'rented')
+                                    On Rent
+                                @else
+                                    {{ ucfirst($vehicle->status) }}
+                                @endif
+                            </span>
+                        @endif
                     </div>
 
                     <div class="ms-5 d-flex">
@@ -156,92 +208,92 @@
                 </div>
 
                 {{-- EDIT MODAL --}}
-                {{-- EDIT MODAL --}}
-<div class="modal fade" id="editModal{{ $vehicle->vehicleID }}" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <form action="{{ route('admin.vehicles.update', $vehicle->vehicleID) }}" method="POST" class="modal-content" enctype="multipart/form-data">
-            @csrf
-            @method('PUT')
-            <div class="modal-header">
-                <h5 class="modal-title">Edit Vehicle: {{ $vehicle->model }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-12 mb-3">
-                        <label class="form-label">Vehicle Photo</label>
-                        <input type="file" name="vehiclePhoto" class="form-control" accept="image/*">
-                        @if($vehicle->vehiclePhoto)
-                            <div class="mt-2">
-                                <small>Current photo:</small><br>
-                                <img src="{{ Storage::url($vehicle->vehiclePhoto) }}" alt="Current photo" style="max-width: 200px; max-height: 150px; border-radius: 5px;">
+                <div class="modal fade" id="editModal{{ $vehicle->vehicleID }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <form action="{{ route('admin.vehicles.update', $vehicle->vehicleID) }}" method="POST" class="modal-content" enctype="multipart/form-data">
+                            @csrf
+                            @method('PUT')
+                            <div class="modal-header">
+                                <h5 class="modal-title">Edit Vehicle: {{ $vehicle->model }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
-                        @else
-                            <div class="mt-2">
-                                <small>No photo uploaded</small>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label class="form-label">Vehicle Photo</label>
+                                        <input type="file" name="vehiclePhoto" class="form-control" accept="image/*">
+                                        @if($vehicle->vehiclePhoto)
+                                            <div class="mt-2">
+                                                <small>Current photo:</small><br>
+                                                <img src="{{ Storage::url($vehicle->vehiclePhoto) }}" alt="Current photo" style="max-width: 200px; max-height: 150px; border-radius: 5px;">
+                                            </div>
+                                        @else
+                                            <div class="mt-2">
+                                                <small>No photo uploaded</small>
+                                            </div>
+                                        @endif
+                                        <small class="text-muted">Leave empty to keep current photo</small>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Model Name</label>
+                                        <input type="text" name="model" class="form-control" value="{{ $vehicle->model }}" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Plate Number</label>
+                                        <input type="text" name="plateNumber" class="form-control" value="{{ $vehicle->plateNumber }}" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Vehicle Type</label>
+                                        <input type="text" name="vehicleType" class="form-control" value="{{ $vehicle->vehicleType }}" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Daily Price (RM)</label>
+                                        <input type="number" step="0.01" name="pricePerDay" class="form-control" value="{{ $vehicle->pricePerDay }}" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Seats</label>
+                                        <input type="number" name="seat" class="form-control" value="{{ $vehicle->seat }}" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Transmission</label>
+                                        <select name="transmission" class="form-select">
+                                            <option value="Manual" {{ $vehicle->transmission == 'Manual' ? 'selected' : '' }}>Manual</option>
+                                            <option value="Automatic" {{ $vehicle->transmission == 'Automatic' ? 'selected' : '' }}>Automatic</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">AC</label>
+                                        <select name="ac" class="form-select">
+                                            <option value="1" {{ $vehicle->ac == 1 ? 'selected' : '' }}>Yes</option>
+                                            <option value="0" {{ $vehicle->ac == 0 ? 'selected' : '' }}>No</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Fuel Type</label>
+                                        <input type="text" name="fuelType" class="form-control" value="{{ $vehicle->fuelType }}">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Fuel Level (%)</label>
+                                        <input type="number" min="0" max="100" name="fuelLevel" class="form-control" value="{{ $vehicle->fuelLevel }}">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Status</label>
+                                        <select name="status" class="form-select">
+                                            <option value="available" {{ $vehicle->status == 'available' ? 'selected' : '' }}>Available</option>
+                                            <option value="reserved" {{ $vehicle->status == 'reserved' ? 'selected' : '' }}>Reserved</option>
+                                            <option value="rented" {{ $vehicle->status == 'rented' ? 'selected' : '' }}>Rented</option>
+                                            <option value="maintenance" {{ $vehicle->status == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
-                        @endif
-                        <small class="text-muted">Leave empty to keep current photo</small>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Model Name</label>
-                        <input type="text" name="model" class="form-control" value="{{ $vehicle->model }}" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Plate Number</label>
-                        <input type="text" name="plateNumber" class="form-control" value="{{ $vehicle->plateNumber }}" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Vehicle Type</label>
-                        <input type="text" name="vehicleType" class="form-control" value="{{ $vehicle->vehicleType }}" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Daily Price (RM)</label>
-                        <input type="number" step="0.01" name="pricePerDay" class="form-control" value="{{ $vehicle->pricePerDay }}" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Seats</label>
-                        <input type="number" name="seat" class="form-control" value="{{ $vehicle->seat }}" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Transmission</label>
-                        <select name="transmission" class="form-select">
-                            <option value="Manual" {{ $vehicle->transmission == 'Manual' ? 'selected' : '' }}>Manual</option>
-                            <option value="Automatic" {{ $vehicle->transmission == 'Automatic' ? 'selected' : '' }}>Automatic</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">AC</label>
-                        <select name="ac" class="form-select">
-                            <option value="1" {{ $vehicle->ac == 1 ? 'selected' : '' }}>Yes</option>
-                            <option value="0" {{ $vehicle->ac == 0 ? 'selected' : '' }}>No</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Fuel Type</label>
-                        <input type="text" name="fuelType" class="form-control" value="{{ $vehicle->fuelType }}">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Fuel Level (%)</label>
-                        <input type="number" min="0" max="100" name="fuelLevel" class="form-control" value="{{ $vehicle->fuelLevel }}">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Status</label>
-                        <select name="status" class="form-select">
-                            <option value="available" {{ $vehicle->status == 'available' ? 'selected' : '' }}>Available</option>
-                            <option value="rented" {{ $vehicle->status == 'rented' ? 'selected' : '' }}>Rented</option>
-                            <option value="maintenance" {{ $vehicle->status == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
-                        </select>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary" style="background-color: #bc3737; border:none;">Save Changes</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary" style="background-color: #bc3737; border:none;">Save Changes</button>
-            </div>
-        </form>
-    </div>
-</div>
             @endforeach
         @else
             <div class="text-center py-5">
@@ -251,7 +303,7 @@
                 <h4 class="text-muted">No vehicles found</h4>
                 <p class="text-muted">
                     @if($status == 'available')
-                        No available vehicles at the moment.
+                        No active vehicles (available or reserved) at the moment.
                     @elseif($status == 'rented')
                         No vehicles currently on rent.
                     @else
@@ -273,7 +325,6 @@
             const editModals = document.querySelectorAll('.modal');
             editModals.forEach(modal => {
                 modal.addEventListener('hidden.bs.modal', function() {
-                    // Check if we should refresh (you could add a data attribute to track changes)
                     setTimeout(() => {
                         if (window.vehicleUpdated) {
                             location.reload();

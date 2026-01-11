@@ -1055,7 +1055,6 @@ let baseRentalPrice = {{ $originalRentalPrice ?? 0 }};
 let deliveryCharge = {{ $deliveryCharge ?? 0 }}; 
 let promotionDiscount = {{ $promotionDiscount ?? 0 }};
 let currentVoucherValue = 0;
-let originalRentalPrice = baseRentalPrice + deliveryCharge;
 
 // Initialize payment calculations
 document.addEventListener('DOMContentLoaded', function() {
@@ -1181,7 +1180,7 @@ function applyVoucherMath(id, amount) {
     
     if (discountRow && discountDisplay) {
         discountRow.style.display = 'flex';
-        discountDisplay.textContent = '- MYR ' + amount.toFixed(2);
+        discountDisplay.textContent = '- RM ' + amount.toFixed(2);
     }
     
     // Recalculate all payments
@@ -1199,8 +1198,11 @@ function resetVoucher() {
 }
 
 function updatePaymentSummary() {
+    // Calculate rental price with delivery
+    const rentalPriceWithDelivery = baseRentalPrice + deliveryCharge;
+    
     // Calculate subtotal after all discounts
-    const subtotal = Math.max(0, originalRentalPrice - promotionDiscount - currentVoucherValue);
+    const subtotal = Math.max(0, rentalPriceWithDelivery - promotionDiscount - currentVoucherValue);
     
     // Get payment type
     const paymentType = document.querySelector('input[name="payAmount"]:checked').value;
@@ -1212,29 +1214,36 @@ function updatePaymentSummary() {
     if (paymentType === 'deposit') {
         // Pay deposit only
         payNow = FIXED_DEPOSIT;
-        remainingBalance = subtotal - FIXED_DEPOSIT;
+        remainingBalance = subtotal; // They still owe the full rental amount
         paymentTypeLabel = 'Deposit Only';
     } else {
-        // Pay full amount
+        // Pay full amount (rental + deposit)
         payNow = subtotal + FIXED_DEPOSIT;
         remainingBalance = 0;
         paymentTypeLabel = 'Full Amount';
     }
     
+    // Total vehicle cost = rental cost after all discounts + deposit
+    const totalVehicleCost = subtotal + FIXED_DEPOSIT;
+    
     // Update display values
     document.getElementById('rental_price_display').textContent = 'RM ' + baseRentalPrice.toFixed(2);
+    
+    // Update delivery charge display if it exists
+    if (deliveryCharge > 0) {
+        const deliveryDisplay = document.getElementById('delivery_charge_display');
+        if (deliveryDisplay) {
+            deliveryDisplay.textContent = 'RM ' + deliveryCharge.toFixed(2);
+        }
+    }
+    
     document.getElementById('subtotal_display').textContent = 'RM ' + subtotal.toFixed(2);
     document.getElementById('summary_deposit_display').textContent = 'RM ' + FIXED_DEPOSIT.toFixed(2);
+    document.getElementById('deposit_display').textContent = 'RM ' + FIXED_DEPOSIT.toFixed(2);
     document.getElementById('payment_type_label').textContent = paymentTypeLabel;
     document.getElementById('pay_now_display').textContent = 'RM ' + payNow.toFixed(2);
     document.getElementById('remaining_balance_display').textContent = 'RM ' + Math.max(0, remainingBalance).toFixed(2);
-    document.getElementById('total_vehicle_cost_display').textContent = 'RM ' + (subtotal + FIXED_DEPOSIT).toFixed(2);
-
-    // Update delivery charge display if it exists
-    const deliveryChargeDisplay = document.getElementById('delivery_charge_display');
-    if (deliveryChargeDisplay) {
-        deliveryChargeDisplay.textContent = 'RM ' + deliveryCharge.toFixed(2);
-    }
+    document.getElementById('total_vehicle_cost_display').textContent = 'RM ' + totalVehicleCost.toFixed(2);
 }
 
 function handleFileSelect(e) {
@@ -1314,6 +1323,9 @@ document.getElementById('paymentForm').addEventListener('submit', function(e) {
     }
 
     const formData = new FormData(this);
+    
+    // Add promotion discount to form data
+    formData.append('promotion_discount', promotionDiscount);
 
     fetch("{{ route('booking.confirm') }}", {
         method: 'POST',

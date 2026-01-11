@@ -102,28 +102,142 @@ class Bookings extends Model
      * Update vehicle status based on booking dates
      */
     public function updateVehicleStatus()
-    {
-        $vehicle = $this->vehicle;
-        if (!$vehicle) return;
+{
+    $vehicle = $this->vehicle;
+    if (!$vehicle) return;
 
-        $now = Carbon::now();
-        $start = Carbon::parse($this->startDate . ' ' . $this->pickupTime);
-        $end = Carbon::parse($this->endDate . ' ' . $this->returnTime);
+    $now = Carbon::now();
+    
+    // Use pickup and return times if available, otherwise use default times
+    $start = Carbon::parse($this->startDate . ' ' . ($this->pickupTime ?? '08:00:00'));
+    $end = Carbon::parse($this->endDate . ' ' . ($this->returnTime ?? '17:00:00'));
+    
+    // If pickupTime/returnTime fields don't exist, check related pickup/return tables
+    if (!$this->pickupTime || !$this->returnTime) {
+        $pickup = $this->pickup()->first();
+        $return = $this->returnCar()->first();
+        
+        if ($pickup) {
+            $start = Carbon::parse($pickup->pickupDate . ' ' . $pickup->pickupTime);
+        }
+        
+        if ($return) {
+            $end = Carbon::parse($return->returnDate . ' ' . $return->returnTime);
+        }
+    }
 
-        if ($this->bookingStatus === 'approved' && $now->between($start, $end)) {
-            // Vehicle should be rented during booking period
-            if ($vehicle->status !== 'rented') {
-                $vehicle->status = 'rented';
+    switch ($this->bookingStatus) {
+        case 'approved':
+        case 'confirmed':
+        case 'reserved':
+            if ($now->lt($start)) {
+                // Future booking - mark as reserved
+                if ($vehicle->status !== 'reserved') {
+                    $vehicle->status = 'reserved';
+                    $vehicle->save();
+                }
+            } elseif ($now->between($start, $end)) {
+                // Currently active booking - mark as rented/in_use
+                if ($vehicle->status !== 'rented' && $vehicle->status !== 'in_use') {
+                    $vehicle->status = 'rented'; // or 'in_use' depending on your system
+                    $vehicle->save();
+                }
+            } elseif ($now->gt($end)) {
+                // Past booking - mark as available (unless another booking exists)
+                // But only if no other active booking for this vehicle
+                $hasActiveBooking = self::where('vehicleID', $vehicle->vehicleID)
+                    ->where('bookingID', '!=', $this->bookingID)
+                    ->whereIn('bookingStatus', ['approved', 'confirmed', 'reserved'])
+                    ->where(function($query) use ($now) {
+                        $query->where('endDate', '>=', $now)
+                              ->orWhere(function($q) use ($now) {
+                                  $q->where('startDate', '<=', $now)
+                                    ->where('endDate', '>=', $now);
+                              });
+                    })
+                    ->exists();
+                    
+                if (!$hasActiveBooking && $vehicle->status !== 'available') {
+                    $vehicle->status = 'available';
+                    $vehicle->save();
+                }
+            }
+            break;
+            
+        case 'cancelled':
+        case 'rejected':
+            // Only mark as available if no other active bookings
+            $hasActiveBooking = self::where('vehicleID', $vehicle->vehicleID)
+                ->where('bookingID', '!=', $this->bookingID)
+                ->whereIn('bookingStatus', ['approved', 'confirmed', 'reserved'])
+                ->where(function($query) use ($now) {
+                    $query->where('endDate', '>=', $now)
+                          ->orWhere(function($q) use ($now) {
+                              $q->where('startDate', '<=', $now)
+                                ->where('endDate', '>=', $now);
+                          });
+                })
+                ->exists();
+                
+            if (!$hasActiveBooking && $vehicle->status !== 'available') {
+                $vehicle->status = 'available';
                 $vehicle->save();
             }
-        } elseif ($this->bookingStatus === 'approved' && $now->lt($start)) {
-            // Future approved booking, mark as reserved
-            if ($vehicle->status !== 'reserved') {
+            break;
+            
+        case 'completed':
+            // Booking completed - mark vehicle as available
+            // Check if there are any upcoming bookings first
+            $hasUpcomingBooking = self::where('vehicleID', $vehicle->vehicleID)
+                ->where('bookingID', '!=', $this->bookingID)
+                ->whereIn('bookingStatus', ['approved', 'confirmed', 'reserved'])
+                ->where('startDate', '>', $now)
+                ->exists();
+                
+            if (!$hasUpcomingBooking && $vehicle->status !== 'available') {
+                $vehicle->status = 'available';
+                $vehicle->save();
+            } elseif ($hasUpcomingBooking && $vehicle->status !== 'reserved') {
+                // If there's an upcoming booking, mark as reserved
                 $vehicle->status = 'reserved';
                 $vehicle->save();
             }
-        }
+            break;
+            
+        case 'pending':
+            // Pending bookings shouldn't affect vehicle status
+            // But we might want to mark it as "reserved" temporarily
+            // to prevent double booking during approval process
+            if ($now->between($start, $end)) {
+                // If booking is supposedly active but still pending, keep as is
+                // Or mark as reserved if you want to hold it
+                if ($vehicle->status === 'available') {
+                    $vehicle->status = 'reserved';
+                    $vehicle->save();
+                }
+            }
+            break;
+            
+        default:
+            // For any other status, ensure vehicle is available if no other bookings
+            $hasActiveBooking = self::where('vehicleID', $vehicle->vehicleID)
+                ->where('bookingID', '!=', $this->bookingID)
+                ->whereIn('bookingStatus', ['approved', 'confirmed', 'reserved'])
+                ->where(function($query) use ($now) {
+                    $query->where('endDate', '>=', $now)
+                          ->orWhere(function($q) use ($now) {
+                              $q->where('startDate', '<=', $now)
+                                ->where('endDate', '>=', $now);
+                          });
+                })
+                ->exists();
+                
+            if (!$hasActiveBooking && $vehicle->status !== 'available') {
+                $vehicle->status = 'available';
+                $vehicle->save();
+            }
     }
+}
 
     /**
      * Check if booking is currently active (in rental period)

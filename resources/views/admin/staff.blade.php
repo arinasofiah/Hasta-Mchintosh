@@ -191,36 +191,65 @@
         </div>
 
         @foreach($staffs as $staff)
-            <div class="staff-card">
-                <div class="staff-info">
-                    <h4 class="mb-2">{{ $staff->name }}</h4>
-                    <div class="text-muted small mt-3">
-                        <p class="mb-1">Email: {{ $staff->email }}</p>
-                        <p class="mb-0">Phone: {{ $staff->phoneNumber ?? 'N/A' }}</p>
-                    </div>
-                </div>
+            <!-- In your staff-card loop, add invitation status -->
+<div class="staff-card">
+    <div class="staff-info">
+        <h4 class="mb-2">{{ $staff->name ?? 'Pending Registration' }}</h4>
+        
+        <!-- Add invitation status badge -->
+        @if($staff->invitation_status === 'pending')
+            <span class="badge bg-warning mb-2">Invitation Sent</span>
+        @elseif($staff->invitation_status === 'accepted')
+            <span class="badge bg-success mb-2">Active</span>
+        @elseif($staff->invitation_status === 'expired')
+            <span class="badge bg-danger mb-2">Expired</span>
+        @elseif($staff->invitation_status === 'cancelled')
+            <span class="badge bg-secondary mb-2">Cancelled</span>
+        @endif
+        
+        <div class="text-muted small mt-3">
+            <p class="mb-1">Email: {{ $staff->email }}</p>
+            <p class="mb-0">Phone: {{ $staff->phoneNumber ?? 'Not registered yet' }}</p>
+        </div>
+    </div>
 
-                <div class="d-flex gap-2">
-                        {{-- 👤 VIEW PROFILE BUTTON --}}
-                        <button type="button" class="action-btn view" data-bs-toggle="modal" data-bs-target="#profileModal{{ $staff->userID }}" title="View Profile">
-                            <i class="fas fa-user"></i>
-                        </button>
-                        
-                        {{-- 📝 EDIT BUTTON --}}
-                        <button type="button" class="action-btn edit" data-bs-toggle="modal" data-bs-target="#editModal{{ $staff->userID }}" title="Edit Staff">
-                            <i class="fas fa-edit"></i>
-                        </button>
+    <div class="d-flex gap-2">
+        <!-- Add invitation action buttons -->
+        @if($staff->invitation_status === 'pending')
+            <form action="{{ route('admin.staff.resendInvitation', $staff->userID) }}" method="POST" class="d-inline">
+                @csrf
+                <button type="submit" class="action-btn" title="Resend Invitation">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+            <form action="{{ route('admin.staff.cancelInvitation', $staff->userID) }}" method="POST" class="d-inline">
+                @csrf
+                <button type="submit" class="action-btn delete" title="Cancel Invitation" onclick="return confirm('Cancel this invitation?')">
+                    <i class="fas fa-ban"></i>
+                </button>
+            </form>
+        @endif
+        
+        <!-- Only show edit/delete for registered staff -->
+        @if($staff->invitation_status === 'accepted' || $staff->invitation_status === 'none')
+            <button type="button" class="action-btn view" data-bs-toggle="modal" data-bs-target="#profileModal{{ $staff->userID }}" title="View Profile">
+                <i class="fas fa-user"></i>
+            </button>
+            
+            <button type="button" class="action-btn edit" data-bs-toggle="modal" data-bs-target="#editModal{{ $staff->userID }}" title="Edit Staff">
+                <i class="fas fa-edit"></i>
+            </button>
 
-                        {{-- 🗑️ DELETE FORM --}}
-                        <form action="{{ route('admin.staff.destroy', $staff->userID) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this staff?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="action-btn delete" title="Delete Staff">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </form>
-                    </div>
-                </div>
+            <form action="{{ route('admin.staff.destroy', $staff->userID) }}" method="POST" onsubmit="return confirm('Are you sure?')">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="action-btn delete" title="Delete Staff">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </form>
+        @endif
+    </div>
+</div>
             </div>
 
             <!-- Profile Modal -->

@@ -13,16 +13,25 @@ class ReturnCar extends Model
         'bookingID',
         'returnDate',
         'returnLocation',
-        'returnPhoto',
         'isfined',
         'trafficTicketPhoto',
         'feedback',
         'fuelAmount',
         'returnTime',
         'agreementForm',
-        'lateHours'
+        'lateHours',
+        'return_photo_front',
+        'return_photo_back',
+        'return_photo_left',
+        'return_photo_right',
+        'photo_dashboard',
+        'photo_keys'
     ];
 
+    protected $casts = [
+        'trafficTicketPhoto' => 'array',
+    ];
+    
      public function booking()
     {
         return $this->belongsTo(Bookings::class, 'bookingID', 'bookingID');

@@ -128,7 +128,8 @@ html, body {
 .sub_txt {
     font-size: 16px;
     color: gray;
-    margin-bottom: 25px;
+    margin-bottom: 15px;
+    margin-top: 10px;
 }
 
 /* 4-Photo Grid CSS */
@@ -153,6 +154,7 @@ html, body {
     transition: all 0.2s ease;
     overflow: hidden;
     position: relative;
+    margin-bottom: 10px;
 }
 
 .mini-drop-zone:hover {
@@ -168,10 +170,15 @@ html, body {
 
 .preview-img {
     position: absolute;
-    width: 100%;
+    top: 0;
+    left: 50%;           /* Move the left edge to the center of the box */
+    transform: translateX(-50%); /* Pull the image back by half its own width */
     height: 100%;
-    object-fit: cover;
-    display: none; /* Hidden until file is selected */
+    width: auto;         /* Keeps original aspect ratio */
+    min-width: 100%;     /* Optional: Ensures the box is always filled */
+    object-fit: contain; /* Changed from 'cover' to 'contain' if you want to see the whole car */
+    border-radius: 10px;
+    display: none; 
     z-index: 2;
 }
 
@@ -221,15 +228,15 @@ html, body {
     margin-bottom: 25px;
 }
 .placeholder-img {
-    opacity: 0.4; /* Makes it look like a watermark/hint */
-    margin: 10px 0;
-    transition: 0.3s;
+    opacity: 0.5; /* Keeps them subtle like the Pickup ones */
+    margin-top: 5px;
+
 }
-#iconFront,#iconBack{
+#iconFront,#iconBack,#iconKeys{
     width:100px;
     height: auto;
 }
-#iconRight,#iconLeft{
+#iconRight,#iconLeft,#iconDash{
     width:150px;
     height: auto;
 }
@@ -256,12 +263,91 @@ html, body {
 
 .mini-drop-zone:hover { border-color: #CB3737; }
 .mini-drop-zone p { font-size: 12px; margin: 5px 0; color: #666; }
-.preview-img { width: 100%; height: 80px; object-fit: cover; border-radius: 5px; display: none; }
 
 canvas{
-    width: 350px;
+    width: 400px;
     height: 100px;
     border: 2px dashed #ddd; 
     border-radius: 15px; 
     background: #f9f9f9; 
+}
+
+.signature-upload-box {
+    height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 5px !important;
+}
+.radio-section {
+    margin: 20px 0;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.radio-section label {
+     display: flex;
+     justify-content: flex-start;
+    margin-left: 15px;
+    font-weight: normal;
+    align-items: center;
+}
+
+.radio-section input{
+    margin-right: 7px;
+}
+.return-info-grid {
+    display: grid;
+    grid-template-columns: auto auto 1fr; /* 3 columns */
+    gap: 20px;
+    width: 100%;
+    align-items: end; /* Optional: aligns inputs to the bottom if labels have different heights */
+}
+
+/* This forces Label to be ABOVE Input */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px; /* Space between label and input */
+}
+
+.input-group label {
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.input-group input {
+    width: 210px; /* Small width for numbers/time */
+    height: 40px;
+    border: 1px solid #ccc;
+    border-radius: 15px;
+    padding: 0 10px;
+    margin-right: 20px;
+}
+
+.full-width {
+    grid-column: span 3; /* Spans across all three columns */
+    width: 100%;
+}
+
+#feed {
+    width: 100%; /* Now takes full width of the container */
+    border: 1px solid #ccc;
+    border-radius: 15px;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+#fuel,#ac_ret_time{
+    border-radius: 15px;
+}
+
+#fileNameList {
+    pointer-events: none; /* Allows clicks to pass through to the parent div */
+    max-height: 150px;
+    overflow-y: auto; /* Adds a scrollbar if they upload too many tickets */
 }
