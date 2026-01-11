@@ -795,18 +795,18 @@ class AdminController extends Controller
 
     public function bookings()
     {
-        $pendingPayments = Bookings::where('bookingStatus', 'pending_payment')->get();
+        $pendingPayments = Bookings::where('bookingStatus', 'pending')->get();
 
-        $pendingApprovals = Bookings::where('bookingStatus', 'paid')->get();
+        $pendingApprovals = Bookings::whereIn('bookingStatus', ['paid', 'pending'])->get(); 
 
-        $upcomingPickups = Bookings::where('bookingStatus', 'approved')
+        $upcomingPickups = Bookings::where('bookingStatus', 'approved') 
                                   ->whereDate('startDate', '>=', Carbon::today())
                                   ->orderBy('startDate', 'asc')
                                   ->get();
 
-        $pendingReturns = Bookings::where('bookingStatus', 'active')->get();
+        $pendingReturns = Bookings::whereIn('bookingStatus', ['active', 'rented'])->get();
 
-        $bookingHistory = Bookings::whereIn('bookingStatus', ['completed', 'rejected', 'cancelled'])
+        $bookingHistory = Bookings::whereIn('bookingStatus', ['completed', 'cancelled', 'rejected'])
                                  ->orderBy('created_at', 'desc')
                                  ->paginate(10); 
 

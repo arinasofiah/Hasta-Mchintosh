@@ -118,9 +118,31 @@
                             <tr>
                                 <td>#{{ $booking->bookingID }}</td>
                                 <td>{{ $booking->customer->name ?? 'Unknown' }}</td>
-                                <td><span class="status-badge bg-yellow">Pending</span></td>
-                                <td><a href="{{ route('admin.bookings.show', $booking->bookingID) }}" class="action-btn">Review</a></td>
-                            </tr>
+                                <td>
+                                    @if($booking->bookingStatus == 'paid')
+                                        <span class="status-badge bg-green">Paid</span>
+                                    @else
+                                        <span class="status-badge bg-yellow">{{ ucfirst($booking->bookingStatus) }}</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-2">
+                                        <form action="{{ route('admin.bookings.approve', $booking->bookingID) }}" method="POST">
+                                            @csrf
+                                            <button class="btn btn-success btn-sm rounded-pill px-3" onclick="return confirm('Approve this booking?')">
+                                                Approve
+                                            </button>
+                                        </form>
+
+                                        <form action="{{ route('admin.bookings.reject', $booking->bookingID) }}" method="POST">
+                                            @csrf
+                                            <button class="btn btn-danger btn-sm rounded-pill px-3" onclick="return confirm('Reject this booking?')">
+                                                Reject
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                                </tr>
                             @empty <tr><td colspan="4" class="text-center p-4 text-muted">No pending approvals.</td></tr>
                             @endforelse
                         </tbody>
