@@ -28,6 +28,10 @@ class ReturnCar extends Model
         'photo_keys'
     ];
 
+    protected $casts = [
+        'trafficTicketPhoto' => 'array',
+    ];
+    
      public function booking()
     {
         return $this->belongsTo(Bookings::class, 'bookingID', 'bookingID');

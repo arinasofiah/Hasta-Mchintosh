@@ -47,10 +47,11 @@
             </ul>
 
             <p id="day_pr">{{$vehicle->pricePerDay}} / Day</p>
-            <p id="all_pr">Total MYR 530</p>
+            <p id="all_pr">Total MYR {{$booking->totalPrice}}</p>
         </div>
 
         <div class="pickup_form">
+            @if(!$pickup->photo_front)
             <form action="{{ route('pickup.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="pickupID" value="{{ $pickup->pickupID }}">
@@ -121,7 +122,24 @@
                     <button class="btn-primary" {{ $onlyDepositPaid ? 'disabled style=opacity:0.5;' : '' }}>Save Pick Up</button>
                 </div>
             </form>
-            <div class="return_form">
+            @else
+        {{-- SHOW TILE: Pickup is finished, show a summary tile --}}
+        <div class="completed-tile" style="background: #f8f9fa; padding: 15px; border-radius: 15px; border-left: 5px solid #28a745; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span><i class="fas fa-check-circle text-success"></i> <strong>Pickup Completed</strong></span>
+            </div>
+            
+            <div id="pickup-details" style="display: none; margin-top: 15px;">
+                <div class="photo-grid">
+                    <img src="{{ asset($pickup->photo_front) }}" class="preview-img" style="display:block">
+                    <img src="{{ asset($pickup->photo_back) }}" class="preview-img" style="display:block">
+                </div>
+                <p style="font-size: 12px; margin-top: 10px;">Status: Picked up on {{ $pickup->updated_at->format('d M, H:i') }}</p>
+            </div>
+        </div>
+
+        <div class="return_form">
+            @if(!$return->photo_dashboard)
     <form action="{{ route('return.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <input type="hidden" name="bookingID" value="{{ $booking->bookingID }}">
@@ -186,13 +204,13 @@
             <p class="sub_txt">Please provide clear photos of traffic ticket(s).</p>
             <div class="mini-drop-zone" onclick="document.getElementById('imgTicket').click()">
                 <p><strong>Traffic ticket photos</strong></p>
-                <i class="fas fa-file-circle-minus" id="iconTicket" style="font-size: 1.6rem; color: #ccc; margin-top: 5px;"></i>
-                <input type="file" id="imgTicket" name="trafficTicketPhoto" accept="image/*" hidden onchange="preview(this, 'pTicket', 'iconTicket')">
-                <img id="pTicket" class="preview-img">
+                <i class="fas fa-file-circle-plus" id="iconTicket" style="font-size: 1.6rem; color: #ccc; margin-top: 5px;"></i>
+                <input type="file" id="imgTicket" name="trafficTicketPhoto[]" accept="image/*" hidden multiple onchange="previewFileNames(this, 'fileNameList', 'iconTicket')">
+                
+                <div id="fileNameList" style="margin-top: 10px; text-align: left; font-size: 12px; color: #333;"></div>
             </div>
         </div>
-
-        <div class="radio-section">
+        <!--<div class="radio-section">
             <span>Was any damage done?</span>
             <label class="radio-label">
                 <input type="radio" name="isDamaged" value="yes" onchange="toggleTicketBox(this)"> <span>Yes</span>
@@ -200,7 +218,7 @@
             <label class="radio-label">
                 <input type="radio" name="isDamaged" value="no" onchange="toggleTicketBox(this)" checked> <span>No</span>
             </label>
-        </div>
+        </div>-->
 
         </div><p class="main_txt">Return information</p>
         <p class="sub_txt">Please provide information about the return</p>
@@ -227,6 +245,15 @@
         </div>
     </form>
 </div>
+        @else
+            {{-- STEP 4: EVERYTHING IS COMPLETE --}}
+            <div class="completed-tile return-done" style="background: #f8f9fa; padding: 15px; border-radius: 15px; border-left: 5px solid #28a745; margin-bottom: 20px;">
+                <div>
+                    <span><i class="fas fa-check-circle text-success"></i> <span><strong>Return completed</strong></span>
+                </div>
+            </div>
+        @endif
+@endif
     </div>
 </div>
     </div>
@@ -359,6 +386,8 @@ function toggleTicketBox(radio) {
         document.getElementById('iconTicket').style.display = "block";
     }
 }
+
+
 </script>
 </body>
 </html>
