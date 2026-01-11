@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="{{ asset('css/header.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/admin-header.css') }}" rel="stylesheet">
     
     <style>
         body { font-family: 'Poppins', sans-serif; background-color: #f8f9fa; }
@@ -56,6 +56,89 @@
         
         /* Phone number display */
         .phone-number { font-family: monospace; background: #f8f9fa; padding: 2px 6px; border-radius: 4px; }
+        
+        /* Document section styles */
+        .documents-section {
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        
+        .document-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .document-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            transition: 0.3s;
+            border: 1px solid #eee;
+        }
+        
+        .document-item:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+        
+        .document-icon {
+            font-size: 24px;
+            color: #1a8f36;
+            margin-bottom: 10px;
+        }
+        
+        .document-status {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-verified {
+            background-color: #dcfce7;
+            color: #1a8f36;
+        }
+        
+        .status-pending {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+        
+        .status-missing {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .view-document-btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 8px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            color: #333;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            transition: 0.3s;
+        }
+        
+        .view-document-btn:hover {
+            background: #f0f0f0;
+            color: #1a8f36;
+            border-color: #1a8f36;
+        }
+        
+        .empty-document {
+            color: #999;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -200,27 +283,121 @@
 
                 <!-- Profile Modal -->
                 <div class="modal fade" id="profileModal{{ $customer->userID }}" tabindex="-1">
-                    <div class="modal-dialog">
+                    <div class="modal-dialog modal-lg">
                         <div class="modal-content" style="border-radius: 20px; border: none;">
                             <div class="modal-header border-0">
                                 <h5 class="modal-title fw-bold">Customer Profile</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
-                            <div class="modal-body text-center p-4">
-                                <div class="p-3 mb-4 bg-light rounded-4">
-                                    <h6 class="text-muted small fw-bold">Outstanding Payment</h6>
-                                    <h2 class="text-danger fw-bold mb-0">
-                                        RM {{ number_format($customer->outstanding_payment ?? 0, 2) }}
-                                    </h2>
+                            <div class="modal-body p-4">
+                                
+                                <!-- Customer Information -->
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <p class="mb-2"><strong>Email:</strong> {{ $customer->email }}</p>
+                                        <p class="mb-2"><strong>Matric Number:</strong> {{ $customer->matricNumber ?? 'N/A' }}</p>
+                                        <p class="mb-2"><strong>License:</strong> {{ $customer->licenseNumber ?? 'N/A' }}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="mb-2"><strong>Faculty:</strong> {{ strtoupper($customer->faculty ?? 'N/A') }}</p>
+                                        <p class="mb-2"><strong>College:</strong> {{ $customer->college ?? 'N/A' }}</p>
+                                        <p class="mb-0"><strong>Emergency Contact:</strong> {{ $customer->emergency_contact_name ?? 'N/A' }}</p>
+                                        <p class="mb-0"><strong>Emergency Phone:</strong> {{ $customer->emergency_contact_phone ?? 'N/A' }}</p>
+                                    </div>
                                 </div>
-                                <div class="text-start">
-                                    <p class="mb-2"><strong>Email:</strong> {{ $customer->email }}</p>
-                                    <p class="mb-2"><strong>Matric Number:</strong> {{ $customer->matricNumber ?? 'N/A' }}</p>
-                                    <p class="mb-2"><strong>License:</strong> {{ $customer->licenseNumber ?? 'N/A' }}</p>
-                                    <p class="mb-2"><strong>Faculty:</strong> {{ strtoupper($customer->faculty ?? 'N/A') }}</p>
-                                    <p class="mb-2"><strong>College:</strong> {{ $customer->college ?? 'N/A' }}</p>
-                                    <p class="mb-2"><strong>Emergency Contact:</strong> {{ $customer->emergency_contact_name ?? 'N/A' }}</p>
-                                    <p class="mb-0"><strong>Emergency Phone:</strong> {{ $customer->emergency_contact_phone ?? 'N/A' }}</p>
+                                
+                                <!-- Documents Section -->
+                                <div class="documents-section">
+                                    <h6 class="fw-bold mb-3">Uploaded Documents</h6>
+                                    <div class="document-grid">
+                                        <!-- IC/Passport Document -->
+                                        @php
+                                            // Safely get document paths using null coalescing
+                                            $icPassportPath = $customer->ic_passport_path ?? null;
+                                            $drivingLicensePath = $customer->driving_license_path ?? null;
+                                            $matricCardPath = $customer->matric_card_path ?? null;
+                                            
+                                            // Determine status for each document
+                                            $icStatus = $icPassportPath ? 'verified' : 'missing';
+                                            $licenseStatus = $drivingLicensePath ? 'verified' : 'missing';
+                                            $matricStatus = $matricCardPath ? 'verified' : 'missing';
+                                        @endphp
+                                        
+                                        <div class="document-item">
+                                            <div class="document-icon">
+                                                <i class="fas fa-id-card"></i>
+                                            </div>
+                                            <h6 class="fw-bold mb-2">IC / Passport</h6>
+                                            <span class="document-status status-{{ $icStatus }}">
+                                                {{ ucfirst($icStatus) }}
+                                            </span>
+                                            @if($icPassportPath)
+                                                <a href="{{ asset('storage/' . $icPassportPath) }}" target="_blank" class="view-document-btn">
+                                                    <i class="fas fa-eye"></i> View Document
+                                                </a>
+                                            @else
+                                                <div class="view-document-btn empty-document">
+                                                    <i class="fas fa-times-circle"></i> Not Uploaded
+                                                </div>
+                                            @endif
+                                        </div>
+                                        
+                                        <!-- Driving License Document -->
+                                        <div class="document-item">
+                                            <div class="document-icon">
+                                                <i class="fas fa-id-badge"></i>
+                                            </div>
+                                            <h6 class="fw-bold mb-2">Driving License</h6>
+                                            <span class="document-status status-{{ $licenseStatus }}">
+                                                {{ ucfirst($licenseStatus) }}
+                                            </span>
+                                            @if($drivingLicensePath)
+                                                <a href="{{ asset('storage/' . $drivingLicensePath) }}" target="_blank" class="view-document-btn">
+                                                    <i class="fas fa-eye"></i> View Document
+                                                </a>
+                                            @else
+                                                <div class="view-document-btn empty-document">
+                                                    <i class="fas fa-times-circle"></i> Not Uploaded
+                                                </div>
+                                            @endif
+                                        </div>
+                                        
+                                        <!-- Matric Card Document -->
+                                        <div class="document-item">
+                                            <div class="document-icon">
+                                                <i class="fas fa-graduation-cap"></i>
+                                            </div>
+                                            <h6 class="fw-bold mb-2">Matric Card</h6>
+                                            <span class="document-status status-{{ $matricStatus }}">
+                                                {{ ucfirst($matricStatus) }}
+                                            </span>
+                                            @if($matricCardPath)
+                                                <a href="{{ asset('storage/' . $matricCardPath) }}" target="_blank" class="view-document-btn">
+                                                    <i class="fas fa-eye"></i> View Document
+                                                </a>
+                                            @else
+                                                <div class="view-document-btn empty-document">
+                                                    <i class="fas fa-times-circle"></i> Not Uploaded
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Document Upload/Update Time -->
+                                    @php
+                                        $lastDocumentUpdate = max(
+                                            $customer->updated_at ?? null,
+                                            $customer->created_at ?? null
+                                        );
+                                    @endphp
+                                    
+                                    @if($lastDocumentUpdate)
+                                        <div class="mt-3 p-3 bg-light rounded-3">
+                                            <small class="text-muted">
+                                                <strong>Last Updated:</strong> {{ Carbon\Carbon::parse($lastDocumentUpdate)->format('d/m/Y H:i') }}
+                                            </small>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -268,6 +445,15 @@
             filter: '{{ request("filter") }}',
             search: '{{ request("search") }}'
         });
+        
+        // Function to preview documents in a new tab
+        function previewDocument(path) {
+            if (path) {
+                window.open(path, '_blank');
+            } else {
+                alert('Document not available');
+            }
+        }
     </script>
 </body>
 </html>
