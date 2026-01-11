@@ -191,13 +191,36 @@
                 <img id="pTicket" class="preview-img">
             </div>
         </div>
-        
-        <!--<p class="main_txt">Return information</p>
+
+        <div class="radio-section">
+            <span>Was any damage done?</span>
+            <label class="radio-label">
+                <input type="radio" name="isDamaged" value="yes" onchange="toggleTicketBox(this)"> <span>Yes</span>
+            </label>
+            <label class="radio-label">
+                <input type="radio" name="isDamaged" value="no" onchange="toggleTicketBox(this)" checked> <span>No</span>
+            </label>
+        </div>
+
+        </div><p class="main_txt">Return information</p>
         <p class="sub_txt">Please provide information about the return</p>
-        <div class="return_info">
+
+       <div class="return-info-grid">
+    <div class="input-group">
+        <label for="fuel">Fuel amount (%)</label>
+        <input type="number" id="fuel" name="fuelAmount" placeholder="0">
+    </div>
+
+    <div class="input-group">
+        <label for="ac_ret_time">Return time</label>
+        <input type="time" id="ac_ret_time" name="acRetTime">
+    </div>
+
+    <div class="input-group full-width">
         <label for="feed">Feedback</label>
-                   <textarea id="feed" name="feedback" rows="5"></textarea>
-        </div>-->
+        <textarea id="feed" name="feedback" rows="4" placeholder="How was the ride?"></textarea>
+    </div>
+</div>
 
         <div id="btn_div"> 
             <button type="submit" class="btn-primary">Save Return</button>
