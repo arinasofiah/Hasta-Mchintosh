@@ -345,3 +345,9 @@ canvas{
 #fuel,#ac_ret_time{
     border-radius: 15px;
 }
+
+#fileNameList {
+    pointer-events: none; /* Allows clicks to pass through to the parent div */
+    max-height: 150px;
+    overflow-y: auto; /* Adds a scrollbar if they upload too many tickets */
+}
