@@ -604,22 +604,22 @@ class BookingController extends Controller
                 return $bookingObj;
             });
 
-        // ACTIVE BOOKINGS: Show ALL approved bookings regardless of date
+        // Categorize bookings
         $active = $bookings->filter(function($booking) {
-            return strtolower(trim($booking->bookingStatus)) === 'approved';
+            if (!in_array($booking->bookingStatus, ['approved', 'confirmed'])) {
+                return false;
+            }
+            
+            $now = Carbon::now();
+            $start = Carbon::parse($booking->pickupDateTime);
+            $end = Carbon::parse($booking->returnDateTime);
+            
+            return $now->between($start, $end);
         });
         
-        $pending = $bookings->filter(function($booking) {
-            return strtolower(trim($booking->bookingStatus)) === 'pending';
-        });
-        
-        $completed = $bookings->filter(function($booking) {
-            return strtolower(trim($booking->bookingStatus)) === 'completed';
-        });
-        
-        $cancelled = $bookings->filter(function($booking) {
-            return strtolower(trim($booking->bookingStatus)) === 'cancelled';
-        });
+        $pending = $bookings->where('bookingStatus', 'pending');
+        $completed = $bookings->where('bookingStatus', 'completed');
+        $cancelled = $bookings->where('bookingStatus', 'cancelled');
 
         return view('bookingHistory', compact('active', 'pending', 'completed', 'cancelled'));
     }
