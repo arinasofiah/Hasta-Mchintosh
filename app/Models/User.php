@@ -2,21 +2,13 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
 
     protected $primaryKey = 'userID';
     
@@ -29,21 +21,11 @@ class User extends Authenticatable
         'phoneNumber',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -52,50 +34,60 @@ class User extends Authenticatable
         ];
     }
 
-    public function customer()
+    /**
+     * Check if the user is blacklisted
+     */
+    // In your User model (App\Models\User.php)
+public function isBlacklisted()
 {
-    // Use fully qualified namespace
-    return $this->hasOne(\App\Models\Customer::class, 'userID', 'userID');
+    // Only customers can be blacklisted
+    if ($this->userType !== 'customer') {
+        return false;
+    }
+    
+    // Eager load the customer relationship
+    if (!$this->relationLoaded('customer')) {
+        $this->load('customer');
+    }
+    
+    return $this->customer && $this->customer->isBlacklisted; // ← Changed to isBlacklisted
 }
+
+    public function customer()
+    {
+        return $this->hasOne(\App\Models\Customer::class, 'userID', 'userID');
+    }
 
     public function staff()
-{
-    return $this->hasOne(\App\Models\Staff::class, 'userID', 'userID');
-}
+    {
+        return $this->hasOne(\App\Models\Staff::class, 'userID', 'userID');
+    }
 
-// Add this method to your User model:
-public function telephone()
-{
-    return $this->hasOne(Telephone::class, 'userID', 'userID');
-}
+    public function telephone()
+    {
+        return $this->hasOne(Telephone::class, 'userID', 'userID');
+    }
 
-// Add accessor for phone number:
-public function getPhoneAttribute()
-{
-    return $this->telephone ? $this->telephone->phoneNumber : null;
-}
+    public function getPhoneAttribute()
+    {
+        return $this->telephone ? $this->telephone->phoneNumber : null;
+    }
 
-public function getPhoneNumberAttribute()
-{
-    return $this->phone;
-}
+    public function getPhoneNumberAttribute()
+    {
+        return $this->phone;
+    }
 
-     public function isAdmin()
+    public function isAdmin()
     {
         return $this->userType === 'admin';
     }
     
-    /**
-     * Check if user is staff
-     */
     public function isStaff()
     {
         return $this->userType === 'staff';
     }
     
-    /**
-     * Check if user is customer
-     */
     public function isCustomer()
     {
         return $this->userType === 'customer';

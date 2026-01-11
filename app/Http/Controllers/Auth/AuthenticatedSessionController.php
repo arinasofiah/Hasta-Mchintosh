@@ -3,14 +3,13 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
-use App\Models\Admin;
-use App\Models\Staff;
+use Illuminate\Http\RedirectResponse;
+use App\Models\User;
+use App\Models\Customer;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -19,7 +18,6 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(Request $request): View
     {
-        // Store the redirect URL if provided
         if ($request->has('redirect')) {
             session(['url.intended' => $request->get('redirect')]);
         }
@@ -30,28 +28,50 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request)
+    public function store(Request $request)
     {
-        $request->authenticate();
+        $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
+
+        // First attempt to authenticate
+        if (!Auth::attempt([
+            'email' => $request->email,
+            'password' => $request->password
+        ], $request->boolean('remember'))) {
+            
+            throw ValidationException::withMessages([
+                'email' => __('auth.failed'),
+            ]);
+        }
+
         $request->session()->regenerate();
 
         $user = Auth::user();
         
-        // Check if user is blacklisted
-        if ($user->is_blacklisted) {
-            Auth::logout();
-            return redirect()->route('login')
-                ->withErrors(['error' => 'Your account has been blacklisted. Please contact support.']);
+        // CHECK BLACKLIST IN CUSTOMER TABLE - using isBlacklisted (not is_blacklisted)
+        // Only check for customers (not admin/staff)
+        if ($user->userType === 'customer') {
+            // Load the customer relationship with blacklist check
+            $customer = Customer::where('userID', $user->userID)->first();
+            
+            if ($customer && $customer->isBlacklisted) { // ← Changed to isBlacklisted
+                // User is blacklisted - log them out
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                
+                return redirect()->route('login')
+                    ->withErrors(['email' => 'Your account has been blacklisted. Please contact support.']);
+            }
         }
         
-        // FIRST: Check if there's a pending booking in session (for guests who clicked Book Now)
+        // Check if there's a pending booking in session
         if (session()->has('pending_booking')) {
             $booking = session('pending_booking');
-            
-            // Clear the session
             session()->forget('pending_booking');
             
-            // Redirect to booking form with parameters
             return redirect()->route('booking.form', [
                 'vehicleID' => $booking['vehicleID'],
                 'pickup_date' => $booking['pickup_date'],
@@ -61,28 +81,25 @@ class AuthenticatedSessionController extends Controller
             ]);
         }
         
-        // SECOND: Check for URL redirect parameter (fallback method)
+        // Check for URL redirect parameter
         if ($request->has('redirect_to') || session()->has('url.intended')) {
             $redirectUrl = $request->get('redirect_to') ?? session('url.intended');
             session()->forget('url.intended');
             
-            // Validate that it's a safe URL (optional but recommended)
             if (filter_var($redirectUrl, FILTER_VALIDATE_URL)) {
                 return redirect($redirectUrl);
             }
         }
         
-        // THIRD: Standard role-based redirect
+        // Standard role-based redirect
         if ($user->userType === 'admin') {
             return redirect()->route('admin.dashboard');
         } elseif ($user->userType === 'staff') {
             return redirect()->route('staff.dashboard');
         } elseif ($user->userType === 'customer') {
-            // Check if there's an intended URL from Laravel's auth system
             return redirect()->intended('/customer/dashboard');
         }
         
-        // Fallback
         return redirect()->intended('/customer/dashboard');
     }
 
@@ -91,7 +108,6 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        // Clear any pending booking session before logout
         if (session()->has('pending_booking')) {
             session()->forget('pending_booking');
         }

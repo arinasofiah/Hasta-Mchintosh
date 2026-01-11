@@ -176,55 +176,8 @@
     @endif
 
     <div class="row g-4 mb-4">
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <div class="icon-box bg-light text-dark">
-                        <i class="fas fa-car-side"></i>
-                    </div>
-                    <span class="badge bg-success-subtle text-success">Total</span>
-                </div>
-                <small class="text-muted d-block">Total Fleet</small>
-                <h2 class="fw-bold mb-0">{{ $totalVehicles ?? 0 }}</h2>
-            </div>
-        </div>
 
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <div class="icon-box" style="background: #e6fffa; color: #38b2ac;">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                </div>
-                <small class="text-muted d-block">Available Now</small>
-                <h2 class="fw-bold mb-0">{{ $availableCount ?? 0 }}</h2>
-            </div>
-        </div>
 
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <div class="icon-box" style="background: #ebf8ff; color: #4299e1;">
-                        <i class="fas fa-key"></i>
-                    </div>
-                </div>
-                <small class="text-muted d-block">Active Rentals</small>
-                <h2 class="fw-bold mb-0">{{ $onRentCount ?? 0 }}</h2>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <div class="icon-box" style="background: #fff5f5; color: #f56565;">
-                        <i class="fas fa-tools"></i>
-                    </div>
-                </div>
-                <small class="text-muted d-block">In Maintenance</small>
-                <h2 class="fw-bold mb-0">{{ $maintenanceCount ?? 0 }}</h2>
-            </div>
-        </div>
-    </div>
 
     <div class="row g-4 mb-5">
         <!-- Available Vehicles Column (NEW) -->
@@ -305,17 +258,6 @@
         </div>
     </div>
     
-    <!-- Top Models Chart -->
-    <div class="row g-4 mb-5">
-        <div class="col-md-12">
-            <div class="stat-card h-100">
-                <h5 class="fw-bold mb-3">Top Models in Use</h5>
-                <div class="chart-container">
-                    <canvas id="fleetUsageChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
     
     <!-- Customer Feedback -->
     <div class="row mt-4 mb-5">

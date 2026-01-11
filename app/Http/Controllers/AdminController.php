@@ -31,14 +31,21 @@ class AdminController extends Controller
     $maintenanceCount = DB::table('vehicles')->where('status', 'maintenance')->count();
     $reservedCount = DB::table('vehicles')->where('status', 'reserved')->count();
 
-    // 2. NEW: Get available vehicles (both available and reserved status)
+    // 2. Get available vehicles (both available and reserved status)
     $availableVehicles = DB::table('vehicles')
         ->whereIn('status', ['available', 'reserved'])
         ->orderBy('created_at', 'desc')
-        ->limit(8) // Limit for dashboard display
+        ->limit(8)
         ->get();
 
-    // 3. Pie Chart Data
+    // 3. Get vehicles currently on rent
+    $onRentVehicles = DB::table('vehicles')
+        ->where('status', 'rented')
+        ->orderBy('created_at', 'desc')
+        ->limit(5)
+        ->get();
+
+    // 4. Pie Chart Data
     $usageData = DB::table('vehicles')
         ->select('model', DB::raw('count(*) as count'))
         ->where('status', 'rented')
@@ -47,7 +54,7 @@ class AdminController extends Controller
         ->take(5)
         ->get();
 
-    // 4. Feedback Data
+    // 5. Feedback Data
     $feedback = DB::table('return as r')
         ->join('booking as b', 'r.bookingID', '=', 'b.bookingID')
         ->join('users as u', 'b.customerID', '=', 'u.userID')
@@ -63,9 +70,9 @@ class AdminController extends Controller
         'availableCount', 
         'onRentCount', 
         'maintenanceCount',
-        'reservedCount', // Add this
-        'availableVehicles', // Add this
-         'onRentVehicles',
+        'reservedCount',
+        'availableVehicles',
+        'onRentVehicles', // This was missing!
         'usageData',
         'feedback'
     ));
