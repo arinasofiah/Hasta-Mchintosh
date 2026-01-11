@@ -34,6 +34,11 @@
 
         .btn-export { border-radius: 20px; border: 1px solid #1a8f36; color: #1a8f36; background: #fff; transition: 0.3s; }
         .btn-export:hover { background: #1a8f36; color: #fff; }
+        
+        /* Small chart containers */
+        .chart-container { height: 400px; }
+        .car-details { font-size: 0.85rem; color: #666; }
+        .chart-title { font-size: 0.9rem; color: #666; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -104,7 +109,7 @@
                                 <option value="KDSE" {{ request('college') == 'KDSE' ? 'selected' : '' }}>MeKOLEJ DATIN SRI ENDON (KDSE)rbau</option>
                                 <option value="K9/K10" {{ request('college') == 'K9/K10' ? 'selected' : '' }}>KOLEJ 9/10</option>
                                 <option value="KP" {{ request('college') == 'KP' ? 'selected' : '' }}>KOLEJ PERDANA (KP)</option>
-                                <option value="KDOJ" {{ request('college') == 'KDOJ' ? 'selected' : '' }}>KOLEJ DATO’ ONN JAAFAR (KDOJ)</option>
+                                <option value="KDOJ" {{ request('college') == 'KDOJ' ? 'selected' : '' }}>KOLEJ DATO' ONN JAAFAR (KDOJ)</option>
                                 <option value="KLG" {{ request('college') == 'KLG' ? 'selected' : '' }}>KLG</option>
                                 <option value="UTMI" {{ request('college') == 'UTMI' ? 'selected' : '' }}>UTM International</option>
                                 <option value="Outside UTM" {{ request('college') == 'Outside UTM' ? 'selected' : '' }}>None</option>
@@ -141,27 +146,49 @@
         </div>
 
         @if($view === 'overview')
-            <div class="row">
+            <div class="row mb-4">
                 <div class="col-md-6">
                     <div class="report-card">
-                        <h5 class="fw-bold mb-4 text-secondary">Booking Status Distribution</h5>
-                        <div style="height: 300px;"><canvas id="statusChart"></canvas></div>
+                        <h5 class="fw-bold mb-4 text-secondary">Faculty Distribution</h5>
+                        @if($faculty)
+                            <p class="chart-title">Showing: {{ $faculty }} ({{ $facultyDistribution[$faculty] ?? 0 }} bookings)</p>
+                        @else
+                            <p class="chart-title">Showing all faculties</p>
+                        @endif
+                        <div class="chart-container"><canvas id="facultyChart"></canvas></div>
                     </div>
                 </div>
+                <div class="col-md-6">
+                    <div class="report-card">
+                        <h5 class="fw-bold mb-4 text-secondary">College Distribution</h5>
+                        @if($college)
+                            <p class="chart-title">Showing: {{ $college }} ({{ $collegeDistribution[$college] ?? 0 }} bookings)</p>
+                        @else
+                            <p class="chart-title">Showing all colleges</p>
+                        @endif
+                        <div class="chart-container"><canvas id="collegeChart"></canvas></div>
+                    </div>
+                </div>
+            </div>
 
             <div class="report-card">
                 <h5 class="fw-bold mb-4">Recent Bookings Activity</h5>
                 <div class="row stats-header pb-2 px-2">
-                    <div class="col-3">Booking ID</div>
-                    <div class="col-3">Duration</div>
-                    <div class="col-3 text-center">Status</div>
+                    <div class="col-2">Booking ID</div>
+                    <div class="col-3">Car Details</div>
+                    <div class="col-2">Duration</div>
+                    <div class="col-2 text-center">Status</div>
                     <div class="col-3 text-end">Total Price</div>
                 </div>
                 @foreach($recentBookings as $booking)
                 <div class="row stats-row align-items-center px-2">
-                    <div class="col-3 fw-bold">#{{ $booking->bookingID }}</div>
-                    <div class="col-3 text-muted">{{ $booking->bookingDuration }} Days</div>
-                    <div class="col-3 text-center">
+                    <div class="col-2 fw-bold">#{{ $booking->booking_code ?? $booking->bookingID }}</div>
+                    <div class="col-3 car-details">
+                        {{ $booking->model ?? 'N/A' }}<br>
+                        <small class="text-muted">{{ $booking->vehicleType ?? '' }} • {{ $booking->plateNumber ?? '' }}</small>
+                    </div>
+                    <div class="col-2 text-muted">{{ $booking->bookingDuration ?? 'N/A' }} Days</div>
+                    <div class="col-2 text-center">
                         <span class="badge rounded-pill {{ $booking->bookingStatus == 'approved' ? 'bg-success' : ($booking->bookingStatus == 'pending' ? 'bg-warning' : 'bg-secondary') }}">
                             {{ ucfirst($booking->bookingStatus) }}
                         </span>
@@ -199,34 +226,102 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         @if($view === 'overview')
-            // Overview Charts
-            new Chart(document.getElementById('statusChart'), {
-                type: 'doughnut',
+            // Faculty Distribution Horizontal Bar Chart
+            const facultyCtx = document.getElementById('facultyChart').getContext('2d');
+            new Chart(facultyCtx, {
+                type: 'bar',
                 data: {
-                    labels: @json($statusCounts->pluck('bookingStatus')),
+                    labels: @json(array_keys($facultyDistribution)),
                     datasets: [{
-                        data: @json($statusCounts->pluck('count')),
-                        backgroundColor: ['#ffc107', '#1a8f36', '#dc3545', '#6c757d'],
-                        borderWidth: 0
+                        label: 'Number of Bookings',
+                        data: @json(array_values($facultyDistribution)),
+                        backgroundColor: '#1a8f36',
+                        borderColor: '#1a8f36',
+                        borderWidth: 1
                     }]
                 },
-                options: { cutout: '75%', plugins: { legend: { position: 'bottom' } } }
+                options: {
+                    indexAxis: 'y', // This makes it horizontal
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Bookings: ${context.parsed.x}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: { color: '#f8f9fa' },
+                            title: {
+                                display: true,
+                                text: 'Number of Bookings',
+                                color: '#666'
+                            }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: {
+                                autoSkip: false,
+                                maxRotation: 0
+                            }
+                        }
+                    }
+                }
             });
-
-            new Chart(document.getElementById('rewardChart'), {
-                type: 'pie',
+            
+            // College Distribution Horizontal Bar Chart
+            const collegeCtx = document.getElementById('collegeChart').getContext('2d');
+            new Chart(collegeCtx, {
+                type: 'bar',
                 data: {
-                    labels: ['Reward Applied', 'No Reward'],
+                    labels: @json(array_keys($collegeDistribution)),
                     datasets: [{
-                        data: [
-                            {{ $rewardStats->where('rewardApplied', 1)->first()->count ?? 0 }},
-                            {{ $rewardStats->where('rewardApplied', 0)->first()->count ?? 0 }}
-                        ],
-                        backgroundColor: ['#1a8f36', '#e9ecef'],
-                        borderWidth: 0
+                        label: 'Number of Bookings',
+                        data: @json(array_values($collegeDistribution)),
+                        backgroundColor: '#bc3737',
+                        borderColor: '#bc3737',
+                        borderWidth: 1
                     }]
                 },
-                options: { plugins: { legend: { position: 'bottom' } } }
+                options: {
+                    indexAxis: 'y', // This makes it horizontal
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Bookings: ${context.parsed.x}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: { color: '#f8f9fa' },
+                            title: {
+                                display: true,
+                                text: 'Number of Bookings',
+                                color: '#666'
+                            }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: {
+                                autoSkip: false,
+                                maxRotation: 0
+                            }
+                        }
+                    }
+                }
             });
         @else
             // Income Charts
