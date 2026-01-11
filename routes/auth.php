@@ -53,13 +53,21 @@ Route::middleware('auth')->group(function () {
         Route::get('/customers', [AdminController::class, 'customers'])->name('admin.customers');
         Route::put('/customers/{id}', [AdminController::class, 'updateCustomer'])->name('admin.customers.update');
         
-        Route::get('/staff', [AdminController::class, 'staff'])->name('admin.staff');
+       // Staff management routes
+    Route::get('/staff', [AdminController::class, 'staff'])->name('admin.staff');
+    Route::get('/staff/create', [AdminController::class, 'createStaff'])->name('admin.staff.create');
+    Route::post('/staff', [AdminController::class, 'storeStaff'])->name('admin.staff.store');
+    Route::put('/staff/{id}', [AdminController::class, 'updateStaff'])->name('admin.staff.update');
+    Route::delete('/staff/{id}', [AdminController::class, 'destroyStaff'])->name('admin.staff.destroy');
+    Route::post('/staff/{id}/resend-invitation', [AdminController::class, 'resendStaffInvitation'])->name('admin.staff.resendInvitation');
+    Route::post('/staff/{id}/cancel-invitation', [AdminController::class, 'cancelStaffInvitation'])->name('admin.staff.cancelInvitation');
+});
 
-        Route::get('/staff/create', [AdminController::class, 'createStaff'])->name('admin.staff.create');
-        Route::post('/staff', [AdminController::class, 'storeStaff'])->name('admin.staff.store');
-        Route::put('/staff/{id}', [AdminController::class, 'updateStaff'])->name('admin.staff.update');
-        Route::delete('/staff/{id}', [AdminController::class, 'destroyStaff'])->name('admin.staff.destroy');
-    });
+// Public routes for staff registration (no auth required)
+Route::middleware('guest')->group(function () {
+    Route::get('/staff/register/{token}', [AdminController::class, 'showStaffRegistrationForm'])->name('staff.register');
+    Route::post('/staff/register/{token}', [AdminController::class, 'completeStaffRegistration'])->name('staff.completeRegistration');
+});
     
     // Staff routes
     Route::prefix('staff')->group(function () {

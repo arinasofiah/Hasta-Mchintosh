@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hasta - Add New Staff</title>
+    <title>Hasta - Invite Staff Member</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="{{ asset('css/header.css') }}" rel="stylesheet">
@@ -22,7 +22,7 @@
             border-radius: 15px; 
             padding: 40px; 
             box-shadow: 0 2px 20px rgba(0,0,0,0.08); 
-            max-width: 800px; 
+            max-width: 600px; 
             margin: 0 auto;
         }
         
@@ -32,11 +32,12 @@
             margin-bottom: 30px; 
         }
         
-        .form-section { 
-            background: #f9f9f9; 
-            padding: 20px; 
-            border-radius: 10px; 
-            margin-bottom: 25px;
+        .invitation-info {
+            background: #f0f9ff;
+            border-left: 4px solid #bc3737;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
         }
         
         .form-label { font-weight: 600; color: #333; }
@@ -51,6 +52,20 @@
             font-weight: 500;
         }
         .btn-custom:hover { background-color: #a52e2e; color: white; }
+        
+        .info-icon {
+            color: #bc3737;
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+        
+        .registration-link {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            word-break: break-all;
+        }
     </style>
 </head>
 <body>
@@ -88,8 +103,8 @@
     <div class="main-content">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h2>Add New Staff</h2>
-                <p class="text-muted">Fill in the details below to register a new staff member</p>
+                <h2>Invite Staff Member</h2>
+                <p class="text-muted">Send an invitation to register as staff member</p>
             </div>
             <a href="{{ route('admin.staff') }}" class="btn btn-light" style="border-radius: 20px;">
                 ← Back to Staff List
@@ -108,7 +123,17 @@
             </div>
         @endif
 
-        @if(session('success'))
+        @if(session('success') && session('registration_link'))
+            <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                <strong>Success!</strong> {{ session('success') }}
+                <div class="registration-link mt-2">
+                    <strong>Registration Link:</strong><br>
+                    <code>{{ session('registration_link') }}</code>
+                    <button class="btn btn-sm btn-outline-secondary ms-2" onclick="copyToClipboard('{{ session('registration_link') }}')">Copy Link</button>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @elseif(session('success'))
             <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
                 <strong>Success!</strong> {{ session('success') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -120,64 +145,40 @@
                 @csrf
                 
                 <div class="form-header">
-                    <h4>Staff Registration Form</h4>
+                    <h4>Staff Invitation</h4>
                 </div>
 
-                <!-- Section 1: Personal Information -->
-                <div class="form-section">
-                    <h5 class="mb-3">Personal Information</h5>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label required">Full Name</label>
-                            <input type="text" name="name" class="form-control" value="{{ old('name') }}" required>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label required">IC Number</label>
-                            <input type="text" name="icNumber" class="form-control" value="{{ old('icNumber') }}" required>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label required">Email Address</label>
-                            <input type="email" name="email" class="form-control" value="{{ old('email') }}" required>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label required">Phone Number</label>
-                            <input type="text" name="phoneNumber" class="form-control" value="{{ old('phoneNumber') }}" required>
+                <!-- Invitation Information -->
+                <div class="invitation-info">
+                    <div class="d-flex align-items-start">
+                        <div class="info-icon">📧</div>
+                        <div>
+                            <h6>How it works:</h6>
+                            <p class="mb-1">1. Enter the staff member's email address</p>
+                            <p class="mb-1">2. You'll receive a registration link</p>
+                            <p class="mb-0">3. Share the link with the staff member to complete registration</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Section 2: Account Credentials -->
-                <div class="form-section">
-                    <h5 class="mb-3">Account Credentials</h5>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label required">Password</label>
-                            <input type="password" name="password" class="form-control" required minlength="8">
-                            <div class="form-text">Minimum 8 characters</div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label required">Confirm Password</label>
-                            <input type="password" name="password_confirmation" class="form-control" required>
-                        </div>
-                    </div>
+                <!-- Email Input -->
+                <div class="mb-4">
+                    <label class="form-label required mb-2">Email Address</label>
+                    <input type="email" name="email" class="form-control form-control-lg" 
+                           value="{{ old('email') }}" 
+                           placeholder="Enter staff member's email address" 
+                           required>
+                    <div class="form-text">A registration link will be generated for this email</div>
                 </div>
 
-                <!-- Section 3: Staff Details -->
-                <div class="form-section">
-                    <h5 class="mb-3">Staff Details</h5>
-                    
-                    <div class="mb-3">
-                        <label class="form-label required">Position</label>
-                        <input type="text" name="position" class="form-control" value="{{ old('position') }}" required>
-                    </div>
+                <!-- Role Selection -->
+                <div class="mb-4">
+                    <label class="form-label mb-2">Assign Role</label>
+                    <select name="userType" class="form-select">
+                        <option value="staff">Staff Member</option>
+                        <option value="admin">Administrator</option>
+                    </select>
+                    <div class="form-text">Select the role for this staff member</div>
                 </div>
 
                 <!-- Form Actions -->
@@ -186,7 +187,7 @@
                         Cancel
                     </a>
                     <button type="submit" class="btn btn-custom">
-                        Register Staff Member
+                        <span class="me-2">📧</span> Generate Invitation Link
                     </button>
                 </div>
             </form>
@@ -194,5 +195,14 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                alert('Registration link copied to clipboard!');
+            }, function(err) {
+                console.error('Could not copy text: ', err);
+            });
+        }
+    </script>
 </body>
 </html>
