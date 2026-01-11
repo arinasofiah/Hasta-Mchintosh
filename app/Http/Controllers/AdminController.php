@@ -484,40 +484,56 @@ class AdminController extends Controller
         return view('admin.staff_create');
     }
 
-    // Send invitation to new staff (instead of direct creation)
-    public function storeStaff(Request $request)
-    {
-        if (auth()->user()->userType !== 'admin') {
-            abort(403, 'Unauthorized. Admin access only.');
-        }
+ public function storeStaff(Request $request)
+{
+    if (auth()->user()->userType !== 'admin') {
+        abort(403, 'Unauthorized. Admin access only.');
+    }
+    
+    $validated = $request->validate([
+        'email' => 'required|string|email|max:255|unique:users',
+        'userType' => 'required|in:staff,admin',
+    ]);
+    
+    // Use database transaction
+    \DB::beginTransaction();
+    
+    try {
+        // 1. Create user
+        $user = new User();
+        $user->email = $validated['email'];
+        $user->userType = $validated['userType'];
+        $user->password = \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(16));
+        $user->invitation_token = \Illuminate\Support\Str::random(60);
+        $user->invitation_sent_at = now();
+        $user->invitation_expires_at = now()->addDays(7);
+        $user->invitation_status = 'pending';
+        $user->invited_by = auth()->user()->userID;
+        $user->save();
         
-        $validated = $request->validate([
-            'email' => 'required|string|email|max:255|unique:users',
-            'userType' => 'required|in:staff,admin',
-        ]);
+        \DB::commit();
         
-        try {
-            // Create user with only email and userType
-            $user = User::create([
-                'email' => $validated['email'],
-                'userType' => $validated['userType'],
-                'password' => Hash::make(Str::random(16)), // Temporary password
-            ]);
-
-            // Create invitation
-            $user->createInvitation(auth()->user()->userID, $validated['userType']);
-
-            // Send invitation email
-            Mail::to($user->email)->send(new StaffInvitationMail($user));
-
-            return redirect()->route('admin.staff')
-                ->with('success', "Invitation sent to {$user->email} successfully!");
-
-        } catch (\Exception $e) {
-            \Log::error('Invitation failed: ' . $e->getMessage());
-            return back()->withInput()->withErrors(['error', 'Failed to send invitation. Please try again.']);
+        // Generate registration URL
+        $registrationUrl = route('staff.register', ['token' => $user->invitation_token]);
+        
+        return redirect()->route('admin.staff')
+            ->with('success', "Invitation created for {$user->email}!")
+            ->with('registration_link', $registrationUrl);
+            
+    } catch (\Exception $e) {
+        \DB::rollBack();
+        
+        // Show specific error message
+        $errorMessage = $e->getMessage();
+        if (str_contains($errorMessage, 'Duplicate entry')) {
+            return back()->withInput()->with('error', 'Email already exists in the system.');
+        } elseif (str_contains($errorMessage, 'SQLSTATE')) {
+            return back()->withInput()->with('error', 'Database error. Please check if all required columns exist.');
+        } else {
+            return back()->withInput()->with('error', 'Failed to create invitation: ' . $errorMessage);
         }
     }
+}
 
     // Show registration form for invited staff (PUBLIC ROUTE - no auth required)
     public function showStaffRegistrationForm($token)
