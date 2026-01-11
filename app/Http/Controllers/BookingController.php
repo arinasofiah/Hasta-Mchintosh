@@ -22,7 +22,7 @@ class BookingController extends Controller
     public function __construct()
     {
         // Require authentication for all methods in this controller
-        $this->middleware('auth');
+        //$this->middleware('auth');
     }
 
     public function showForm($vehicleID, Request $request)
