@@ -8,7 +8,7 @@ use Carbon\Carbon;
 
 class ReportController extends Controller
 {
-    public function reportingIndex(Request $request)
+   public function reportingIndex(Request $request)
 {
     $year = $request->get('year', date('Y'));
     $month = $request->get('month', date('m'));
@@ -26,51 +26,73 @@ class ReportController extends Controller
 
     // 1. Logic for BOOKING OVERVIEW (With Faculty, College, Vehicle Filters)
     if ($view === 'overview') {
-        $query = DB::table('booking')
+        // Base query for general stats
+        $baseQuery = DB::table('booking')
             ->join('users', 'booking.userID', '=', 'users.userID')
             ->join('customer', 'users.userID', '=', 'customer.userID')
-            ->join('vehicles', 'booking.vehicleID', '=', 'vehicles.vehicleID');
+            ->join('vehicles', 'booking.vehicleID', '=', 'vehicles.vehicleID')
+            ->whereYear('booking.created_at', $year);
 
-        // Apply specific filters - now use customer table instead of users
-        if ($faculty) $query->where('customer.faculty', $faculty);
-        if ($college) $query->where('customer.college', $college);
-        if ($vehicleType) $query->where('vehicles.vehicleType', $vehicleType);
+        // Apply filters to base query
+        if ($faculty) $baseQuery->where('customer.faculty', $faculty);
+        if ($college) $baseQuery->where('customer.college', $college);
+        if ($vehicleType) $baseQuery->where('vehicles.vehicleType', $vehicleType);
 
-        // Fetch Data
-        $statusCounts = (clone $query)
+        // Fetch general stats
+        $statusCounts = (clone $baseQuery)
             ->select('bookingStatus', DB::raw('count(*) as count'))
-            ->whereYear('booking.created_at', $year)
             ->groupBy('bookingStatus')
             ->get();
 
-        $rewardStats = (clone $query)
+        $rewardStats = (clone $baseQuery)
             ->select('rewardApplied', DB::raw('count(*) as count'))
-            ->whereYear('booking.created_at', $year)
             ->groupBy('rewardApplied')
             ->get();
 
-        // Faculty distribution data
-        $facultyDistribution = (clone $query)
+        // Faculty distribution - respect faculty filter if set
+        $facultyQuery = DB::table('booking')
+            ->join('users', 'booking.userID', '=', 'users.userID')
+            ->join('customer', 'users.userID', '=', 'customer.userID')
+            ->join('vehicles', 'booking.vehicleID', '=', 'vehicles.vehicleID')
+            ->whereYear('booking.created_at', $year);
+
+        if ($faculty) $facultyQuery->where('customer.faculty', $faculty);
+        if ($vehicleType) $facultyQuery->where('vehicles.vehicleType', $vehicleType);
+        // Note: Don't apply college filter to faculty distribution
+
+        $facultyDistribution = $facultyQuery
             ->select('customer.faculty', DB::raw('count(*) as count'))
-            ->whereYear('booking.created_at', $year)
             ->groupBy('customer.faculty')
             ->orderBy('count', 'desc')
             ->get()
             ->pluck('count', 'faculty')
             ->toArray();
 
-        // College distribution data  
-        $collegeDistribution = (clone $query)
+        // College distribution - respect college filter if set
+        $collegeQuery = DB::table('booking')
+            ->join('users', 'booking.userID', '=', 'users.userID')
+            ->join('customer', 'users.userID', '=', 'customer.userID')
+            ->join('vehicles', 'booking.vehicleID', '=', 'vehicles.vehicleID')
+            ->whereYear('booking.created_at', $year);
+
+        if ($college) $collegeQuery->where('customer.college', $college);
+        if ($vehicleType) $collegeQuery->where('vehicles.vehicleType', $vehicleType);
+        // Note: Don't apply faculty filter to college distribution
+
+        $collegeDistribution = $collegeQuery
             ->select('customer.college', DB::raw('count(*) as count'))
-            ->whereYear('booking.created_at', $year)
             ->groupBy('customer.college')
             ->orderBy('count', 'desc')
             ->get()
             ->pluck('count', 'college')
             ->toArray();
 
-        // Recent bookings with vehicle details
-        $recentBookings = DB::table('booking')
+        // Get filtered count for stats box (when specific filter is selected)
+        $filteredFacultyCount = $faculty ? ($facultyDistribution[$faculty] ?? 0) : 0;
+        $filteredCollegeCount = $college ? ($collegeDistribution[$college] ?? 0) : 0;
+
+        // Recent bookings with vehicle details - SIMPLIFIED VERSION
+        $recentBookingsQuery = DB::table('booking')
             ->join('vehicles', 'booking.vehicleID', '=', 'vehicles.vehicleID')
             ->select(
                 'booking.bookingID',
@@ -79,19 +101,35 @@ class ReportController extends Controller
                 'booking.bookingDuration',
                 'booking.totalPrice',
                 'booking.created_at',
-                'vehicles.model',
+                'vehicles.model as vehicleModel',
                 'vehicles.vehicleType',
-                'vehicles.plateNumber'
+                'vehicles.plateNumber as plateNo'
             )
+            ->whereYear('booking.created_at', $year)
             ->orderBy('booking.created_at', 'desc')
-            ->limit(5)
-            ->get();
+            ->limit(5);
+
+        // Apply filters if set
+        if ($faculty || $college) {
+            $recentBookingsQuery->join('users', 'booking.userID', '=', 'users.userID')
+                               ->join('customer', 'users.userID', '=', 'customer.userID');
+            
+            if ($faculty) $recentBookingsQuery->where('customer.faculty', $faculty);
+            if ($college) $recentBookingsQuery->where('customer.college', $college);
+        }
+        
+        if ($vehicleType) {
+            $recentBookingsQuery->where('vehicles.vehicleType', $vehicleType);
+        }
+
+        $recentBookings = $recentBookingsQuery->get();
 
         return view('admin.reporting', compact(
             'statusCounts', 'rewardStats', 'recentBookings', 
             'year', 'month', 'view', 'faculty', 'college', 'vehicleType',
             'facultyDistribution', 'collegeDistribution',
-            'chartData', 'chartLabels', 'reportStats' // Add these empty variables
+            'filteredFacultyCount', 'filteredCollegeCount',
+            'chartData', 'chartLabels', 'reportStats'
         ));
     }
 

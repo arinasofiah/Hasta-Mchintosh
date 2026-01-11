@@ -39,6 +39,37 @@
         .chart-container { height: 400px; }
         .car-details { font-size: 0.85rem; color: #666; }
         .chart-title { font-size: 0.9rem; color: #666; margin-bottom: 10px; }
+        
+        /* Stats Display */
+        .stats-box { 
+            background: #f8f9fa; 
+            border-radius: 10px; 
+            padding: 30px; 
+            text-align: center;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 300px;
+        }
+        .stats-number { 
+            font-size: 3.5rem; 
+            font-weight: 700; 
+            color: #1a8f36; 
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+        .stats-label { 
+            font-size: 1rem; 
+            color: #666;
+            font-weight: 500;
+        }
+        .stats-subtitle {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -150,23 +181,37 @@
                 <div class="col-md-6">
                     <div class="report-card">
                         <h5 class="fw-bold mb-4 text-secondary">Faculty Distribution</h5>
+                        
                         @if($faculty)
-                            <p class="chart-title">Showing: {{ $faculty }} ({{ $facultyDistribution[$faculty] ?? 0 }} bookings)</p>
+                            <!-- Show Stats Box when specific faculty is selected -->
+                            <div class="stats-box">
+                                <div class="stats-number">{{ $filteredFacultyCount ?? 0 }}</div>
+                                <div class="stats-label">Total Bookings</div>
+                                <div class="stats-subtitle">for {{ $faculty }}</div>
+                            </div>
                         @else
+                            <!-- Show Chart when showing all faculties -->
                             <p class="chart-title">Showing all faculties</p>
+                            <div class="chart-container"><canvas id="facultyChart"></canvas></div>
                         @endif
-                        <div class="chart-container"><canvas id="facultyChart"></canvas></div>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="report-card">
                         <h5 class="fw-bold mb-4 text-secondary">College Distribution</h5>
+                        
                         @if($college)
-                            <p class="chart-title">Showing: {{ $college }} ({{ $collegeDistribution[$college] ?? 0 }} bookings)</p>
+                            <!-- Show Stats Box when specific college is selected -->
+                            <div class="stats-box">
+                                <div class="stats-number">{{ $filteredCollegeCount ?? 0 }}</div>
+                                <div class="stats-label">Total Bookings</div>
+                                <div class="stats-subtitle">for {{ $college }}</div>
+                            </div>
                         @else
+                            <!-- Show Chart when showing all colleges -->
                             <p class="chart-title">Showing all colleges</p>
+                            <div class="chart-container"><canvas id="collegeChart"></canvas></div>
                         @endif
-                        <div class="chart-container"><canvas id="collegeChart"></canvas></div>
                     </div>
                 </div>
             </div>
@@ -174,7 +219,7 @@
             <div class="report-card">
                 <h5 class="fw-bold mb-4">Recent Bookings Activity</h5>
                 <div class="row stats-header pb-2 px-2">
-                    <div class="col-2">Booking ID</div>
+                    <div class="col-2">Booking Code</div>
                     <div class="col-3">Car Details</div>
                     <div class="col-2">Duration</div>
                     <div class="col-2 text-center">Status</div>
@@ -184,8 +229,8 @@
                 <div class="row stats-row align-items-center px-2">
                     <div class="col-2 fw-bold">#{{ $booking->booking_code ?? $booking->bookingID }}</div>
                     <div class="col-3 car-details">
-                        {{ $booking->model ?? 'N/A' }}<br>
-                        <small class="text-muted">{{ $booking->vehicleType ?? '' }} • {{ $booking->plateNumber ?? '' }}</small>
+                        {{ $booking->vehicleModel ?? 'N/A' }}<br>
+                        <small class="text-muted">{{ $booking->vehicleType ?? '' }} • {{ $booking->plateNo ?? '' }}</small>
                     </div>
                     <div class="col-2 text-muted">{{ $booking->bookingDuration ?? 'N/A' }} Days</div>
                     <div class="col-2 text-center">
@@ -226,103 +271,108 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         @if($view === 'overview')
-            // Faculty Distribution Horizontal Bar Chart
-            const facultyCtx = document.getElementById('facultyChart').getContext('2d');
-            new Chart(facultyCtx, {
-                type: 'bar',
-                data: {
-                    labels: @json(array_keys($facultyDistribution)),
-                    datasets: [{
-                        label: 'Number of Bookings',
-                        data: @json(array_values($facultyDistribution)),
-                        backgroundColor: '#1a8f36',
-                        borderColor: '#1a8f36',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    indexAxis: 'y', // This makes it horizontal
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `Bookings: ${context.parsed.x}`;
+            // Only create charts when NOT filtering by specific faculty/college
+            @if(!$faculty)
+                // Faculty Distribution Horizontal Bar Chart (only when showing all)
+                const facultyCtx = document.getElementById('facultyChart').getContext('2d');
+                new Chart(facultyCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: @json(array_keys($facultyDistribution)),
+                        datasets: [{
+                            label: 'Number of Bookings',
+                            data: @json(array_values($facultyDistribution)),
+                            backgroundColor: '#1a8f36',
+                            borderColor: '#1a8f36',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Bookings: ${context.parsed.x}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                grid: { color: '#f8f9fa' },
+                                title: {
+                                    display: true,
+                                    text: 'Number of Bookings',
+                                    color: '#666'
+                                }
+                            },
+                            y: {
+                                grid: { display: false },
+                                ticks: {
+                                    autoSkip: false,
+                                    maxRotation: 0
                                 }
                             }
                         }
-                    },
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            grid: { color: '#f8f9fa' },
-                            title: {
-                                display: true,
-                                text: 'Number of Bookings',
-                                color: '#666'
-                            }
-                        },
-                        y: {
-                            grid: { display: false },
-                            ticks: {
-                                autoSkip: false,
-                                maxRotation: 0
-                            }
-                        }
                     }
-                }
-            });
+                });
+            @endif
             
-            // College Distribution Horizontal Bar Chart
-            const collegeCtx = document.getElementById('collegeChart').getContext('2d');
-            new Chart(collegeCtx, {
-                type: 'bar',
-                data: {
-                    labels: @json(array_keys($collegeDistribution)),
-                    datasets: [{
-                        label: 'Number of Bookings',
-                        data: @json(array_values($collegeDistribution)),
-                        backgroundColor: '#bc3737',
-                        borderColor: '#bc3737',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    indexAxis: 'y', // This makes it horizontal
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `Bookings: ${context.parsed.x}`;
+            @if(!$college)
+                // College Distribution Horizontal Bar Chart (only when showing all)
+                const collegeCtx = document.getElementById('collegeChart').getContext('2d');
+                new Chart(collegeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: @json(array_keys($collegeDistribution)),
+                        datasets: [{
+                            label: 'Number of Bookings',
+                            data: @json(array_values($collegeDistribution)),
+                            backgroundColor: '#bc3737',
+                            borderColor: '#bc3737',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Bookings: ${context.parsed.x}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                grid: { color: '#f8f9fa' },
+                                title: {
+                                    display: true,
+                                    text: 'Number of Bookings',
+                                    color: '#666'
+                                }
+                            },
+                            y: {
+                                grid: { display: false },
+                                ticks: {
+                                    autoSkip: false,
+                                    maxRotation: 0
                                 }
                             }
                         }
-                    },
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            grid: { color: '#f8f9fa' },
-                            title: {
-                                display: true,
-                                text: 'Number of Bookings',
-                                color: '#666'
-                            }
-                        },
-                        y: {
-                            grid: { display: false },
-                            ticks: {
-                                autoSkip: false,
-                                maxRotation: 0
-                            }
-                        }
                     }
-                }
-            });
+                });
+            @endif
         @else
             // Income Charts
             const ctx = document.getElementById('incomeChart').getContext('2d');
