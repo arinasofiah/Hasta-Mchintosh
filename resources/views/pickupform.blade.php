@@ -143,6 +143,9 @@
     <form action="{{ route('return.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <input type="hidden" name="bookingID" value="{{ $booking->bookingID }}">
+        <input type="hidden" name="late_fee" id="late_fee_input" value="0">
+        <input type="hidden" name="fuel_fee" id="fuel_fee_input" value="0">
+        <input type="hidden" name="total_fee" id="total_fee_input" value="0">
 
         <p id="form_name">Return vehicle form</p>
         <p class="main_txt">Upload 4 Angle Photos</p>
@@ -241,24 +244,44 @@
 </div>
 
         <div id="btn_div"> 
-            <button type="submit" class="btn-primary">Save Return</button>
+        <button type="submit" class="btn-primary">Save Return</button>
         </div>
-    </form>
-</div>
+        </form>
         @else
-            {{-- STEP 4: EVERYTHING IS COMPLETE --}}
-            <div class="completed-tile return-done" style="background: #f8f9fa; padding: 15px; border-radius: 15px; border-left: 5px solid #28a745; margin-bottom: 20px;">
-                <div>
-                    <span><i class="fas fa-check-circle text-success"></i> <span><strong>Return completed</strong></span>
+                {{-- STEP 3: RETURN IS DONE, SHOW SUMMARY --}}
+                <div class="completed-tile return-done" style="background: #f8f9fa; padding: 15px; border-radius: 15px; border-left: 5px solid #28a745; margin-bottom: 20px;">
+                        <span><i class="fas fa-check-circle text-success"></i> <strong>Return completed</strong></span>
                 </div>
-            </div>
-        @endif
-@endif
-    </div>
-</div>
-    </div>
-</div>
-</div>
+                <div class="summary-fees">
+                   <div class="fee-summary-card">
+                        <div class="fee-header">Payment Summary</div>
+    
+                        <div class="fee-row">
+                            <span class="fee-label">Late Return Fee</span>
+                            <span class="fee-value">RM {{ number_format($return->late_fee, 2) }}</span>
+                        </div>
+
+                        <div class="fee-row">
+                            <span class="fee-label">Refuel Surcharge</span>
+                            <span class="fee-value">RM {{ number_format($return->fuel_fee, 2) }}</span>
+                        </div>
+
+                        <hr class="fee-divider">
+
+                        <div class="total-row">
+                            <span class="total-label">Total Amount Due</span>
+                            <span class="total-value">RM {{ number_format($return->total_fee, 2) }}</span>
+                        </div>
+                    </div>
+                @endif
+                </div> {{-- End of return_form --}}
+            @endif {{-- End of pickup check --}}
+        </div> {{-- End of pickup_form --}}
+    </div> {{-- End of pickup-layout --}}
+</div> {{-- End of container --}}
+</div> {{-- End of body --}}        
+
+
 <div class="modal fade" id="tncModal" tabindex="-1" aria-labelledby="tncModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
@@ -278,6 +301,7 @@
         </div>
     </div>
 </div>
+
 
 <script>
     function preview(input, previewId, placeholderId) {
@@ -387,7 +411,82 @@ function toggleTicketBox(radio) {
     }
 }
 
+function previewFileNames(input, listId, iconId) {
+        const listContainer = document.getElementById(listId);
+        const icon = document.getElementById(iconId);
+        listContainer.innerHTML = ""; // Clear existing list
 
+        if (input.files && input.files.length > 0) {
+            icon.style.display = 'none'; // Hide plus icon
+            for (let i = 0; i < input.files.length; i++) {
+                const nameItem = document.createElement("div");
+                nameItem.style.cssText = "padding:4px 8px; margin-bottom:4px; background:#f0f0f0; border-radius:5px; border-left:3px solid #CB3737;";
+                nameItem.innerHTML = `<i class="fa-solid fa-file-image" style="margin-right:8px; color:#666;"></i> ${input.files[i].name}`;
+                listContainer.appendChild(nameItem);
+            }
+        } else {
+            icon.style.display = 'block';
+        }
+    }
+
+    function calculateLateFee(scheduledTime, actualTime) {
+        if (!actualTime) return 0;
+        
+        function timeToMinutes(timeStr) {
+            const parts = timeStr.split(':');
+            return (parseInt(parts[0]) * 60) + parseInt(parts[1]);
+        }
+
+        const scheduledMinutes = timeToMinutes(scheduledTime);
+        const actualMinutes = timeToMinutes(actualTime);
+        const diff = actualMinutes - scheduledMinutes;
+
+        if (diff <= 0) return 0;
+        return Math.ceil(diff / 30) * 50; // RM 50 per 30 mins
+    }
+    const fuelInput = document.getElementById('fuel');
+        const timeInput = document.getElementById('ac_ret_time');
+        
+        const pickupFuel = {{ $vehicle->fuelLevel }}; 
+        const scheduledTime = "{{ $return->returnTime }}";
+
+        function updateTotals() {
+            // 1. Calculate Late Fee
+            const lateFee = calculateLateFee(scheduledTime, timeInput.value);
+            document.getElementById('late-fee-display').innerText = `RM ${lateFee.toFixed(2)}`;
+            document.getElementById('late_fee_input').value = lateFee;
+
+            // 2. Calculate Fuel Fee (Example: RM 50 per 10% missing)
+            const currentFuel = parseFloat(fuelInput.value) || pickupFuel;
+            let fuelFee = 0;
+            if (currentFuel < pickupFuel) {
+                fuelFee = Math.ceil((pickupFuel - currentFuel) / 10) * 50;
+            }
+            document.getElementById('fuel-fee-display').innerText = `RM ${fuelFee.toFixed(2)}`;
+            document.getElementById('fuel_fee_input').value = fuelFee;
+
+            // 3. Grand Total
+            const total = lateFee + fuelFee;
+            document.getElementById('total_fee_input').value = total;
+        }
+
+        if(fuelInput) fuelInput.addEventListener('input', updateTotals);
+        if(timeInput) timeInput.addEventListener('change', updateTotals);
+
+function updateTotals() {
+    const lateFee = calculateLateFee(scheduledTime, timeInput.value);
+    const currentFuel = parseFloat(fuelInput.value) || pickupFuel;
+    let fuelFee = 0;
+    if (currentFuel < pickupFuel) {
+        fuelFee = Math.ceil((pickupFuel - currentFuel) / 10) * 50;
+    }
+    const total = lateFee + fuelFee;
+
+    // Update hidden inputs for DB submission
+    if(document.getElementById('late_fee_input')) document.getElementById('late_fee_input').value = lateFee;
+    if(document.getElementById('fuel_fee_input')) document.getElementById('fuel_fee_input').value = fuelFee;
+    if(document.getElementById('total_fee_input')) document.getElementById('total_fee_input').value = total;
+}
 </script>
 </body>
 </html>
