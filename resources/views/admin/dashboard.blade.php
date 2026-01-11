@@ -33,35 +33,101 @@
         }
 
         .feedback-scroll::-webkit-scrollbar {
-    width: 6px;
-}
-
-.feedback-scroll::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-}
-
-.feedback-scroll::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 10px;
-}
-
-.feedback-scroll::-webkit-scrollbar-thumb:hover {
-    background: #bc3737;
-}
-
-.feedback-card {
-    transition: background 0.3s ease;
-}
-
-.feedback-card:hover {
-    background: #fff !important;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-}
-
-.italic {
-    font-style: italic;
-}
+            width: 6px;
+        }
+        .feedback-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .feedback-scroll::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 10px;
+        }
+        .feedback-scroll::-webkit-scrollbar-thumb:hover {
+            background: #bc3737;
+        }
+        .feedback-card {
+            transition: background 0.3s ease;
+        }
+        .feedback-card:hover {
+            background: #fff !important;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .italic {
+            font-style: italic;
+        }
+        
+        /* New styles for available vehicles */
+        .available-vehicles-card {
+            height: 100%;
+        }
+        .vehicle-list-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            border: 1px solid #e9ecef;
+        }
+        .vehicle-list-item:hover {
+            background: white;
+            border-color: #bc3737;
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(188, 55, 55, 0.1);
+            text-decoration: none;
+            color: inherit;
+        }
+        .vehicle-image {
+            width: 60px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-right: 15px;
+            background: #e9ecef;
+        }
+        .vehicle-info h6 {
+            margin-bottom: 2px;
+            font-weight: 600;
+        }
+        .vehicle-info small {
+            color: #6c757d;
+        }
+        .view-all-btn {
+            text-decoration: none;
+            color: #bc3737;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+        .view-all-btn:hover {
+            color: #8b2525;
+            text-decoration: underline;
+        }
+        .no-vehicles {
+            padding: 40px 20px;
+            text-align: center;
+            color: #6c757d;
+        }
+        .vehicle-badge {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 10px;
+            margin-left: auto;
+        }
+        .available-badge {
+            background: #c1f2c7;
+            color: #2e7d32;
+        }
+        .reserved-badge {
+            background: #fff3cd;
+            color: #856404;
+        }
     </style>
 </head>
 <body>
@@ -161,22 +227,87 @@
     </div>
 
     <div class="row g-4 mb-5">
+        <!-- Available Vehicles Column (NEW) -->
+        <div class="col-md-5">
+            <div class="stat-card available-vehicles-card h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-car text-success me-2"></i> Available Vehicles
+                    </h5>
+                    <span class="badge bg-light text-dark">{{ $availableVehicles->count() }} Ready</span>
+                </div>
+                
+                @if($availableVehicles->count() > 0)
+                    <div class="vehicle-list-scroll" style="max-height: 250px; overflow-y: auto; padding-right: 10px;">
+                        @foreach($availableVehicles->take(8) as $vehicle)
+                            <a href="{{ route('admin.fleet') }}?status=available" class="vehicle-list-item">
+                                @if($vehicle->vehiclePhoto)
+                                    <img src="{{ Storage::url($vehicle->vehiclePhoto) }}" class="vehicle-image" alt="{{ $vehicle->model }}">
+                                @else
+                                    <div class="vehicle-image d-flex align-items-center justify-content-center bg-light">
+                                        <i class="fas fa-car text-muted"></i>
+                                    </div>
+                                @endif
+                                <div class="vehicle-info">
+                                    <h6 class="mb-0">{{ $vehicle->model }}</h6>
+                                    <small>{{ $vehicle->plateNumber }} • {{ $vehicle->vehicleType }}</small>
+                                </div>
+                                <span class="vehicle-badge {{ $vehicle->status == 'reserved' ? 'reserved-badge' : 'available-badge' }}">
+                                    {{ $vehicle->status == 'reserved' ? 'Reserved' : 'Available' }}
+                                </span>
+                            </a>
+                        @endforeach
+                    </div>
+                    
+                    @if($availableVehicles->count() > 8)
+                        <div class="text-center mt-3">
+                            <a href="{{ route('admin.fleet') }}?status=available" class="view-all-btn">
+                                View all {{ $availableVehicles->count() }} vehicles
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    @endif
+                @else
+                    <div class="no-vehicles">
+                        <i class="fas fa-car fa-3x text-light mb-3"></i>
+                        <p class="mb-2">No vehicles available at the moment</p>
+                        <a href="{{ route('admin.vehicles.create') }}" class="btn btn-sm btn-success">
+                            <i class="fas fa-plus me-1"></i> Add Vehicle
+                        </a>
+                    </div>
+                @endif
+            </div>
+        </div>
+        
+        <!-- Utilization Efficiency Column -->
         <div class="col-md-7">
             <div class="stat-card utilization-card h-100">
                 <h5 class="fw-bold mb-1">Fleet Utilization Efficiency</h5>
                 <p class="text-white-50 mb-4">Current revenue-generating capacity.</p>
                 
-                @php $rate = ($totalVehicles > 0) ? ($onRentCount / $totalVehicles) * 100 : 0; @endphp
+                @php 
+                    $availableForRent = $availableCount + ($reservedCount ?? 0);
+                    $totalRentable = $totalVehicles - $maintenanceCount;
+                    $rate = ($totalRentable > 0) ? ($onRentCount / $totalRentable) * 100 : 0;
+                @endphp
                 <h1 class="fw-bold mb-2">{{ number_format($rate, 1) }}%</h1>
                 
                 <div class="progress mb-3">
                     <div class="progress-bar shadow-sm" role="progressbar" style="width: {{ $rate }}%;"></div>
                 </div>
-                <small class="text-white-50">{{ $onRentCount }} out of {{ $totalVehicles }} cars are currently on the road.</small>
+                <small class="text-white-50">
+                    {{ $onRentCount }} out of {{ $totalRentable }} rentable cars are generating revenue.
+                    @if($availableForRent > 0)
+                        <br>{{ $availableForRent }} vehicles ready for booking.
+                    @endif
+                </small>
             </div>
         </div>
-
-        <div class="col-md-5">
+    </div>
+    
+    <!-- Top Models Chart -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-12">
             <div class="stat-card h-100">
                 <h5 class="fw-bold mb-3">Top Models in Use</h5>
                 <div class="chart-container">
@@ -185,45 +316,47 @@
             </div>
         </div>
     </div>
+    
+    <!-- Customer Feedback -->
     <div class="row mt-4 mb-5">
-    <div class="col-12">
-        <div class="stat-card p-4 bg-white rounded-4 shadow-sm">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="fw-bold mb-0">
-                    <i class="fas fa-comments text-danger me-2"></i> Recent Customer Feedback
-                </h5>
-                <span class="badge bg-light text-dark">{{ $feedback->count() }} New Reviews</span>
-            </div>
+        <div class="col-12">
+            <div class="stat-card p-4 bg-white rounded-4 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-comments text-danger me-2"></i> Recent Customer Feedback
+                    </h5>
+                    <span class="badge bg-light text-dark">{{ $feedback->count() }} New Reviews</span>
+                </div>
 
-            <div class="feedback-scroll" style="max-height: 350px; overflow-y: auto; padding-right: 10px;">
-                @forelse($feedback as $feedback)
-                    <div class="feedback-card p-3 mb-3 border-start border-4 border-danger bg-light rounded-2">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="fw-bold mb-0 text-dark">{{ $feedback->name }}</h6>
-                            <small class="text-muted">
-                                <i class="far fa-calendar-alt me-1"></i> 
-                                {{ date('d M Y', strtotime($feedback->returnDate)) }}
-                            </small>
+                <div class="feedback-scroll" style="max-height: 350px; overflow-y: auto; padding-right: 10px;">
+                    @forelse($feedback as $feedbackItem)
+                        <div class="feedback-card p-3 mb-3 border-start border-4 border-danger bg-light rounded-2">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="fw-bold mb-0 text-dark">{{ $feedbackItem->name }}</h6>
+                                <small class="text-muted">
+                                    <i class="far fa-calendar-alt me-1"></i> 
+                                    {{ date('d M Y', strtotime($feedbackItem->returnDate)) }}
+                                </small>
+                            </div>
+                            <p class="mb-0 text-secondary italic">
+                                "{{ $feedbackItem->feedback }}"
+                            </p>
+                            <div class="mt-2">
+                                <small class="text-uppercase fw-bold" style="font-size: 10px; color: #bc3737;">
+                                    Return ID: #{{ $feedbackItem->returnID }}
+                                </small>
+                            </div>
                         </div>
-                        <p class="mb-0 text-secondary italic">
-                            "{{ $feedback->feedback }}"
-                        </p>
-                        <div class="mt-2">
-                            <small class="text-uppercase fw-bold" style="font-size: 10px; color: #bc3737;">
-                                Return ID: #{{ $feedback->returnID }}
-                            </small>
+                    @empty
+                        <div class="text-center py-5">
+                            <i class="fas fa-comment-slash fa-3x text-light mb-3"></i>
+                            <p class="text-muted">No feedback found in the database.</p>
                         </div>
-                    </div>
-                @empty
-                    <div class="text-center py-5">
-                        <i class="fas fa-comment-slash fa-3x text-light mb-3"></i>
-                        <p class="text-muted">No feedback found in the database.</p>
-                    </div>
-                @endforelse
+                    @endforelse
+                </div>
             </div>
         </div>
     </div>
-</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

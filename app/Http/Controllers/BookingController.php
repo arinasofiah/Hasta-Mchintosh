@@ -465,61 +465,61 @@ class BookingController extends Controller
     }
 
     public function approveBooking($bookingID)
-{
-    try {
-        DB::beginTransaction();
-        
-        $booking = Bookings::findOrFail($bookingID);
-        $booking->bookingStatus = 'approved';
-        $booking->save();
-        
-        // === Issue Loyalty Stamp ===
-        if (auth()->check()) {
-            $customerProfile = DB::table('customer')->where('userID', auth()->id())->first();
-            if ($customerProfile) {
-                $loyaltyCard = LoyaltyCard::firstOrCreate(
-                    ['matricNumber' => $customerProfile->matricNumber],
-                    ['stampCount' => 0]
-                );
+    {
+        try {
+            DB::beginTransaction();
+            
+            $booking = Bookings::findOrFail($bookingID);
+            $booking->bookingStatus = 'approved';
+            $booking->save();
+            
+            // === Issue Loyalty Stamp ===
+            if (auth()->check()) {
+                $customerProfile = DB::table('customer')->where('userID', auth()->id())->first();
+                if ($customerProfile) {
+                    $loyaltyCard = LoyaltyCard::firstOrCreate(
+                        ['matricNumber' => $customerProfile->matricNumber],
+                        ['stampCount' => 0]
+                    );
 
-                // Calculate rental hours from booking
-                $start = Carbon::parse($booking->startDate . ' 00:00:00');
-                $end = Carbon::parse($booking->endDate . ' 23:59:59');
-                $rentalHours = $end->diffInHours($start);
-                
-                // Only give stamp if rental duration >= 7 hours
-                if ($rentalHours >= 7) {
-                    $loyaltyCard->stampCount += 1;
-                    $loyaltyCard->save();
+                    // Calculate rental hours from booking
+                    $start = Carbon::parse($booking->startDate . ' 00:00:00');
+                    $end = Carbon::parse($booking->endDate . ' 23:59:59');
+                    $rentalHours = $end->diffInHours($start);
+                    
+                    // Only give stamp if rental duration >= 7 hours
+                    if ($rentalHours >= 7) {
+                        $loyaltyCard->stampCount += 1;
+                        $loyaltyCard->save();
+                    }
                 }
             }
+            
+            // Check if booking has already started
+            $now = Carbon::now();
+            $startDate = Carbon::parse($booking->startDate);
+            
+            // If booking hasn't started yet, mark vehicle as "reserved"
+            // If booking has started or in progress, mark as "in_use"
+            if ($startDate->isFuture()) {
+                // Booking hasn't started yet - mark vehicle as "reserved"
+                $booking->vehicle->status = 'reserved';
+                $booking->vehicle->save();
+            } else {
+                // Booking has started or is in progress - use default logic
+                $booking->updateVehicleStatus();
+            }
+            
+            DB::commit();
+            
+            return redirect()->back()->with('success', 'Booking approved successfully!');
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Approve booking error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to approve booking: ' . $e->getMessage());
         }
-        
-        // Check if booking has already started
-        $now = Carbon::now();
-        $startDate = Carbon::parse($booking->startDate);
-        
-        // If booking hasn't started yet, mark vehicle as "reserved"
-        // If booking has started or in progress, mark as "in_use"
-        if ($startDate->isFuture()) {
-            // Booking hasn't started yet - mark vehicle as "reserved"
-            $booking->vehicle->status = 'reserved';
-            $booking->vehicle->save();
-        } else {
-            // Booking has started or is in progress - use default logic
-            $booking->updateVehicleStatus();
-        }
-        
-        DB::commit();
-        
-        return redirect()->back()->with('success', 'Booking approved successfully!');
-        
-    } catch (\Exception $e) {
-        DB::rollBack();
-        \Log::error('Approve booking error: ' . $e->getMessage());
-        return redirect()->back()->with('error', 'Failed to approve booking: ' . $e->getMessage());
     }
-}
 
    public function bookingHistory()
 {
@@ -531,7 +531,7 @@ class BookingController extends Controller
         ->leftJoin('return_car', 'booking.bookingID', '=', 'return_car.bookingID')
         ->leftJoin('payments', function($join) {
             $join->on('booking.bookingID', '=', 'payments.bookingID')
-                 ->where('payments.paymentStatus', 'approved');
+                ->where('payments.paymentStatus', 'approved');
         })
         ->select(
             'booking.*',
@@ -553,7 +553,7 @@ class BookingController extends Controller
         )
         ->where(function($query) use ($userId) {
             $query->where('booking.customerID', $userId)
-                  ->orWhere('booking.userID', $userId);
+                ->orWhere('booking.userID', $userId);
         })
         ->groupBy('booking.bookingID')
         ->orderBy('booking.startDate', 'asc')
@@ -595,24 +595,33 @@ class BookingController extends Controller
             return $bookingObj;
         });
 
-    // ACTIVE BOOKINGS: Show ALL approved bookings that haven't ended yet
-    // INCLUDING future bookings that haven't started yet
-    $active = $bookings->filter(function($booking) {
-        // Only include approved bookings
-        if ($booking->bookingStatus !== 'approved') {
-            return false;
-        }
-        
-        $now = Carbon::now();
-        $end = Carbon::parse($booking->returnDateTime);
-        
-        // Show booking if it hasn't ended yet (includes future bookings)
-        return $now->lte($end);
-    });
+        \Log::info('Auth user ID', ['id' => auth()->id()]);
+
+    // ACTIVE BOOKINGS: Show ALL approved bookings regardless of date
+    // This includes: upcoming bookings, current bookings, and past bookings that are still approved
+    $active = $bookings->where('bookingStatus', 'approved');
     
     $pending = $bookings->where('bookingStatus', 'pending');
     $completed = $bookings->where('bookingStatus', 'completed');
     $cancelled = $bookings->where('bookingStatus', 'cancelled');
+
+    // DEBUG: Check booking ID 21 specifically
+    $booking21 = $bookings->firstWhere('bookingID', 21);
+    if ($booking21) {
+        \Log::info('Booking ID 21 Details:', [
+            'id' => $booking21->bookingID,
+            'status' => $booking21->bookingStatus,
+            'start' => $booking21->startDate,
+            'end' => $booking21->endDate,
+            'in_active' => $active->contains('bookingID', 21) ? 'YES' : 'NO',
+            'filter_check' => [
+                'status_ok' => $booking21->bookingStatus === 'approved' ? 'YES' : 'NO',
+                'should_show' => $booking21->bookingStatus === 'approved' ? 'YES' : 'NO'
+            ]
+        ]);
+    } else {
+        \Log::warning('Booking ID 21 not found in $bookings collection');
+    }
 
     return view('bookingHistory', compact('active', 'pending', 'completed', 'cancelled'));
 }

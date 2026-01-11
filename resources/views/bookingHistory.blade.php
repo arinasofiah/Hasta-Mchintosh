@@ -109,50 +109,6 @@
         <div class="booking-history-page">
             <h1 class="profile-title">My Booking History</h1>
 
-            <!-- Debug Section (Enable if needed) -->
-            @php $debugEnabled = true; @endphp <!-- Change to false to hide -->
-            @if($debugEnabled)
-            <div style="background: #f0f0f0; padding: 10px; margin-bottom: 20px; border-radius: 4px; font-size: 12px; border: 1px solid #ccc;">
-                <strong style="color: red;">DEBUG INFORMATION:</strong><br><br>
-                
-                @php
-                    $testBooking = $active->first() ?? $pending->first() ?? $completed->first() ?? $cancelled->first();
-                @endphp
-                
-                @if($testBooking)
-                    <strong>Sample Booking:</strong><br>
-                    Booking ID: {{ $testBooking->bookingID }}<br>
-                    Booking Status: <span style="color: {{ $testBooking->bookingStatus == 'approved' ? 'green' : 'orange' }}"><b>{{ $testBooking->bookingStatus }}</b></span><br>
-                    Start Date: {{ $testBooking->startDate }}<br>
-                    End Date: {{ $testBooking->endDate }}<br>
-                    Vehicle: {{ $testBooking->vehicle->model ?? 'N/A' }}<br>
-                    <br>
-                    
-                    <strong>Current Time:</strong> {{ \Carbon\Carbon::now()->toDateTimeString() }}<br>
-                    <strong>End Date Parsed:</strong> {{ \Carbon\Carbon::parse($testBooking->endDate)->toDateTimeString() }}<br>
-                    <strong>Has ended?</strong> {{ \Carbon\Carbon::now()->gt(\Carbon\Carbon::parse($testBooking->endDate)) ? 'YES' : 'NO' }}<br>
-                    <strong>Should show in Active?</strong> {{ ($testBooking->bookingStatus == 'approved' && \Carbon\Carbon::now()->lte(\Carbon\Carbon::parse($testBooking->endDate))) ? 'YES' : 'NO' }}<br>
-                    <br>
-                @endif
-                
-                <strong>Counts:</strong><br>
-                • Active Bookings: {{ count($active) }}<br>
-                • Pending Bookings: {{ count($pending) }}<br>
-                • Completed Bookings: {{ count($completed) }}<br>
-                • Cancelled Bookings: {{ count($cancelled) }}<br>
-                <br>
-                
-                <strong>Active Booking IDs:</strong><br>
-                @if(count($active) > 0)
-                    @foreach($active as $a)
-                        • ID: {{ $a->bookingID }} | Status: {{ $a->bookingStatus }} | Dates: {{ $a->startDate }} to {{ $a->endDate }}<br>
-                    @endforeach
-                @else
-                    <em>No active bookings found</em>
-                @endif
-            </div>
-            @endif
-
             <!-- Active/Ongoing Bookings Section -->
             <div class="booking-section">
                 <div class="section-title active">Active & Upcoming Bookings</div>
