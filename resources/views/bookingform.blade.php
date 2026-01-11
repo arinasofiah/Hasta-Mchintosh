@@ -212,7 +212,8 @@ textarea.input {resize:vertical; min-height:100px;}
 <form id="bookingForm" action="{{ route('payment.form') }}" method="POST">
     @csrf
     <input type="hidden" name="vehicleID" value="{{ $vehicle->vehicleID }}">
-    
+    <input type="hidden" name="deliveryCharge" id="deliveryChargeInput" value="0">
+
     <div class="container">
         <!-- Booking Details Card -->
         <div class="card">
@@ -697,6 +698,11 @@ function checkPromotion() {
 function recalculateTotal() {
     const finalTotal = baseGrandTotal + deliveryCharge - promotionDiscount;
 
+    const deliveryInput = document.getElementById('deliveryChargeInput');
+    if (deliveryInput) {
+        deliveryInput.value = deliveryCharge;
+    }
+
     // Update delivery charge display
     const deliveryChargeEl = document.getElementById('deliveryCharge');
     if (deliveryChargeEl) {
@@ -800,7 +806,6 @@ function showMessage(text, type) {
     message.style.border = type === 'success' ? '1px solid #c3e6cb' : '1px solid #f5c6cb';
 }
 
-// ===== GO TO PAYMENT FUNCTION =====
 function goToPayment() {
     console.log('=== GO TO PAYMENT DEBUG START ===');
     
@@ -880,7 +885,10 @@ function goToPayment() {
     console.log('Promotion Discount:', promotionDiscount);
     console.log('Delivery Charge:', deliveryCharge);
     console.log('Final Total:', window.finalTotal);
-    
+
+    updateDeliveryCharge();
+    recalculateTotal();
+
     // Add hidden fields for calculated values
     console.log('\n=== Adding dynamic fields ===');
     const hiddenFields = [
@@ -923,9 +931,6 @@ function goToPayment() {
     
     // Submit the form
     form.submit();
-    
-    console.log('=== Form submission triggered ===');
-    console.log('=== GO TO PAYMENT DEBUG END ===');
 }
 
 function validateOtherLocations() {

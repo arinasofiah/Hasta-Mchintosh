@@ -1223,7 +1223,6 @@ function updatePaymentSummary() {
         paymentTypeLabel = 'Full Amount';
     }
     
-    // Total vehicle cost = rental cost after all discounts + deposit
     const totalVehicleCost = subtotal + FIXED_DEPOSIT;
     
     // Update display values
