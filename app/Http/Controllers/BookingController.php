@@ -16,6 +16,15 @@ use Carbon\Carbon;
 
 class BookingController extends Controller
 {
+    /**
+     * Create a new controller instance.
+     */
+    public function __construct()
+    {
+        // Require authentication for all methods in this controller
+        $this->middleware('auth');
+    }
+
     public function showForm($vehicleID, Request $request)
     {
         $vehicle = Vehicles::findOrFail($vehicleID);
@@ -521,109 +530,98 @@ class BookingController extends Controller
         }
     }
 
-   public function bookingHistory()
-{
-    $userId = auth()->id();
-    
-    $bookings = DB::table('booking')
-        ->join('vehicles', 'booking.vehicleID', '=', 'vehicles.vehicleID')
-        ->leftJoin('pickup', 'booking.bookingID', '=', 'pickup.bookingID')
-        ->leftJoin('return_car', 'booking.bookingID', '=', 'return_car.bookingID')
-        ->leftJoin('payments', function($join) {
-            $join->on('booking.bookingID', '=', 'payments.bookingID')
-                ->where('payments.paymentStatus', 'approved');
-        })
-        ->select(
-            'booking.*',
-            'vehicles.model',
-            'vehicles.vehicleType',
-            'vehicles.plateNumber',
-            'vehicles.vehiclePhoto',
-            'vehicles.pricePerDay',
-            'pickup.pickupLocation',
-            'pickup.pickupDate as pickup_date',
-            'pickup.pickupTime as pickup_time',
-            'return_car.returnLocation',
-            'return_car.returnDate as return_date',
-            'return_car.returnTime as return_time',
-            DB::raw('COALESCE(SUM(payments.amount), 0) as total_paid'),
-            'booking.bank_name',
-            'booking.bank_owner_name', 
-            'booking.penamaBank'
-        )
-        ->where(function($query) use ($userId) {
-            $query->where('booking.customerID', $userId)
-                ->orWhere('booking.userID', $userId);
-        })
-        ->groupBy('booking.bookingID')
-        ->orderBy('booking.startDate', 'asc')
-        ->get()
-        ->map(function($booking) {
-            $bookingObj = (object) (array) $booking;
-            
-            $bookingObj->vehicle = (object) [
-                'model' => $booking->model,
-                'vehicleType' => $booking->vehicleType,
-                'plateNumber' => $booking->plateNumber,
-                'vehiclePhoto' => $booking->vehiclePhoto,
-                'pricePerDay' => $booking->pricePerDay,
-                'vehicleID' => $booking->vehicleID
-            ];
-            
-            $bookingObj->bank_name = $booking->bank_name ?? 'Not Available';
-            $bookingObj->bank_owner_name = $booking->bank_owner_name ?? 'Not Available';
-            $bookingObj->penamaBank = $booking->penamaBank ?? 'Not Available';
-            
-            $bookingObj->totalPaid = $booking->total_paid ?? 0;
-            $bookingObj->totalCost = $booking->totalPrice;
-            $bookingObj->remainingBalance = max(0, $bookingObj->totalCost - $bookingObj->totalPaid);
-            $bookingObj->isFullyPaid = $bookingObj->remainingBalance <= 0;
-            
-            $bookingObj->pickupLocation = $booking->pickupLocation ?? 'Not specified';
-            $bookingObj->returnLocation = $booking->returnLocation ?? 'Not specified';
-            
-            $bookingObj->pickupDateTime = ($booking->pickup_date ?? $booking->startDate) 
-                . ' ' . ($booking->pickup_time ?? '08:00:00');
-            $bookingObj->returnDateTime = ($booking->return_date ?? $booking->endDate) 
-                . ' ' . ($booking->return_time ?? '16:00:00');
-            
-            $startDate = Carbon::parse($booking->startDate);
-            $endDate = Carbon::parse($booking->endDate);
-            $duration = $startDate->diffInDays($endDate);
-            $bookingObj->duration = $duration > 0 ? $duration : 1;
-            
-            return $bookingObj;
+    public function bookingHistory()
+    {
+        $userId = auth()->id();
+        
+        $bookings = DB::table('booking')
+            ->join('vehicles', 'booking.vehicleID', '=', 'vehicles.vehicleID')
+            ->leftJoin('pickup', 'booking.bookingID', '=', 'pickup.bookingID')
+            ->leftJoin('return_car', 'booking.bookingID', '=', 'return_car.bookingID')
+            ->leftJoin('payments', function($join) {
+                $join->on('booking.bookingID', '=', 'payments.bookingID')
+                    ->where('payments.paymentStatus', 'approved');
+            })
+            ->select(
+                'booking.*',
+                'vehicles.model',
+                'vehicles.vehicleType',
+                'vehicles.plateNumber',
+                'vehicles.vehiclePhoto',
+                'vehicles.pricePerDay',
+                'pickup.pickupLocation',
+                'pickup.pickupDate as pickup_date',
+                'pickup.pickupTime as pickup_time',
+                'return_car.returnLocation',
+                'return_car.returnDate as return_date',
+                'return_car.returnTime as return_time',
+                DB::raw('COALESCE(SUM(payments.amount), 0) as total_paid'),
+                'booking.bank_name',
+                'booking.bank_owner_name', 
+                'booking.penamaBank'
+            )
+            ->where(function($query) use ($userId) {
+                $query->where('booking.customerID', $userId)
+                    ->orWhere('booking.userID', $userId);
+            })
+            ->groupBy('booking.bookingID')
+            ->orderBy('booking.startDate', 'asc')
+            ->get()
+            ->map(function($booking) {
+                $bookingObj = (object) (array) $booking;
+                
+                $bookingObj->vehicle = (object) [
+                    'model' => $booking->model,
+                    'vehicleType' => $booking->vehicleType,
+                    'plateNumber' => $booking->plateNumber,
+                    'vehiclePhoto' => $booking->vehiclePhoto,
+                    'pricePerDay' => $booking->pricePerDay,
+                    'vehicleID' => $booking->vehicleID
+                ];
+                
+                $bookingObj->bank_name = $booking->bank_name ?? 'Not Available';
+                $bookingObj->bank_owner_name = $booking->bank_owner_name ?? 'Not Available';
+                $bookingObj->penamaBank = $booking->penamaBank ?? 'Not Available';
+                
+                $bookingObj->totalPaid = $booking->total_paid ?? 0;
+                $bookingObj->totalCost = $booking->totalPrice;
+                $bookingObj->remainingBalance = max(0, $bookingObj->totalCost - $bookingObj->totalPaid);
+                $bookingObj->isFullyPaid = $bookingObj->remainingBalance <= 0;
+                
+                $bookingObj->pickupLocation = $booking->pickupLocation ?? 'Not specified';
+                $bookingObj->returnLocation = $booking->returnLocation ?? 'Not specified';
+                
+                $bookingObj->pickupDateTime = ($booking->pickup_date ?? $booking->startDate) 
+                    . ' ' . ($booking->pickup_time ?? '08:00:00');
+                $bookingObj->returnDateTime = ($booking->return_date ?? $booking->endDate) 
+                    . ' ' . ($booking->return_time ?? '16:00:00');
+                
+                $startDate = Carbon::parse($booking->startDate);
+                $endDate = Carbon::parse($booking->endDate);
+                $duration = $startDate->diffInDays($endDate);
+                $bookingObj->duration = $duration > 0 ? $duration : 1;
+                
+                return $bookingObj;
+            });
+
+        // ACTIVE BOOKINGS: Show ALL approved bookings regardless of date
+        $active = $bookings->filter(function($booking) {
+            return strtolower(trim($booking->bookingStatus)) === 'approved';
+        });
+        
+        $pending = $bookings->filter(function($booking) {
+            return strtolower(trim($booking->bookingStatus)) === 'pending';
+        });
+        
+        $completed = $bookings->filter(function($booking) {
+            return strtolower(trim($booking->bookingStatus)) === 'completed';
+        });
+        
+        $cancelled = $bookings->filter(function($booking) {
+            return strtolower(trim($booking->bookingStatus)) === 'cancelled';
         });
 
-        \Log::info('Auth user ID', ['id' => auth()->id()]);
-
-    // ACTIVE BOOKINGS: Show ALL approved bookings regardless of date
-    // This includes: upcoming bookings, current bookings, and past bookings that are still approved
-    $active = $bookings->where('bookingStatus', 'approved');
-    
-    $pending = $bookings->where('bookingStatus', 'pending');
-    $completed = $bookings->where('bookingStatus', 'completed');
-    $cancelled = $bookings->where('bookingStatus', 'cancelled');
-
-    // DEBUG: Check booking ID 21 specifically
-    $booking21 = $bookings->firstWhere('bookingID', 21);
-    if ($booking21) {
-        \Log::info('Booking ID 21 Details:', [
-            'id' => $booking21->bookingID,
-            'status' => $booking21->bookingStatus,
-            'start' => $booking21->startDate,
-            'end' => $booking21->endDate,
-            'in_active' => $active->contains('bookingID', 21) ? 'YES' : 'NO',
-            'filter_check' => [
-                'status_ok' => $booking21->bookingStatus === 'approved' ? 'YES' : 'NO',
-                'should_show' => $booking21->bookingStatus === 'approved' ? 'YES' : 'NO'
-            ]
-        ]);
-    } else {
-        \Log::warning('Booking ID 21 not found in $bookings collection');
+        return view('bookingHistory', compact('active', 'pending', 'completed', 'cancelled'));
     }
-
-    return view('bookingHistory', compact('active', 'pending', 'completed', 'cancelled'));
-}
 
 }

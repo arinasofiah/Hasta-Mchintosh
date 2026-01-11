@@ -109,6 +109,7 @@ Route::middleware(['auth'])->prefix('booking')->name('booking.')->group(function
     Route::post('/booking/confirm', [BookingController::class, 'confirmBooking'])->name('confirm');
     Route::get('/history', [BookingController::class, 'bookingHistory'])->name('history');
     Route::post('/payment-form', [BookingController::class, 'showPaymentForm'])->name('payment.form');
+    Route::get('/booking-history', [BookingController::class, 'history'])->name('booking.history');
 });
 
 Route::post('/register-customer', [CustomerController::class, 'registerCustomer'])->name('customer.register');
@@ -181,7 +182,8 @@ Route::post('/customer/booking/{id}/cancel', [CustomerController::class, 'cancel
     ->name('customer.booking.cancel')
     ->middleware('auth');
    
-Route::get('/booking-history', [BookingController::class, 'history'])->name('booking.history');
+Route::get('/admin/get-vehicle-availability', [AdminController::class, 'getVehicleAvailability'])
+    ->name('admin.vehicle-availability');
 
 
 Route::get('/pickup/form/{bookingID}', [PickupController::class, 'form'])->name('pickup.form');

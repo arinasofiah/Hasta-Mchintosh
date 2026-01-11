@@ -15,19 +15,30 @@ use Carbon\Carbon;
 class AdminController extends Controller
 {
     // Dashboard
-    public function index()
+   public function index()
 {
     if (auth()->user()->userType !== 'admin') {
         abort(403, 'Unauthorized. Admin access only.');
     }
-
+    
+    // Update vehicle statuses first
+    $this->updateVehicleStatuses();
+    
     // 1. Existing Stats
     $totalVehicles = DB::table('vehicles')->count();
     $availableCount = DB::table('vehicles')->where('status', 'available')->count();
     $onRentCount = DB::table('vehicles')->where('status', 'rented')->count();
     $maintenanceCount = DB::table('vehicles')->where('status', 'maintenance')->count();
+    $reservedCount = DB::table('vehicles')->where('status', 'reserved')->count();
 
-    // 2. Pie Chart Data
+    // 2. NEW: Get available vehicles (both available and reserved status)
+    $availableVehicles = DB::table('vehicles')
+        ->whereIn('status', ['available', 'reserved'])
+        ->orderBy('created_at', 'desc')
+        ->limit(8) // Limit for dashboard display
+        ->get();
+
+    // 3. Pie Chart Data
     $usageData = DB::table('vehicles')
         ->select('model', DB::raw('count(*) as count'))
         ->where('status', 'rented')
@@ -36,26 +47,149 @@ class AdminController extends Controller
         ->take(5)
         ->get();
 
-    // 3. NEW: Fetch Feedback with Customer Names
-    // Assuming 'return' table has 'userID' to link to 'users' table
+    // 4. Feedback Data
     $feedback = DB::table('return as r')
-    ->join('booking as b', 'r.bookingID', '=', 'b.bookingID')
-    ->join('users as u', 'b.customerID', '=', 'u.userID') // Assuming customerID is the foreign key in booking table
-    ->select('u.name', 'r.feedback', 'r.returnDate', 'r.returnID')
-    ->whereNotNull('r.feedback')
-    ->where('r.feedback', '!=', '')  // Fixed: Added empty string value
-    ->orderBy('r.returnDate', 'desc')
-    ->limit(10)
-    ->get();
+        ->join('booking as b', 'r.bookingID', '=', 'b.bookingID')
+        ->join('users as u', 'b.customerID', '=', 'u.userID')
+        ->select('u.name', 'r.feedback', 'r.returnDate', 'r.returnID')
+        ->whereNotNull('r.feedback')
+        ->where('r.feedback', '!=', '')
+        ->orderBy('r.returnDate', 'desc')
+        ->limit(10)
+        ->get();
 
     return view('admin.dashboard', compact(
         'totalVehicles', 
         'availableCount', 
         'onRentCount', 
         'maintenanceCount',
+        'reservedCount', // Add this
+        'availableVehicles', // Add this
+         'onRentVehicles',
         'usageData',
         'feedback'
     ));
+}
+
+public function getVehicleAvailability(Request $request)
+{
+    $vehicleId = $request->query('vehicle_id');
+    
+    if ($vehicleId) {
+        // Get bookings for specific vehicle
+        $bookings = DB::table('booking')
+            ->where('vehicleID', $vehicleId)
+            ->whereIn('bookingStatus', ['confirmed', 'approved', 'active'])
+            ->orderBy('startDate')
+            ->get();
+        
+        // Get vehicle info
+        $vehicle = DB::table('vehicles')->where('vehicleID', $vehicleId)->first();
+        
+        $events = [];
+        
+        // Add current status as an event starting from today
+        $events[] = [
+            'vehicle_id' => $vehicleId,
+            'model' => $vehicle->model,
+            'status' => $vehicle->status,
+            'start_date' => now()->toDateString(),
+            'end_date' => now()->addDays(30)->toDateString(), // Show 30 days ahead
+            'customer_name' => null
+        ];
+        
+        // Add booking events
+        foreach ($bookings as $booking) {
+            $customer = DB::table('users')->where('userID', $booking->customerID)->first();
+            
+            $status = ($booking->startDate <= now() && $booking->endDate >= now()) ? 'rented' : 'reserved';
+            
+            $events[] = [
+                'vehicle_id' => $vehicleId,
+                'model' => $vehicle->model,
+                'status' => $status,
+                'start_date' => $booking->startDate,
+                'end_date' => $booking->endDate,
+                'customer_name' => $customer ? $customer->name : 'Unknown'
+            ];
+        }
+        
+        return response()->json($events);
+    }
+    
+    // Get all vehicles with their next 30 days availability
+    $vehicles = DB::table('vehicles')->get();
+    $events = [];
+    
+    foreach ($vehicles as $vehicle) {
+        // Get upcoming bookings for this vehicle
+        $bookings = DB::table('booking')
+            ->where('vehicleID', $vehicle->vehicleID)
+            ->where('endDate', '>=', now())
+            ->whereIn('bookingStatus', ['confirmed', 'approved', 'active'])
+            ->orderBy('startDate')
+            ->limit(5) // Limit to 5 upcoming bookings per vehicle
+            ->get();
+        
+        if ($bookings->isEmpty()) {
+            // No bookings - vehicle is available
+            $events[] = [
+                'vehicle_id' => $vehicle->vehicleID,
+                'model' => $vehicle->model,
+                'status' => 'available',
+                'start_date' => now()->toDateString(),
+                'end_date' => now()->addDays(30)->toDateString(),
+                'customer_name' => null
+            ];
+        } else {
+            // Add booking periods
+            $lastDate = now();
+            
+            foreach ($bookings as $booking) {
+                $customer = DB::table('users')->where('userID', $booking->customerID)->first();
+                
+                // Add available period before booking if there's a gap
+                if ($lastDate->lt($booking->startDate)) {
+                    $events[] = [
+                        'vehicle_id' => $vehicle->vehicleID,
+                        'model' => $vehicle->model,
+                        'status' => 'available',
+                        'start_date' => $lastDate->toDateString(),
+                        'end_date' => $booking->startDate,
+                        'customer_name' => null
+                    ];
+                }
+                
+                // Add booking period
+                $status = ($booking->startDate <= now() && $booking->endDate >= now()) ? 'rented' : 'reserved';
+                
+                $events[] = [
+                    'vehicle_id' => $vehicle->vehicleID,
+                    'model' => $vehicle->model,
+                    'status' => $status,
+                    'start_date' => $booking->startDate,
+                    'end_date' => $booking->endDate,
+                    'customer_name' => $customer ? $customer->name : 'Unknown'
+                ];
+                
+                $lastDate = $booking->endDate;
+            }
+            
+            // Add available period after last booking (next 30 days)
+            if ($lastDate->lt(now()->addDays(30))) {
+                $events[] = [
+                    'vehicle_id' => $vehicle->vehicleID,
+                    'model' => $vehicle->model,
+                    'status' => 'available',
+                    'start_date' => $lastDate->toDateString(),
+                    'end_date' => now()->addDays(30)->toDateString(),
+                    'customer_name' => null
+                ];
+            }
+        }
+    }
+    
+    return response()->json($events);
 }
 
     // Fleet Management
