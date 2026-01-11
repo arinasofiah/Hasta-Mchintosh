@@ -598,8 +598,6 @@
         <a href="{{ url('/') }}"><button class="head_button">Home</button></a>
         <button class="head_button">Vehicles</button>
         <button class="head_button">Details</button>
-        <button class="head_button">About Us</button>
-        <button class="head_button">Contact Us</button>
     </div>
 
     <div id="profile">
