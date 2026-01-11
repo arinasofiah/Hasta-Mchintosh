@@ -153,9 +153,6 @@ textarea.input {resize:vertical; min-height:100px;}
     <div id="menu">
         <button class="head_button">Home</button>
         <button class="head_button">Vehicles</button>
-        <button class="head_button">Details</button>
-        <button class="head_button">About Us</button>
-        <button class="head_button">Contact Us</button>
     </div>
 
     <div id="profile">
