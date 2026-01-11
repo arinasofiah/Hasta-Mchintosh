@@ -154,6 +154,7 @@ html, body {
     transition: all 0.2s ease;
     overflow: hidden;
     position: relative;
+    margin-bottom: 10px;
 }
 
 .mini-drop-zone:hover {
@@ -297,4 +298,50 @@ canvas{
 
 .radio-section input{
     margin-right: 7px;
+}
+.return-info-grid {
+    display: grid;
+    grid-template-columns: auto auto 1fr; /* 3 columns */
+    gap: 20px;
+    width: 100%;
+    align-items: end; /* Optional: aligns inputs to the bottom if labels have different heights */
+}
+
+/* This forces Label to be ABOVE Input */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px; /* Space between label and input */
+}
+
+.input-group label {
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.input-group input {
+    width: 210px; /* Small width for numbers/time */
+    height: 40px;
+    border: 1px solid #ccc;
+    border-radius: 15px;
+    padding: 0 10px;
+    margin-right: 20px;
+}
+
+.full-width {
+    grid-column: span 3; /* Spans across all three columns */
+    width: 100%;
+}
+
+#feed {
+    width: 100%; /* Now takes full width of the container */
+    border: 1px solid #ccc;
+    border-radius: 15px;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+#fuel,#ac_ret_time{
+    border-radius: 15px;
 }
