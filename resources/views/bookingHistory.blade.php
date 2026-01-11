@@ -14,6 +14,39 @@
     <link href="{{ asset('css/profile.css') }}" rel="stylesheet">
     <link href="{{ asset('css/booking-history.css') }}" rel="stylesheet">
  
+    <style>
+        .status.upcoming {
+            background-color: #6c757d !important; /* Grey color for upcoming */
+            color: white !important;
+        }
+        
+        .upcoming-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #f8f9fa;
+            color: #495057;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            border: 1px solid #dee2e6;
+            z-index: 1;
+        }
+        
+        .time-until {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .booking-card {
+            position: relative;
+        }
+    </style>
 </head>
 <body class="has-scrollable-content">
     
@@ -76,31 +109,53 @@
         <div class="booking-history-page">
             <h1 class="profile-title">My Booking History</h1>
 
-            <!-- Debug Section -->
-            <div style="background: #f0f0f0; padding: 10px; margin-bottom: 20px; border-radius: 4px; font-size: 12px; display: none;">
-                <strong>Debug Info:</strong><br>
+            <!-- Debug Section (Enable if needed) -->
+            @php $debugEnabled = true; @endphp <!-- Change to false to hide -->
+            @if($debugEnabled)
+            <div style="background: #f0f0f0; padding: 10px; margin-bottom: 20px; border-radius: 4px; font-size: 12px; border: 1px solid #ccc;">
+                <strong style="color: red;">DEBUG INFORMATION:</strong><br><br>
                 
                 @php
                     $testBooking = $active->first() ?? $pending->first() ?? $completed->first() ?? $cancelled->first();
                 @endphp
                 
                 @if($testBooking)
-                    First Booking ID: {{ $testBooking->bookingID }}<br>
-                    Vehicle Model: {{ $testBooking->vehicle->model ?? 'NO VEHICLE MODEL' }}<br>
-                    Vehicle Type: {{ $testBooking->vehicle->vehicleType ?? 'NO VEHICLE TYPE' }}<br>
-                    Vehicle Photo: {{ $testBooking->vehicle->vehiclePhoto ?? 'NO PHOTO' }}<br>
-                    Booking Status: {{ $testBooking->bookingStatus ?? 'NO STATUS' }}<br>
+                    <strong>Sample Booking:</strong><br>
+                    Booking ID: {{ $testBooking->bookingID }}<br>
+                    Booking Status: <span style="color: {{ $testBooking->bookingStatus == 'approved' ? 'green' : 'orange' }}"><b>{{ $testBooking->bookingStatus }}</b></span><br>
+                    Start Date: {{ $testBooking->startDate }}<br>
+                    End Date: {{ $testBooking->endDate }}<br>
+                    Vehicle: {{ $testBooking->vehicle->model ?? 'N/A' }}<br>
                     <br>
-                    Counts: Active={{ count($active) }}, Pending={{ count($pending) }}, 
-                    Completed={{ count($completed) }}, Cancelled={{ count($cancelled) }}
+                    
+                    <strong>Current Time:</strong> {{ \Carbon\Carbon::now()->toDateTimeString() }}<br>
+                    <strong>End Date Parsed:</strong> {{ \Carbon\Carbon::parse($testBooking->endDate)->toDateTimeString() }}<br>
+                    <strong>Has ended?</strong> {{ \Carbon\Carbon::now()->gt(\Carbon\Carbon::parse($testBooking->endDate)) ? 'YES' : 'NO' }}<br>
+                    <strong>Should show in Active?</strong> {{ ($testBooking->bookingStatus == 'approved' && \Carbon\Carbon::now()->lte(\Carbon\Carbon::parse($testBooking->endDate))) ? 'YES' : 'NO' }}<br>
+                    <br>
+                @endif
+                
+                <strong>Counts:</strong><br>
+                • Active Bookings: {{ count($active) }}<br>
+                • Pending Bookings: {{ count($pending) }}<br>
+                • Completed Bookings: {{ count($completed) }}<br>
+                • Cancelled Bookings: {{ count($cancelled) }}<br>
+                <br>
+                
+                <strong>Active Booking IDs:</strong><br>
+                @if(count($active) > 0)
+                    @foreach($active as $a)
+                        • ID: {{ $a->bookingID }} | Status: {{ $a->bookingStatus }} | Dates: {{ $a->startDate }} to {{ $a->endDate }}<br>
+                    @endforeach
                 @else
-                    No bookings found in any category
+                    <em>No active bookings found</em>
                 @endif
             </div>
+            @endif
 
             <!-- Active/Ongoing Bookings Section -->
             <div class="booking-section">
-                <div class="section-title active">Active Bookings</div>
+                <div class="section-title active">Active & Upcoming Bookings</div>
                 <div class="booking-cards-container" id="activeBookingsContainer">
                     @forelse($active as $booking)
                         @php
@@ -120,11 +175,24 @@
                             
                             $isFullyPaid = $remainingBalance <= 0;
                             $canPayBalance = $remainingBalance > 0 && $booking->bookingStatus === 'approved';
-                            $isReserved = $booking->bookingStatus === 'reserved';
-                            $isConfirmed = $booking->bookingStatus === 'confirmed';
+                            
+                            // Check if booking has started yet
+                            $now = \Carbon\Carbon::now();
+                            $startDate = \Carbon\Carbon::parse($booking->startDate);
+                            $isUpcoming = $now->lt($startDate);
+                            
+                            // Check if booking is currently active (has started but not ended)
+                            $endDate = \Carbon\Carbon::parse($booking->endDate);
+                            $isCurrent = $now->between($startDate, $endDate);
                         @endphp
                         
                         <div class="booking-card">
+                            @if($isUpcoming)
+                                <div class="upcoming-badge">
+                                    <i class="fas fa-calendar-alt"></i> Upcoming
+                                </div>
+                            @endif
+                            
                             <div class="booking-details">
                                 <div class="car-info">
                                     <h3>{{ $vehicle->model ?? 'Car Model' }}</h3>
@@ -149,7 +217,14 @@
                                     {{ date('d M Y', strtotime($booking->startDate)) }} - 
                                     {{ date('d M Y', strtotime($booking->endDate)) }}
                                     
-                                    @if($booking->bookingStatus === 'approved' || $booking->bookingStatus === 'confirmed')
+                                    @if($isUpcoming)
+                                        <div class="time-until">
+                                            <i class="far fa-clock"></i> 
+                                            Starts in {{ \Carbon\Carbon::parse($booking->startDate)->diffForHumans() }}
+                                        </div>
+                                    @endif
+                                    
+                                    @if($booking->bookingStatus === 'approved' && !$isUpcoming)
                                         <div class="action-buttons" style="margin-top: 10px;">
                                             {{-- Pickup Button --}}
                                             <a href="{{ route('pickup.form', ['bookingID' => $booking->bookingID]) }}" 
@@ -158,8 +233,8 @@
                                                 <i class="fas fa-car"></i> Pickup
                                             </a>
                                             
-                                            {{-- Return Button (show only if pickup likely completed) --}}
-                                            @if(strtotime($booking->startDate) <= time())
+                                            {{-- Return Button --}}
+                                            @if($isCurrent)
                                                 <a href="{{ route('return.form', ['bookingID' => $booking->bookingID]) }}" 
                                                    class="btn btn-warning btn-sm return-btn"
                                                    title="Process vehicle return">
@@ -171,13 +246,13 @@
                                 </div>
 
                                 <div class="status 
-                                    @if($booking->bookingStatus === 'reserved') reserved
-                                    @elseif($booking->bookingStatus === 'confirmed') confirmed
+                                    @if($isUpcoming) upcoming
+                                    @elseif($booking->bookingStatus === 'reserved') reserved
                                     @else active @endif">
-                                    @if($booking->bookingStatus === 'reserved')
+                                    @if($isUpcoming)
+                                        Upcoming
+                                    @elseif($booking->bookingStatus === 'reserved')
                                         Reserved
-                                    @elseif($booking->bookingStatus === 'confirmed')
-                                        Confirmed
                                     @else
                                         Active
                                     @endif
@@ -189,19 +264,12 @@
                                         <i class="fas fa-eye"></i> Details
                                     </button>
                                     
-                                    @if($canPayBalance)
+                                    @if($canPayBalance && !$isUpcoming)
                                         <a href="{{ route('payment.remaining', ['bookingID' => $booking->bookingID]) }}" 
                                            class="action-btn-success" 
                                            style="text-decoration: none;">
                                             <i class="fas fa-credit-card"></i> Pay Balance (RM{{ number_format($remainingBalance, 2) }})
                                         </a>
-                                    @endif
-                                    
-                                    @if($booking->bookingStatus === 'reserved')
-                                        <!-- Show different actions for reserved bookings -->
-                                        <div style="margin-top: 10px; font-size: 12px; color: #666;">
-                                            <i class="fas fa-info-circle"></i> Awaiting approval
-                                        </div>
                                     @endif
                                 </div>
                             </div>
@@ -209,7 +277,7 @@
                     @empty
                         <div class="empty-state">
                             <i class="fas fa-calendar-check" style="font-size: 24px; margin-bottom: 10px;"></i><br>
-                            No active bookings currently.
+                            No active or upcoming bookings.
                         </div>
                     @endforelse
                 </div>
@@ -427,7 +495,7 @@
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Duration</span>
-                        <span class="detail-value" id="detail-duration">-</span>
+                        <span class="detail-value" id="detail-duration">1 day(s)</span>
                     </div>
                 </div>
 
@@ -508,9 +576,6 @@
     </div>
     
    <script>
-
-    // booking-history.js
-
     // Collect all booking data with proper vehicle information
     let bookingsData = [];
 
@@ -810,8 +875,6 @@
             return;
         }
 
-        console.log('Booking data for modal:', booking);
-
         // Set vehicle image dynamically
         const carImage = document.getElementById('detail-car-image');
         if (booking.vehicle && booking.vehicle.vehiclePhoto) {
@@ -832,8 +895,6 @@
         let statusDisplay = booking.bookingStatus || '-';
         if (statusDisplay === 'reserved') {
             statusDisplay = 'Reserved';
-        } else if (statusDisplay === 'confirmed') {
-            statusDisplay = 'Confirmed';
         } else if (statusDisplay === 'approved') {
             statusDisplay = 'Approved';
         } else if (statusDisplay === 'pending') {
@@ -876,8 +937,7 @@
 
         // Show/Hide Pay Balance button
         const payBalanceBtn = document.getElementById('modal-pay-balance-btn');
-        const canPayBalance = booking.remainingBalance > 0 && 
-                             (booking.bookingStatus === 'approved' || booking.bookingStatus === 'confirmed');
+        const canPayBalance = booking.remainingBalance > 0 && booking.bookingStatus === 'approved';
         
         if (canPayBalance) {
             payBalanceBtn.style.display = 'inline-block';
@@ -950,18 +1010,6 @@
         }
     }
 
-    // Scroll functionality for past bookings
-    function scrollPastBookings(containerId, direction) {
-        const container = document.getElementById(containerId);
-        const scrollAmount = 100; // Adjust scroll amount as needed
-        
-        if (direction === 'up') {
-            container.scrollBy({ top: -scrollAmount, behavior: 'smooth' });
-        } else {
-            container.scrollBy({ top: scrollAmount, behavior: 'smooth' });
-        }
-    }
-
     // Show more/less toggle for active and pending bookings
     function toggleShowAll(containerId, button) {
         const container = document.getElementById(containerId);
@@ -979,37 +1027,8 @@
         }
     }
 
-    // Update navigation button states based on scroll position
-    function updateNavButtons(containerId) {
-        const container = document.getElementById(containerId);
-        if (!container) return;
-        
-        const navButtons = container.parentElement.querySelectorAll('.nav-btn');
-        if (navButtons.length === 0) return;
-        
-        const upBtn = navButtons[0];
-        const downBtn = navButtons[1];
-        
-        // Disable up button if at top
-        upBtn.disabled = container.scrollTop <= 0;
-        
-        // Disable down button if at bottom
-        downBtn.disabled = container.scrollTop + container.clientHeight >= container.scrollHeight - 1;
-    }
-
     // Initialize
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM loaded, adding click handlers');
-        
-        // Add scroll event listeners for past bookings
-        ['completedScroll', 'cancelledScroll'].forEach(containerId => {
-            const container = document.getElementById(containerId);
-            if (container) {
-                container.addEventListener('scroll', () => updateNavButtons(containerId));
-                updateNavButtons(containerId); // Initial state
-            }
-        });
-        
         // Add click handlers for all Details buttons
         document.querySelectorAll('button').forEach(button => {
             if (button.textContent.includes('Details') || button.textContent.includes('View')) {
@@ -1050,7 +1069,6 @@
             e.target.classList.remove('active');
         }
     };
-
     </script>
 </body>
 </html>

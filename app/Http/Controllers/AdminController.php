@@ -59,25 +59,49 @@ class AdminController extends Controller
 }
 
     // Fleet Management
-    public function fleet(Request $request)
-    {
-        if (auth()->user()->userType !== 'admin') {
-            abort(403, 'Unauthorized. Admin access only.');
-        }
-        
-        $status = $request->get('status', 'available');
-        
+    // In AdminController.php - update the fleet() method:
+public function fleet(Request $request)
+{
+    if (auth()->user()->userType !== 'admin') {
+        abort(403, 'Unauthorized. Admin access only.');
+    }
+    
+    // Update vehicle statuses based on current bookings
+    $this->updateVehicleStatuses();
+    
+    $status = $request->get('status', 'available');
+    
+    // Special handling: For "available" tab, show BOTH available AND reserved vehicles
+    if ($status == 'available') {
+        $vehicles = Vehicles::whereIn('status', ['available', 'reserved'])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+    } else {
+        // For other tabs, show only that specific status
         $vehicles = Vehicles::where('status', $status)
                     ->orderBy('created_at', 'desc')
                     ->get();
-
-        $totalCount = Vehicles::count(); // Total all vehicles
-        $availableCount = Vehicles::where('status', 'available')->count();
-        $onRentCount = Vehicles::where('status', 'rented')->count();
-        $maintenanceCount = Vehicles::where('status', 'maintenance')->count();
-
-        return view('admin.fleet', compact('vehicles', 'totalCount', 'availableCount', 'onRentCount', 'maintenanceCount', 'status'));
     }
+    
+    // Counts for display
+    $totalCount = Vehicles::count();
+    $availableCount = Vehicles::whereIn('status', ['available', 'reserved'])->count(); // Count both
+    $onRentCount = Vehicles::where('status', 'rented')->count();
+    $maintenanceCount = Vehicles::where('status', 'maintenance')->count();
+    
+    // Optional: Count reserved separately for info display
+    $reservedCount = Vehicles::where('status', 'reserved')->count();
+
+    return view('admin.fleet', compact(
+        'vehicles', 
+        'totalCount', 
+        'availableCount', 
+        'onRentCount', 
+        'maintenanceCount',
+        'reservedCount',
+        'status'
+    ));
+}
 
     // Show create vehicle form
     public function createVehicle()
@@ -195,6 +219,44 @@ class AdminController extends Controller
         
         return redirect()->back()->with('success', 'Vehicle deleted successfully!');
     }
+
+    // In AdminController.php, add this method:
+private function updateVehicleStatuses()
+{
+    $vehicles = Vehicles::all();
+    $now = Carbon::now();
+    
+    foreach ($vehicles as $vehicle) {
+        // Check for ACTIVE bookings (currently rented)
+        $hasActiveBooking = Bookings::where('vehicleID', $vehicle->vehicleID)
+            ->where('bookingStatus', 'approved')
+            ->where('startDate', '<=', $now)
+            ->where('endDate', '>=', $now)
+            ->exists();
+        
+        // Check for FUTURE bookings (reserved)
+        $hasFutureBooking = Bookings::where('vehicleID', $vehicle->vehicleID)
+            ->where('bookingStatus', 'approved')
+            ->where('startDate', '>', $now)
+            ->exists();
+        
+        // Update status based on bookings
+        if ($hasActiveBooking && $vehicle->status !== 'rented') {
+            $vehicle->status = 'rented';
+            $vehicle->save();
+        } elseif ($hasFutureBooking && $vehicle->status !== 'reserved') {
+            $vehicle->status = 'reserved';
+            $vehicle->save();
+        } elseif (!$hasActiveBooking && $vehicle->status === 'rented') {
+            $vehicle->status = 'available';
+            $vehicle->save();
+        } elseif (!$hasFutureBooking && $vehicle->status === 'reserved' && !$hasActiveBooking) {
+            $vehicle->status = 'available';
+            $vehicle->save();
+        }
+        // Note: Vehicles with status 'maintenance' stay as-is
+    }
+}
 
     // Customers Management
     public function customers(Request $request)

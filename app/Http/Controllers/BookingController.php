@@ -556,7 +556,7 @@ class BookingController extends Controller
                   ->orWhere('booking.userID', $userId);
         })
         ->groupBy('booking.bookingID')
-        ->orderBy('booking.created_at', 'desc')
+        ->orderBy('booking.startDate', 'asc')
         ->get()
         ->map(function($booking) {
             $bookingObj = (object) (array) $booking;
@@ -575,7 +575,6 @@ class BookingController extends Controller
             $bookingObj->penamaBank = $booking->penamaBank ?? 'Not Available';
             
             $bookingObj->totalPaid = $booking->total_paid ?? 0;
-            // totalPrice in database already includes deposit, so use it directly
             $bookingObj->totalCost = $booking->totalPrice;
             $bookingObj->remainingBalance = max(0, $bookingObj->totalCost - $bookingObj->totalPaid);
             $bookingObj->isFullyPaid = $bookingObj->remainingBalance <= 0;
@@ -596,24 +595,19 @@ class BookingController extends Controller
             return $bookingObj;
         });
 
-    // ACTIVE BOOKINGS: Include 'reserved' status along with approved/confirmed
+    // ACTIVE BOOKINGS: Show ALL approved bookings that haven't ended yet
+    // INCLUDING future bookings that haven't started yet
     $active = $bookings->filter(function($booking) {
-        // Add 'reserved' to the allowed statuses
-        if (!in_array($booking->bookingStatus, ['approved', 'confirmed', 'reserved'])) {
+        // Only include approved bookings
+        if ($booking->bookingStatus !== 'approved') {
             return false;
         }
         
         $now = Carbon::now();
-        $start = Carbon::parse($booking->pickupDateTime);
         $end = Carbon::parse($booking->returnDateTime);
         
-        // For 'reserved' bookings, show them as active if they haven't ended yet
-        if ($booking->bookingStatus === 'reserved') {
-            return $now->lte($end); // Show reserved bookings that haven't ended yet
-        }
-        
-        // For approved/confirmed, use the original logic
-        return $now->between($start, $end);
+        // Show booking if it hasn't ended yet (includes future bookings)
+        return $now->lte($end);
     });
     
     $pending = $bookings->where('bookingStatus', 'pending');
@@ -622,4 +616,5 @@ class BookingController extends Controller
 
     return view('bookingHistory', compact('active', 'pending', 'completed', 'cancelled'));
 }
+
 }
