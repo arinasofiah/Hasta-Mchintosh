@@ -493,7 +493,7 @@
         </div>
     </main>
     
-    <section class="promo-section">
+     <section class="promo-section">
     <div class="section-title">
         <div class="promo-badge"><i class="fas fa-percentage"></i></div>
         <div>
@@ -507,22 +507,13 @@
             <div class="promo-card promo-red">
                 <h4 class="fw-bold">Spend & Earn Points!</h4>
                 <ul class="list-unstyled mb-0 mt-2" style="font-size: 0.9rem; opacity: 0.9;">
-                    <li><i class="fas fa-check-circle me-2"></i> No Deposit</li>
+                    <li><i class="fas fa-check-circle me-2"></i> With Deposit</li>
                     <li><i class="fas fa-check-circle me-2"></i> 5% Discount</li>
-                    <li><i class="fas fa-check-circle me-2"></i> 1.5x WaPoint</li>
+                    <li><i class="fas fa-check-circle me-2"></i> After Several Bookings</li>
                 </ul>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="promo-card promo-blue">
-                <h4 class="fw-bold">Stay Protected, Worry Less.</h4>
-                <p class="small mb-2">Backed by Zurich Travel Insurance</p>
-                <ul class="list-unstyled mb-0" style="font-size: 0.9rem; opacity: 0.9;">
-                    <li><i class="fas fa-check-circle me-2"></i> Hassle-Free Claims</li>
-                    <li><i class="fas fa-check-circle me-2"></i> Covers Accidents & Medical</li>
-                </ul>
-            </div>
-        </div>
+        
     </div>
 </section>
 
@@ -537,7 +528,7 @@
             <div class="feature-card">
                 <div class="feature-icon"><i class="fas fa-map-marker-alt"></i></div>
                 <h5 class="fw-bold">Flexible Pickup and Dropoff Points</h5>
-                <p class="text-muted small">Pick up and return your car at locations that suit your travel plans.</p>
+                <p class="text-muted small">Pick up and return your car at locations that suit your travel plans around UTM.</p>
             </div>
         </div>
         <div class="col-lg-4">

@@ -63,7 +63,7 @@ class AuthenticatedSessionController extends Controller
                 $request->session()->regenerateToken();
                 
                 return redirect()->route('login')
-                    ->withErrors(['email' => 'Your account has been blacklisted. Please contact support.']);
+                    ->withErrors(['email' => 'Your account has been blacklisted. Please contact support at 011-1090 0700.']);
             }
         }
         

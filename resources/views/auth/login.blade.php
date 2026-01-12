@@ -49,11 +49,6 @@
                     </div>
 
                     <div class="options-row">
-                        <label class="remember-me">
-                            <input type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
-                            Remember for 30 days
-                        </label>
-
                         @if (Route::has('password.request'))
                             <a class="forgot-password" href="{{ route('password.request') }}">
                                 Forget password?
