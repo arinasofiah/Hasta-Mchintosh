@@ -185,22 +185,26 @@ Route::get('/admin/get-vehicle-availability', [AdminController::class, 'getVehic
     ->name('admin.vehicle-availability');
 
 // Add this to your routes/web.php
-Route::get('/test-mail', function() {
+Route::get('/test-mailtrap', function () {
     try {
-        // Test 1: Check if mail config works
-        \Log::info('Testing mail configuration...');
+        // Test with a dummy user
+        $user = new \App\Models\User();
+        $user->email = 'test@example.com';
+        $user->userType = 'staff';
+        $user->invitation_expires_at = now()->addDays(7);
         
-        // Test 2: Send a simple email
-        \Mail::raw('Test email from Hasta', function($message) {
-            $message->to('test@example.com')
-                    ->subject('Test Email');
-        });
+        $registrationUrl = 'https://hasta.test/staff/register/test-token';
         
-        return 'Email test passed! Check laravel.log';
+        \Mail::to('test@example.com')->send(new \App\Mail\StaffInvitationMail(
+            $user, 
+            $registrationUrl,
+            'Test Admin'
+        ));
+        
+        return '✅ Email sent successfully! Check Mailtrap inbox.';
         
     } catch (\Exception $e) {
-        \Log::error('Mail test failed: ' . $e->getMessage());
-        return 'Email test failed: ' . $e->getMessage();
+        return '❌ Error: ' . $e->getMessage();
     }
 });
 

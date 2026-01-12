@@ -48,6 +48,7 @@
         .status-rejected { background: #f8d7da; color: #721c24; }
         .commission-date { font-size: 12px; color: #666; }
         .no-commissions { text-align: center; padding: 30px; color: #999; }
+        .registration-link { background: #e8f5e9; padding: 12px; border-radius: 6px; margin-top: 15px; word-break: break-all; font-size: 0.85rem; border: 1px solid #c8e6c9; }
     </style>
 </head>
 <body>
@@ -85,7 +86,22 @@
 
     <div class="main-content">
         
-        @if(session('success'))
+        @if(session('success') && session('registration_link'))
+            <div class="alert alert-success alert-dismissible fade show alert-floating" role="alert">
+                <strong>Success!</strong> {{ session('success') }}
+                <div class="registration-link mt-2">
+                    <strong>Registration Link (Share with staff):</strong><br>
+                    <div class="d-flex align-items-center mt-2">
+                        <code style="flex-grow: 1; word-break: break-all; font-size: 0.9rem; background: transparent; border: none; padding: 0;">{{ session('registration_link') }}</code>
+                        <button class="btn btn-sm btn-outline-secondary ms-2" onclick="copyToClipboard('{{ session('registration_link') }}')" style="font-size: 0.8rem; flex-shrink: 0;">
+                            <i class="fas fa-copy me-1"></i>Copy Link
+                        </button>
+                    </div>
+                    <small class="text-muted d-block mt-2">Share this link with the staff member to complete their registration</small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @elseif(session('success'))
             <div class="alert alert-success alert-dismissible fade show alert-floating" role="alert">
                 <strong>Success!</strong> {{ session('success') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -99,17 +115,19 @@
             </div>
         @endif
 
+        @if(session('cancelled'))
+            <div class="alert alert-warning alert-dismissible fade show alert-floating" role="alert" style="background-color: #fff3cd; border-color: #ffeaa7; color: #856404;">
+                <strong>Invitation Cancelled!</strong> {{ session('cancelled') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
         <div class="header-flex">
             <h2>Staff Management</h2>
             <a href="{{ route('admin.staff.create')}}" class="btn btn-success" style="border-radius: 20px; background-color: #1a8f36; text-decoration: none;">
                 + Add New Staff
             </a>
-
         </div>
-
-        <!-- <div class="tab-menu">
-            <span class="float-end text-muted">Total <b>{{ $staffs->count() }}</b></span>
-        </div> -->
 
         @foreach($staffs as $staff)
             <div class="staff-card">
@@ -384,6 +402,14 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                alert('Registration link copied to clipboard!');
+            }, function(err) {
+                console.error('Could not copy text: ', err);
+            });
+        }
+        
         function approveCommission(commissionId, amount) {
             if (confirm('Approve this commission claim of RM ' + amount.toFixed(2) + '?')) {
                 fetch('/admin/commission/' + commissionId + '/approve', {
@@ -422,6 +448,15 @@
                 });
             }
         }
+        
+        // Auto-dismiss alerts after 8 seconds
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 8000);
     </script>
 </body>
 </html>

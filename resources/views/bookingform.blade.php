@@ -454,6 +454,10 @@ textarea.input {resize:vertical; min-height:100px;}
                 <span>Delivery Charge</span>
                 <span id="deliveryCharge">RM 0.00</span>
             </div>
+            <div class="charge-row">
+                <span>Total Price (by hour)</span>
+                <span id="totalByHour">RM 0.00</span>
+            </div>
             <div class="charge-row" style="color: #28a745;">
                 <span>Promotion Discount</span>
                 <span id="promotionDiscount">- RM 0.00</span>

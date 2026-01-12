@@ -65,7 +65,7 @@ Route::middleware('auth')->group(function () {
 
 // Public routes for staff registration (no auth required)
 Route::middleware('guest')->group(function () {
-    Route::get('/staff/register/{token}', [AdminController::class, 'showStaffRegistrationForm'])->name('staff.register');
+    Route::get('/staff/register/{token}', [AdminController::class, 'showStaffRegistrationForm'])->name('staff.register.form');
     Route::post('/staff/register/{token}', [AdminController::class, 'completeStaffRegistration'])->name('staff.completeRegistration');
 });
     
