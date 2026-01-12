@@ -357,8 +357,8 @@ class BookingController extends Controller
         $booking->voucher_id = $request->voucher_id;
         $booking->destination = $request->destination;
         $booking->remark = $request->remark;
-        $booking->bankName = $request->bank_name;
-        $booking->bankOwnerName = $request->bank_owner_name;
+        $booking->bank_name = $request->bank_name;
+        $booking->bank_owner_name = $request->bank_owner_name;
         $booking->pay_amount_type = $request->payAmount;
         $booking->payment_receipt_path = $receiptPath;
 
@@ -377,8 +377,8 @@ class BookingController extends Controller
         // PAYMENT (COMPLETED)
         Payment::create([
             'bookingID' => $booking->bookingID,
-            'bankName' => $request->bank_name,
-            'bankOwnerName' => $request->bank_owner_name,
+            'bank_name' => $request->bank_name,
+            'bank_owner_name' => $request->bank_owner_name,
             'amount' => $request->payAmount === 'deposit' ? 50 : ($finalPrice + 50),
             'paymentType' => $request->payAmount,
             'paymentStatus' => 'completed',
@@ -511,8 +511,8 @@ class BookingController extends Controller
             
             // Use booking's pay_amount_type if no payment found
             $paymentType = $latestPayment ? $latestPayment->paymentType : $booking->pay_amount_type;
-            $bankName = $latestPayment ? $latestPayment->bankName : $booking->bankName;
-            $bankOwnerName = $latestPayment ? $latestPayment->bankOwnerName : $booking->bankOwnerName;
+            $bankName = $latestPayment ? $latestPayment->bankName : $booking->bank_name;
+            $bankOwnerName = $latestPayment ? $latestPayment->bankOwnerName : $booking->bank_owner_name;
             
             // Calculate amounts correctly
             $rentalPrice = $booking->totalPrice ?? 0;
@@ -542,8 +542,8 @@ class BookingController extends Controller
             $booking->remainingBalance = $remainingBalance;
             $booking->isFullyPaid = $remainingBalance <= 0;
             $booking->pay_amount_type = $paymentType;
-            $booking->bankName = $bankName;
-            $booking->bankOwnerName = $bankOwnerName;
+            $booking->bank_name = $bankName;
+            $booking->bank_owner_name = $bankOwnerName;
             $booking->depositAmount = $depositAmount;
             
             // Build datetime strings using related models
