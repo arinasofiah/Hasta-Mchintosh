@@ -12,7 +12,32 @@
 </head>
 
 <body>
-@include('profile.partials.header')
+<div id="header">
+        <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}" alt="Hasta Logo">
+        
+        <div id="menu">
+            <button class="head_button" onclick="window.location.href='{{ route('customer.dashboard') }}'">Home</button>
+            <button class="head_button" onclick="window.location.href='{{ route('customer.dashboard') }}'">Vehicles</button>
+        </div>
+        
+        <div id="profile">
+            <div id="profile-container">
+                <img id="pfp" src="{{ asset('img/racc_icon.png') }}" alt="Profile">
+                
+                <div id="profile-dropdown">
+                    <a href="{{ route('customer.profile') }}" class="dropdown-item">My Profile</a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="dropdown-item">Logout</button>
+                    </form>
+                </div>
+            </div>
+            
+            @auth
+                <span id="username">{{ Auth::user()->name }}</span>
+            @endauth
+        </div>
+    </div>
 <div id="body">   
 <div class="container">
     <div class="pickup-layout">
