@@ -408,14 +408,20 @@ class BookingController extends Controller
 
         DB::commit();
 
-        return redirect()
-            ->route('bookingHistory')
-            ->with('success', 'Payment received. Awaiting admin approval.');
+        return response()->json([
+            'success' => true,
+            'message' => 'Payment received. Awaiting admin approval.',
+            'redirect_url' => route('bookingHistory')
+        ]);
 
     } catch (\Exception $e) {
         DB::rollBack();
-        \Log::error($e->getMessage());
-        return back()->with('error', 'An error occurred. Please try again.');
+        \Log::error('Booking confirmation failed: ' . $e->getMessage());
+
+        return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage()
+        ], 500);
     }
 }
 

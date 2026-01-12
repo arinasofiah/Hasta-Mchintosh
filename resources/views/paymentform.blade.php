@@ -1173,6 +1173,9 @@
             .then(data => {
                 if (data.success) {
                     if (successModal) successModal.style.display = 'block';
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url || "{{ route('bookingHistory') }}";
+                    }, 2000);
                 } else {
                     alert(data.message || 'Submission failed. Please try again.');
                 }
