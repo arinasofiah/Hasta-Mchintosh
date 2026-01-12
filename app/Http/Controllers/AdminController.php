@@ -706,7 +706,7 @@ public function storeStaff(Request $request)
             abort(403, 'Unauthorized.');
         }
 
-        $booking = Bookings::with('customer', 'vehicle', 'payment')->findOrFail($id);
+        $booking = Bookings::with('customer', 'vehicle', 'payment', 'pickup', 'returnDetail')->findOrFail($id);
         return view('admin.bookings.show', compact('booking'));
     }
 
