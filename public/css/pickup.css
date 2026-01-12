@@ -434,3 +434,7 @@ canvas{
     border: 2px solid #CB3737 !important;
     background-color: #fff8f8;
 }
+
+.is-invalid {
+    border: 1px solid #CB3737 !important;
+}

@@ -101,21 +101,21 @@
                     </div>
                     <div class="mini-drop-zone" onclick="document.getElementById('imgBack').click()">
                         <p><strong>Back View</strong></p>
-                        <span class="error-msg" id="err_photo_front">Required</span>
+                        <span class="error-msg">Required</span>
                         <img src="{{ asset('img/car_sides/back.png') }}" class="placeholder-img" id="iconBack">
                         <input type="file" id="imgBack" name="photo_back" accept="image/*" hidden onchange="preview(this, 'pBack','iconBack')">
                         <img id="pBack" class="preview-img">
                     </div>
                     <div class="mini-drop-zone" onclick="document.getElementById('imgLeft').click()">
                         <p><strong>Left Side</strong></p>
-                        <span class="error-msg" id="err_photo_front">Required</span>
+                        <span class="error-msg">Required</span>
                         <img src="{{ asset('img/car_sides/left.png') }}" class="placeholder-img" id="iconLeft">
                         <input type="file" id="imgLeft" name="photo_left" accept="image/*" hidden onchange="preview(this, 'pLeft','iconLeft')">
                         <img id="pLeft" class="preview-img">
                     </div>
                     <div class="mini-drop-zone" onclick="document.getElementById('imgRight').click()">
                         <p><strong>Right Side</strong></p>
-                        <span class="error-msg" id="err_photo_front">Required</span>
+                        <span class="error-msg">Required</span>
                         <img src="{{ asset('img/car_sides/right.png') }}" class="placeholder-img" id="iconRight">
                         <input type="file" id="imgRight" name="photo_right" accept="image/*" hidden onchange="preview(this, 'pRight','iconRight')">
                         <img id="pRight" class="preview-img">
@@ -129,7 +129,7 @@
                     </a>
                 </p>
                 <span class="error-msg" id="err_sig_group" style="margin-left: 10px;">Please provide either a signature or a signed document.</span>
-                <div class="signature-section" style="display: flex; gap: 5px; align-items: flex-start; margin-top: 10px;">
+                <div id="sig_area_wrapper" class="signature-section" style="display: flex; gap: 5px; align-items: flex-start; margin-top: 10px;">
                     <div style="flex: 1;">
                         <canvas id="signature-pad"></canvas>
                         <div style="margin-top: 5px;">
@@ -182,24 +182,28 @@
         <div class="photo-grid">
             <div class="mini-drop-zone" onclick="document.getElementById('imgRetFront').click()">
                 <p><strong>Front View</strong></p>
+                <span class="error-msg" >Required</span>
                 <img src="{{ asset('img/car_sides/front.png') }}" class="placeholder-img" id="iconFront">
                 <input type="file" id="imgRetFront" name="return_photo_front" accept="image/*" hidden onchange="preview(this, 'pRetFront', 'iconFront')">
                 <img id="pRetFront" class="preview-img">
             </div>
             <div class="mini-drop-zone" onclick="document.getElementById('imgRetBack').click()">
                 <p><strong>Back View</strong></p>
+                <span class="error-msg" >Required</span>
                 <img src="{{ asset('img/car_sides/back.png') }}" class="placeholder-img" id="iconBack">
                 <input type="file" id="imgRetBack" name="return_photo_back" accept="image/*" hidden onchange="preview(this, 'pRetBack', 'iconBack')">
                 <img id="pRetBack" class="preview-img">
             </div>
             <div class="mini-drop-zone" onclick="document.getElementById('imgRetLeft').click()">
                 <p><strong>Left Side</strong></p>
+                <span class="error-msg">Required</span>
                 <img src="{{ asset('img/car_sides/left.png') }}" class="placeholder-img" id="iconLeft">
                 <input type="file" id="imgRetLeft" name="return_photo_left" accept="image/*" hidden onchange="preview(this, 'pRetLeft', 'iconLeft')">
                 <img id="pRetLeft" class="preview-img">
             </div>
             <div class="mini-drop-zone" onclick="document.getElementById('imgRetRight').click()">
                 <p><strong>Right Side</strong></p>
+                <span class="error-msg">Required</span>
                 <img src="{{ asset('img/car_sides/right.png') }}" class="placeholder-img" id="iconRight">
                 <input type="file" id="imgRetRight" name="return_photo_right" accept="image/*" hidden onchange="preview(this, 'pRetRight', 'iconRight')">
                 <img id="pRetRight" class="preview-img">
@@ -210,12 +214,14 @@
         <div class="photo-grid">
             <div class="mini-drop-zone" onclick="document.getElementById('imgDash').click()">
                 <p><strong>Dashboard</strong></p>
+                <span class="error-msg">Required</span>
                 <img src="{{ asset('img/dashboard.jpg') }}" class="placeholder-img" id="iconDash">
                 <input type="file" id="imgDash" name="return_photo_dashboard" accept="image/*" hidden onchange="preview(this, 'pDash', 'iconDash')">
                 <img id="pDash" class="preview-img">
             </div>
             <div class="mini-drop-zone" onclick="document.getElementById('imgKeys').click()">
                 <p><strong>Keys</strong></p>
+                <span class="error-msg">Required</span>
                 <img src="{{ asset('img/keys.jpg') }}" class="placeholder-img" id="iconKeys">
                 <input type="file" id="imgKeys" name="return_photo_keys" accept="image/*" hidden onchange="preview(this, 'pKeys', 'iconKeys')">
                 <img id="pKeys" class="preview-img">
@@ -257,23 +263,26 @@
 
        <div class="return-info-grid">
     <div class="input-group">
+        <span class="error-msg">Required</span>
         <label for="fuel">Fuel amount (%)</label>
         <input type="number" id="fuel" name="fuelAmount" placeholder="0">
     </div>
 
     <div class="input-group">
+        <span class="error-msg">Required</span>
         <label for="ac_ret_time">Return time</label>
         <input type="time" id="ac_ret_time" name="acRetTime">
     </div>
 
     <div class="input-group full-width">
+        <span class="error-msg">Required</span>
         <label for="feed">Feedback</label>
         <textarea id="feed" name="feedback" rows="4" placeholder="How was the ride?"></textarea>
     </div>
 </div>
 
         <div id="btn_div"> 
-        <button type="submit" class="btn-primary">Save Return</button>
+            <button type="button" id="saveReturnBtn" class="btn-primary">Save Return</button>
         </div>
         </form>
         @else
@@ -525,30 +534,150 @@ function updateTotals() {
 }
 
 document.getElementById('savePickupBtn').addEventListener('click', function() {
+    const btn = this;
+    const form = btn.closest('form');
     let isValid = true;
-    
-    // Check Photos
-    ['imgFront', 'imgBack', 'imgLeft', 'imgRight'].forEach(id => {
+
+    // 1. Reset Styles
+    document.querySelectorAll('.error-msg').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.mini-drop-zone, .signature-section').forEach(el => el.classList.remove('field-error'));
+
+    // 2. Validate All 4 Photos (Mandatory)
+    const photos = ['imgFront', 'imgBack', 'imgLeft', 'imgRight'];
+    photos.forEach(id => {
         const input = document.getElementById(id);
-        if (!input.files.length) {
+        if (!input.files || input.files.length === 0) {
             isValid = false;
-            input.closest('.mini-drop-zone').classList.add('field-error');
+            // Highlight the container and show error text
+            const container = input.closest('.mini-drop-zone');
+            container.classList.add('field-error');
+            container.querySelector('.error-msg').style.display = 'block';
         }
     });
 
-    // Check Signature OR File
-    const hasCanvas = document.getElementById('signature-input').value.length > 0;
-    const hasFile = document.getElementById('imgSigDoc').files.length > 0;
+    // 3. Validate Signature OR File (One of them must exist)
+    const signatureData = document.getElementById('signature-input').value; // Canvas data
+    const signatureFile = document.getElementById('imgSigDoc').files.length; // Uploaded file
 
-    if (!hasCanvas && !hasFile) {
+    if (!signatureData && signatureFile === 0) {
         isValid = false;
-        document.getElementById('sig_area_wrapper').classList.add('field-error');
         document.getElementById('err_sig_group').style.display = 'block';
+        document.getElementById('sig_area_wrapper').classList.add('field-error');
     }
 
+    // 4. Submit if valid
     if (isValid) {
-        // Trigger your fetch/AJAX call here
-        this.form.submit(); // Or use your existing Fetch logic
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        
+        const formData = new FormData(form);
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+        })
+        .then(response => {
+            var myModal = new bootstrap.Modal(document.getElementById('pickupSuccessModal'));
+            myModal.show();
+        })
+        .catch(error => {
+            btn.disabled = false;
+            btn.innerHTML = 'Save Pick Up';
+            alert('Error saving. Please try again.');
+        });
+    } else {
+        // Scroll to the first error
+        document.querySelector('.field-error').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+});
+
+document.getElementById('saveReturnBtn').addEventListener('click', function() {
+    const btn = this;
+    const form = btn.closest('form');
+    let isValid = true;
+
+    // 1. Reset Styles
+    document.querySelectorAll('.error-msg').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.mini-drop-zone').forEach(el => el.classList.remove('field-error'));
+
+    // 2. Validate 4 Angle Photos
+    const anglePhotos = ['imgRetFront', 'imgRetBack', 'imgRetLeft', 'imgRetRight'];
+    anglePhotos.forEach(id => {
+        const input = document.getElementById(id);
+        if (!input.files || input.files.length === 0) {
+            isValid = false;
+            const container = input.closest('.mini-drop-zone');
+            container.classList.add('field-error');
+            // Using a generic approach to find the error-msg if you didn't give them unique IDs
+            const errorSpan = container.querySelector('.error-msg');
+            if(errorSpan) errorSpan.style.display = 'block';
+        }
+    });
+
+    // 3. Validate Dashboard & Keys
+    const internalPhotos = ['imgDash', 'imgKeys'];
+    internalPhotos.forEach(id => {
+        const input = document.getElementById(id);
+        if (!input.files || input.files.length === 0) {
+            isValid = false;
+            const container = input.closest('.mini-drop-zone');
+            container.classList.add('field-error');
+            if(container.querySelector('.error-msg')) {
+                container.querySelector('.error-msg').style.display = 'block';
+            }
+        }
+    });
+    // 4. Validate Fuel and Return Time
+    const fuel = document.getElementById('fuel');
+    const retTime = document.getElementById('ac_ret_time');
+
+    if (!fuel.value || fuel.value === "") {
+        isValid = false;
+        fuel.classList.add('is-invalid');
+        // Find the error span relative to the input
+        const fuelErr = fuel.parentElement.querySelector('.error-msg');
+        if(fuelErr) fuelErr.style.display = 'block';
+    }
+
+    if (!retTime.value) {
+        isValid = false;
+        retTime.classList.add('is-invalid');
+        const timeErr = retTime.parentElement.querySelector('.error-msg');
+        if(timeErr) timeErr.style.display = 'block';
+}
+
+    // 5. Submit via AJAX if valid
+    if (isValid) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+        const formData = new FormData(form);
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+        })
+        .then(response => {
+            if(response.ok) {
+                // You can reuse the same success modal or create a specific 'returnSuccessModal'
+                alert('Return submitted successfully!');
+                window.location.href = "{{ route('customer.dashboard') }}";
+            } else {
+                throw new Error('Server error');
+            }
+        })
+        .catch(error => {
+            btn.disabled = false;
+            btn.innerHTML = 'Save Return';
+            alert('Error saving return. Please check all fields.');
+        });
+    } else {
+        // Scroll to the first error found
+        const firstError = document.querySelector('.field-error, .is-invalid');
+        if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
     }
 });
 </script>
