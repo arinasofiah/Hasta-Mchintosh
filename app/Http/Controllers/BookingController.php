@@ -208,9 +208,6 @@ class BookingController extends Controller
             'durationText' => $request->duration,
             'deposit' => $deposit,
             'promoDetails' => $promoDetails,
-            'eligibleVouchers' => $eligibleVouchers,
-            'loyaltyCard' => $loyaltyCard,
-            'deliveryCharge' => $deliveryCharge,
         ]);
     }
 

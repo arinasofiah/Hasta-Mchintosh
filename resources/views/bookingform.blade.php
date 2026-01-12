@@ -4,21 +4,10 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<<<<<<< Updated upstream
 <title>HASTA - Booking Details</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="{{ asset('css/header.css') }}" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-=======
-<title>HASTA – Booking Details</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link href="{{ asset('css/header.css') }}" rel="stylesheet">
-<link href="{{ asset('css/footer.css') }}" rel="stylesheet">
-<link href="{{ asset('css/vehicles.css') }}" rel="stylesheet">
->>>>>>> Stashed changes
 
 <style>
 /* ====== Reset & Body ====== */
@@ -123,8 +112,6 @@ textarea.input {resize:vertical; min-height:100px;}
 .grand-amount {font-size:20px; font-weight:900;}
 .next-btn {background:#d94444; color:white; border:none; padding:12px 24px; border-radius:6px; font-size:16px; font-weight:bold; cursor:pointer; min-width: 120px;} 
 .next-btn:hover {background:#c23535;}
-.next-btn:disabled {background:#ccc; cursor:not-allowed;}
-
 #profile-container {
     position: relative;
     display: inline-block;
@@ -145,17 +132,10 @@ textarea.input {resize:vertical; min-height:100px;}
 }
 
 .hint {
-<<<<<<< Updated upstream
     font-size: 11px;
     color: #999;
     margin-top: 3px;
     display: block;
-=======
-    display: block;
-    font-size: 11px;
-    color: #999;
-    margin-top: 5px;
->>>>>>> Stashed changes
 }
 
 @media(max-width:768px){
@@ -166,12 +146,6 @@ textarea.input {resize:vertical; min-height:100px;}
 </head>
 <body>
 
-@if(session('error'))
-<script>
-    alert("{{ session('error') }}");
-</script>
-@endif
-
 <!-- HEADER -->
 <div id="header">
     <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}">
@@ -179,12 +153,9 @@ textarea.input {resize:vertical; min-height:100px;}
     <div id="menu">
         <button class="head_button">Home</button>
         <button class="head_button">Vehicles</button>
-<<<<<<< Updated upstream
-=======
         <button class="head_button">Details</button>
         <button class="head_button">About Us</button>
         <button class="head_button">Contact Us</button>
->>>>>>> Stashed changes
     </div>
 
     <div id="profile">
@@ -216,7 +187,6 @@ textarea.input {resize:vertical; min-height:100px;}
         @endauth
     </div>
 </div>
-</div>
 
 <!-- Progress Steps -->
 <div class="progress-container">
@@ -242,8 +212,9 @@ textarea.input {resize:vertical; min-height:100px;}
 <form id="bookingForm" action="{{ route('payment.form') }}" method="POST">
     @csrf
     <input type="hidden" name="vehicleID" value="{{ $vehicle->vehicleID }}">
-    <input type="hidden" name="deliveryCharge" id="deliveryChargeInput" value="0">
     
+    <input type="hidden" name="deliveryCharge" id="deliveryChargeInput" value="0">
+
     <div class="container">
         <!-- Booking Details Card -->
         <div class="card">
@@ -351,6 +322,7 @@ textarea.input {resize:vertical; min-height:100px;}
             <div id="driverInfoSection" style="display: none; border: 1px solid #ddd; padding: 15px; margin-top: 15px; border-radius: 5px; background: #f9f9f9;">
                 <h5 style="margin-bottom: 15px;">Driver Information</h5>
                 
+                <!-- Success/Error Messages -->
                 <div id="driverMessage" style="display: none; padding: 10px; margin-bottom: 15px; border-radius: 5px;"></div>
                 
                 <div style="margin-bottom: 15px;">
@@ -377,27 +349,27 @@ textarea.input {resize:vertical; min-height:100px;}
                 
                 <div style="margin-bottom: 15px;">
                     <div class="field-label">Matric Number</div>
-                    <input type="text" id="matricNumber" name="driver_matric" class="input" placeholder="e.g. A21CS0001">
+                    <input type="text" id="matricNumber" name="matricNumber" class="input" placeholder="e.g. A21CS0001">
                 </div>
                 
                 <div style="margin-bottom: 15px;">
                     <div class="field-label">License Number</div>
-                    <input type="text" id="licenseNumber" name="driver_license" class="input" placeholder="Enter license number">
+                    <input type="text" id="licenseNumber" name="licenseNumber" class="input" placeholder="Enter license number">
                 </div>
                 
                 <div style="margin-bottom: 15px;">
                     <div class="field-label">College</div>
-                    <input type="text" id="college" name="driver_college" class="input" placeholder="Enter college">
+                    <input type="text" id="college" name="college" class="input" placeholder="Enter college">
                 </div>
                 
                 <div style="margin-bottom: 15px;">
                     <div class="field-label">Faculty</div>
-                    <input type="text" id="faculty" name="driver_faculty" class="input" placeholder="Enter faculty">
+                    <input type="text" id="faculty" name="faculty" class="input" placeholder="Enter faculty">
                 </div>
                 
                 <div style="margin-bottom: 15px;">
                     <div class="field-label">Deposit Balance (RM)</div>
-                    <input type="number" step="0.01" id="depoBalance" name="driver_deposit" class="input" placeholder="0.00">
+                    <input type="number" step="0.01" id="depoBalance" name="depoBalance" class="input" placeholder="0.00">
                 </div>
                 
                 <button type="button" id="registerDriverBtn" class="next-btn" style="width: 100%;">
@@ -459,30 +431,46 @@ textarea.input {resize:vertical; min-height:100px;}
             <div class="grand-amount" id="bottomBarTotal">RM 0.00</div>
         </div>
         <div>
-            <button type="button" id="nextButton" class="next-btn" onclick="goToPayment()">Next →</button>
+            <button type="button" class="next-btn" onclick="goToPayment()">Next →</button>
         </div>
     </div>
 </form>
 
 <script>
+// ===== GLOBAL VARIABLES =====
 let baseGrandTotal = 0;
 let promotionDiscount = 0;
+let deliveryCharge = 0;
 
-// Open Google Maps
-function openMap(type) {
-    const loc = type === 'pickup' ? document.getElementById('pickupLocation') : 
-                type === 'return' ? document.getElementById('returnLocation') : 
-                document.getElementById('destination');
-    const addr = loc.value;
+const pricePerHour = {{ $vehicle->pricePerHour }};
+const pricePerDay = {{ $vehicle->pricePerDay }};
+
+// ===== LOCATION HANDLING =====
+function handleLocationChange(type) {
+    const locType = document.getElementById(`${type}LocationType`).value;
+    const notice = document.getElementById(`${type}DeliveryNotice`);
+    const othersFields = document.getElementById(`${type}OthersFields`);
+    const hiddenInput = document.getElementById(`${type}Location`);
     
-    if (addr) {
-        const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
-        window.open(mapUrl, '_blank');
+    // Get the "Others" fields
+    const categoryField = document.getElementById(`${type}Category`);
+    const detailsField = document.getElementById(`${type}Details`);
+
+    if (locType === 'hasta') {
+        hiddenInput.value = 'HASTA Office, Student Mall';
+        notice.style.display = 'none';
+        othersFields.style.display = 'none';
+
+    } else if (locType === 'others') {
+        // Show fields and make them required
+        hiddenInput.value = 'Waiting for details...';
+        notice.style.display = 'block';
+        othersFields.style.display = 'block';
         
-        const mapLinkField = type === 'pickup' ? document.getElementById('pickupMapLink') : 
-                             type === 'return' ? document.getElementById('returnMapLink') : 
-                             document.getElementById('destinationMapLink');
-        mapLinkField.value = mapUrl;
+        // Add required to "Others" fields
+        if (categoryField) categoryField.setAttribute('required', 'required');
+        if (detailsField) detailsField.setAttribute('required', 'required');
+        
     } else {
         hiddenInput.value = '';
         notice.style.display = 'none';
@@ -753,7 +741,7 @@ document.getElementById('registerDriverBtn')?.addEventListener('click', function
         college: document.getElementById('college').value,
         faculty: document.getElementById('faculty').value,
         depoBalance: document.getElementById('depoBalance').value,
-        _token: document.querySelector('meta[name="csrf-token"]').content
+        _token: '{{ csrf_token() }}'
     };
     
     if (!driverData.email || !driverData.name || !driverData.icNumber || !driverData.phone || !driverData.matricNumber) {
@@ -768,7 +756,7 @@ document.getElementById('registerDriverBtn')?.addEventListener('click', function
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': driverData._token
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
         },
         body: JSON.stringify(driverData)
     })
@@ -803,141 +791,93 @@ function showMessage(text, type) {
     message.style.border = type === 'success' ? '1px solid #c3e6cb' : '1px solid #f5c6cb';
 }
 
-// Calculate duration and prices
-document.addEventListener('DOMContentLoaded', function() {
-    const pickupDateInput = document.querySelector('input[name="pickup_date"]');
-    const pickupTimeInput = document.querySelector('input[name="pickup_time"]');
-    const returnDateInput = document.querySelector('input[name="return_date"]');
-    const returnTimeInput = document.querySelector('input[name="return_time"]');
-    const durationInput = document.querySelector('.duration-box input');
-
-    const durationDisplayEl = document.getElementById('durationDisplay');
-    const totalByHourEl = document.getElementById('totalByHour');
-    const grandTotalEl = document.getElementById('grandTotal');
-    const bottomBarTotalEl = document.getElementById('bottomBarTotal');
-    const promotionDiscountEl = document.getElementById('promotionDiscount');
-
-    const pricePerHour = {{ $vehicle->pricePerHour }};
-    const pricePerDay = {{ $vehicle->pricePerDay }};
-
-    function calculateDurationAndPrice() {
-        const pickup = new Date(`${pickupDateInput.value}T${pickupTimeInput.value}`);
-        const returnDT = new Date(`${returnDateInput.value}T${returnTimeInput.value}`);
-
-        if (!pickupDateInput.value || !pickupTimeInput.value || !returnDateInput.value || !returnTimeInput.value || returnDT <= pickup) {
-            durationInput.value = '';
-            durationDisplayEl.textContent = '-';
-            totalByHourEl.textContent = 'MYR 0.00';
-            promotionDiscountEl.textContent = 'MYR 0.00';
-            grandTotalEl.textContent = 'MYR 0.00';
-            bottomBarTotalEl.textContent = 'MYR 0.00';
-            baseGrandTotal = 0;
-            return;
-        }
-
-        const diffMs = returnDT - pickup;
-        const diffHours = Math.ceil(diffMs / (1000 * 60 * 60));
-
-        const days = Math.floor(diffHours / 24);
-        const remainingHours = diffHours % 24;
-
-        const durationText = days > 0
-            ? `${days} day${days > 1 ? 's' : ''} ${remainingHours} hour${remainingHours !== 1 ? 's' : ''}`
-            : `${diffHours} hour${diffHours !== 1 ? 's' : ''}`;
-
-        durationInput.value = durationText;
-        durationDisplayEl.textContent = durationText;
-
-        const totalByHour = diffHours * pricePerHour;
-        baseGrandTotal = (days * pricePerDay) + (remainingHours * pricePerHour);
-
-        totalByHourEl.textContent = `MYR ${totalByHour.toFixed(2)}`;
-
-        checkPromotion();
-    }
-
-    function checkPromotion() {
-        const today = new Date();
-        const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
-
-        fetch('/check-promotion', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({
-                day: dayName,
-                amount: baseGrandTotal
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.hasPromotion) {
-                promotionDiscount = data.discount;
-                promotionDiscountEl.textContent = `- MYR ${promotionDiscount.toFixed(2)}`;
-                promotionDiscountEl.style.color = '#28a745';
-                
-                let promoInput = document.getElementById('appliedPromoId');
-                if (!promoInput) {
-                    promoInput = document.createElement('input');
-                    promoInput.type = 'hidden';
-                    promoInput.id = 'appliedPromoId';
-                    promoInput.name = 'promo_id';
-                    document.querySelector('form').appendChild(promoInput);
-                }
-                promoInput.value = data.promoID;
-            } else {
-                promotionDiscount = 0;
-                promotionDiscountEl.textContent = 'MYR 0.00';
-                promotionDiscountEl.style.color = '#333';
-            }
-
-            const finalTotal = baseGrandTotal - promotionDiscount;
-            grandTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
-            bottomBarTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
-        })
-        .catch(error => {
-            console.error('Error checking promotion:', error);
-            promotionDiscount = 0;
-            promotionDiscountEl.textContent = 'MYR 0.00';
-            const finalTotal = baseGrandTotal;
-            grandTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
-            bottomBarTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;
-        });
-    }
-
-    calculateDurationAndPrice();
-
-    [pickupDateInput, pickupTimeInput, returnDateInput, returnTimeInput].forEach(el =>
-        el.addEventListener('change', calculateDurationAndPrice)
-    );
-});
-
+// ===== GO TO PAYMENT FUNCTION =====
 function goToPayment() {
-    const form = document.getElementById('bookingForm');
-    const nextBtn = document.getElementById('nextButton');
+    console.log('=== GO TO PAYMENT DEBUG START ===');
     
-    // Validate required fields
-    if (!form.checkValidity()) {
-        form.reportValidity();
+    const form = document.getElementById('bookingForm');
+    
+    // Debug: Log all form data
+    console.log('Form action:', form.action);
+    console.log('Form method:', form.method);
+    
+    // First, validate "Others" locations
+    console.log('\n=== Validating "Others" locations ===');
+    if (!validateOtherLocations()) {
+        return;
+    }
+    
+    // Debug: Check all required fields (skip hidden "Others" fields)
+    console.log('\n=== Checking required fields ===');
+    const allInputs = form.querySelectorAll('input, select, textarea');
+    let missingFields = [];
+    
+    allInputs.forEach(input => {
+        // Skip "Others" fields that are hidden
+        const isOthersField = ['pickupCategory', 'pickupDetails', 'returnCategory', 'returnDetails'].includes(input.id);
+        const isOthersFieldVisible = !isOthersField || input.closest('div[id$="OthersFields"]')?.style.display !== 'none';
+        
+        if (input.required && !input.value.trim() && isOthersFieldVisible) {
+            missingFields.push(input.name || input.id || input.type);
+            console.log(`❌ Missing: ${input.name || input.id} = "${input.value}"`);
+        } else if (input.required && isOthersFieldVisible) {
+            console.log(`✓ OK: ${input.name || input.id} = "${input.value}"`);
+        }
+    });
+    
+    if (missingFields.length > 0) {
+        console.log('Missing fields:', missingFields);
+        alert(`Please fill in all required fields`);
+        return;
+    }
+    
+    // Validate location fields specifically
+    console.log('\n=== Checking location fields ===');
+    const pickupLocation = document.getElementById('pickupLocation').value;
+    const returnLocation = document.getElementById('returnLocation').value;
+    
+    console.log('Pickup Location:', pickupLocation);
+    console.log('Return Location:', returnLocation);
+    
+    if (!pickupLocation || pickupLocation.trim() === '' || pickupLocation === 'Waiting for details...') {
+        alert('Please select a pickup location');
+        document.getElementById('pickupLocationType').focus();
+        return;
+    }
+    
+    if (!returnLocation || returnLocation.trim() === '' || returnLocation === 'Waiting for details...') {
+        alert('Please select a return location');
+        document.getElementById('returnLocationType').focus();
         return;
     }
     
     // Check if duration is calculated
-    if (baseGrandTotal === 0) {
-        alert('Please ensure pickup and return dates/times are properly set.');
+    console.log('\n=== Checking calculated values ===');
+    const durationValue = document.getElementById('durationInput').value;
+    console.log('Duration:', durationValue);
+    
+    if (!durationValue || durationValue === '-') {
+        alert('Please wait for duration calculation to complete');
         return;
     }
     
-    // Disable button and show loading
-    nextBtn.disabled = true;
-    nextBtn.textContent = 'Processing...';
+    // Ensure totals are calculated
+    if (typeof window.finalTotal === 'undefined') {
+        console.log('Final total not calculated yet, recalculating...');
+        recalculateTotal();
+    }
     
-    // Remove any existing dynamic fields
-    document.querySelectorAll('input.dynamic-field').forEach(el => el.remove());
+    console.log('Base Grand Total:', baseGrandTotal);
+    console.log('Promotion Discount:', promotionDiscount);
+    console.log('Delivery Charge:', deliveryCharge);
+    console.log('Final Total:', window.finalTotal);
     
-    // Add calculation fields
+
+    updateDeliveryCharge();
+    recalculateTotal();
+
+    // Add hidden fields for calculated values
+    console.log('\n=== Adding dynamic fields ===');
     const hiddenFields = [
         { name: 'subtotal', value: baseGrandTotal || 0 },
         { name: 'promotionDiscount', value: promotionDiscount || 0 },
@@ -978,6 +918,9 @@ function goToPayment() {
     
     // Submit the form
     form.submit();
+    
+    console.log('=== Form submission triggered ===');
+    console.log('=== GO TO PAYMENT DEBUG END ===');
 }
 
 function validateOtherLocations() {
