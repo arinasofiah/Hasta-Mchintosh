@@ -234,7 +234,7 @@
             <div class="report-card">
                 <h5 class="fw-bold mb-4">Recent Bookings Activity</h5>
                 <div class="row stats-header pb-2 px-2">
-                    <div class="col-2">Booking Code</div>
+                    <div class="col-2">Booking ID</div>
                     <div class="col-3">Car Details</div>
                     <div class="col-3">Booking Dates</div>
                     <div class="col-2 text-center">Status</div>
