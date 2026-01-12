@@ -107,7 +107,7 @@
         {{-- Main Content Area --}}
         <div class="booking-history-page">
             <h1 class="profile-title">My Booking History</h1>
-
+        
             <!-- Active/Ongoing Bookings Section -->
             <div class="booking-section">
                 <div class="section-title active">Active & Upcoming Bookings</div>
@@ -115,30 +115,26 @@
                     @forelse($active as $booking)
                         @php
                             $vehicle = $booking->vehicle ?? null;
-                            // Calculate like payment form
+                            // Use values calculated in controller
                             $rentalPrice = $booking->totalPrice ?? 0;
-                            $depositAmount = 50; // Fixed deposit
-                            $totalCost = $rentalPrice + $depositAmount;
+                            $totalCost = $booking->totalCost ?? ($rentalPrice + 50);
                             $totalPaid = $booking->totalPaid ?? 0;
-                            
-                            // Calculate remaining balance based on payment type
-                            if(isset($booking->pay_amount_type) && $booking->pay_amount_type == 'deposit') {
-                                $remainingBalance = max(0, $rentalPrice - ($totalPaid - $depositAmount));
-                            } else {
-                                $remainingBalance = max(0, $totalCost - $totalPaid);
-                            }
-                            
-                            $isFullyPaid = $remainingBalance <= 0;
-                            $canPayBalance = $remainingBalance > 0 && $booking->bookingStatus === 'approved';
+                            $remainingBalance = $booking->remainingBalance ?? 0;
+                            $isFullyPaid = $booking->isFullyPaid ?? false;
                             
                             // Check if booking has started yet
                             $now = \Carbon\Carbon::now();
                             $startDate = \Carbon\Carbon::parse($booking->startDate);
                             $isUpcoming = $now->lt($startDate);
                             
-                            // Check if booking is currently active (has started but not ended)
+                            // Check if booking is currently active
                             $endDate = \Carbon\Carbon::parse($booking->endDate);
                             $isCurrent = $now->between($startDate, $endDate);
+                            
+                            // Determine if balance can be paid
+                            $canPayBalance = $remainingBalance > 0 && 
+                                           $booking->bookingStatus === 'approved' && 
+                                           !$isUpcoming;
                         @endphp
                         
                         <div class="booking-card">
@@ -219,7 +215,7 @@
                                         <i class="fas fa-eye"></i> Details
                                     </button>
                                     
-                                    @if($canPayBalance && !$isUpcoming)
+                                    @if($canPayBalance)
                                         <a href="{{ route('payment.remaining', ['bookingID' => $booking->bookingID]) }}" 
                                            class="action-btn-success" 
                                            style="text-decoration: none;">
@@ -254,16 +250,10 @@
                     @forelse($pending as $booking)
                         @php
                             $vehicle = $booking->vehicle ?? null;
+                            // Use values calculated in controller
                             $rentalPrice = $booking->totalPrice ?? 0;
-                            $depositAmount = 50;
-                            $totalCost = $rentalPrice + $depositAmount;
                             $totalPaid = $booking->totalPaid ?? 0;
-                            
-                            if(isset($booking->pay_amount_type) && $booking->pay_amount_type == 'deposit') {
-                                $remainingBalance = max(0, $rentalPrice - ($totalPaid - $depositAmount));
-                            } else {
-                                $remainingBalance = max(0, $totalCost - $totalPaid);
-                            }
+                            $remainingBalance = $booking->remainingBalance ?? 0;
                         @endphp
                         <div class="booking-card">
                             <div class="booking-details">
@@ -323,7 +313,6 @@
                             @forelse($completed as $booking)
                                 @php
                                     $vehicle = $booking->vehicle ?? null;
-                                    $rentalPrice = $booking->totalPrice ?? 0;
                                 @endphp
                                 <div class="past-booking-item">
                                     <div class="past-booking-content">
@@ -350,7 +339,6 @@
                                 </div>
                             @endforelse
                         </div>
-                       
                     </div>
 
                     <!-- Cancelled Bookings Column -->
@@ -360,7 +348,6 @@
                             @forelse($cancelled as $booking)
                                 @php
                                     $vehicle = $booking->vehicle ?? null;
-                                    $rentalPrice = $booking->totalPrice ?? 0;
                                 @endphp
                                 <div class="past-booking-item">
                                     <div class="past-booking-content">
@@ -394,7 +381,6 @@
                                 </div>
                             @endforelse
                         </div>
-                       
                     </div>
                 </div>
             </div>
@@ -530,10 +516,10 @@
         </div>
     </div>
     
-   <script>
+    <script>
     let bookingsData = [];
 
-    // Add active bookings (including reserved)
+    // Add all bookings to JavaScript array for modal access
     @if(isset($active) && $active->isNotEmpty())
         @foreach($active as $booking)
             @php
@@ -543,44 +529,6 @@
                     'vehiclePhoto' => $booking->vehicle->vehiclePhoto ?? null,
                     'plateNumber' => $booking->vehicle->plateNumber ?? null,
                 ];
-                
-                // Get bank name - check multiple fields
-                $bankName = 'Not Available';
-                if (!empty($booking->bank_name)) {
-                    $bankName = $booking->bank_name;
-                } elseif (!empty($booking->penamaBank)) {
-                    $bankName = $booking->penamaBank;
-                }
-                
-                // Get bank owner name
-                $bankOwner = $booking->bank_owner_name ?? 'Not Available';
-                
-                // Calculate duration from dates
-                $duration = 1;
-                if ($booking->startDate && $booking->endDate) {
-                    try {
-                        $start = new DateTime($booking->startDate);
-                        $end = new DateTime($booking->endDate);
-                        $diff = $start->diff($end);
-                        $duration = max(1, $diff->days);
-                    } catch (Exception $e) {
-                        $duration = $booking->bookingDuration ?? 1;
-                    }
-                } else {
-                    $duration = $booking->bookingDuration ?? 1;
-                }
-                
-                // Calculate like payment form
-                $rentalPrice = $booking->totalPrice ?? 0;
-                $depositAmount = 50; // Fixed deposit
-                $totalCost = $rentalPrice + $depositAmount;
-                $totalPaid = $booking->totalPaid ?? 0;
-                
-                if(isset($booking->pay_amount_type) && $booking->pay_amount_type == 'deposit') {
-                    $remainingBalance = max(0, $rentalPrice - ($totalPaid - $depositAmount));
-                } else {
-                    $remainingBalance = max(0, $totalCost - $totalPaid);
-                }
             @endphp
             
             bookingsData.push({
@@ -588,17 +536,16 @@
                 startDate: '{{ $booking->startDate }}',
                 endDate: '{{ $booking->endDate }}',
                 bookingStatus: '{{ $booking->bookingStatus }}',
-                totalPrice: {{ $rentalPrice }},
-                totalPaid: {{ $totalPaid }},
-                totalCost: {{ $totalCost }},
-                remainingBalance: {{ $remainingBalance }},
-                depositAmount: {{ $depositAmount }},
+                totalPrice: {{ $booking->totalPrice ?? 0 }},
+                totalPaid: {{ $booking->totalPaid ?? 0 }},
+                totalCost: {{ $booking->totalCost ?? 0 }},
+                remainingBalance: {{ $booking->remainingBalance ?? 0 }},
+                depositAmount: 50,
                 pay_amount_type: '{{ $booking->pay_amount_type ?? '' }}',
                 penamaBank: '{{ $booking->penamaBank ?? '' }}',
                 bank_name: '{{ $booking->bank_name ?? '' }}',
                 bank_owner_name: '{{ $booking->bank_owner_name ?? '' }}',
-                duration: {{ $duration }},
-                bookingDuration: {{ $booking->bookingDuration ?? 0 }},
+                duration: {{ $booking->bookingDuration ?? 1 }},
                 vehicle: {!! json_encode($vehicleData) !!}
             });
         @endforeach
@@ -614,61 +561,22 @@
                     'vehiclePhoto' => $booking->vehicle->vehiclePhoto ?? null,
                     'plateNumber' => $booking->vehicle->plateNumber ?? null,
                 ];
-                
-                // Get bank name - check multiple fields
-                $bankName = 'Not Available';
-                if (!empty($booking->bank_name)) {
-                    $bankName = $booking->bank_name;
-                } elseif (!empty($booking->penamaBank)) {
-                    $bankName = $booking->penamaBank;
-                }
-                
-                // Get bank owner name
-                $bankOwner = $booking->bank_owner_name ?? 'Not Available';
-                
-                // Calculate duration from dates
-                $duration = 1;
-                if ($booking->startDate && $booking->endDate) {
-                    try {
-                        $start = new DateTime($booking->startDate);
-                        $end = new DateTime($booking->endDate);
-                        $diff = $start->diff($end);
-                        $duration = max(1, $diff->days);
-                    } catch (Exception $e) {
-                        $duration = $booking->bookingDuration ?? 1;
-                    }
-                } else {
-                    $duration = $booking->bookingDuration ?? 1;
-                }
-                
-                // Calculate like payment form
-                $rentalPrice = $booking->totalPrice ?? 0;
-                $depositAmount = 50;
-                $totalCost = $rentalPrice + $depositAmount;
-                $totalPaid = $booking->totalPaid ?? 0;
-                
-                if(isset($booking->pay_amount_type) && $booking->pay_amount_type == 'deposit') {
-                    $remainingBalance = max(0, $rentalPrice - ($totalPaid - $depositAmount));
-                } else {
-                    $remainingBalance = max(0, $totalCost - $totalPaid);
-                }
             @endphp
             bookingsData.push({
                 bookingID: {{ $booking->bookingID }},
                 startDate: '{{ $booking->startDate }}',
                 endDate: '{{ $booking->endDate }}',
                 bookingStatus: '{{ $booking->bookingStatus }}',
-                totalPrice: {{ $rentalPrice }},
-                totalPaid: {{ $totalPaid }},
-                totalCost: {{ $totalCost }},
-                remainingBalance: {{ $remainingBalance }},
-                depositAmount: {{ $depositAmount }},
+                totalPrice: {{ $booking->totalPrice ?? 0 }},
+                totalPaid: {{ $booking->totalPaid ?? 0 }},
+                totalCost: {{ $booking->totalCost ?? 0 }},
+                remainingBalance: {{ $booking->remainingBalance ?? 0 }},
+                depositAmount: 50,
                 pay_amount_type: '{{ $booking->pay_amount_type ?? '' }}',
                 penamaBank: '{{ $booking->penamaBank ?? '' }}',
                 bank_name: '{{ $booking->bank_name ?? '' }}',
                 bank_owner_name: '{{ $booking->bank_owner_name ?? '' }}',
-                duration: {{ $duration }},
-                bookingDuration: {{ $booking->bookingDuration ?? 0 }},
+                duration: {{ $booking->bookingDuration ?? 1 }},
                 vehicle: {!! json_encode($vehicleData) !!}
             });
         @endforeach
@@ -684,61 +592,22 @@
                     'vehiclePhoto' => $booking->vehicle->vehiclePhoto ?? null,
                     'plateNumber' => $booking->vehicle->plateNumber ?? null,
                 ];
-                
-                // Get bank name - check multiple fields
-                $bankName = 'Not Available';
-                if (!empty($booking->bank_name)) {
-                    $bankName = $booking->bank_name;
-                } elseif (!empty($booking->penamaBank)) {
-                    $bankName = $booking->penamaBank;
-                }
-                
-                // Get bank owner name
-                $bankOwner = $booking->bank_owner_name ?? 'Not Available';
-                
-                // Calculate duration from dates
-                $duration = 1;
-                if ($booking->startDate && $booking->endDate) {
-                    try {
-                        $start = new DateTime($booking->startDate);
-                        $end = new DateTime($booking->endDate);
-                        $diff = $start->diff($end);
-                        $duration = max(1, $diff->days);
-                    } catch (Exception $e) {
-                        $duration = $booking->bookingDuration ?? 1;
-                    }
-                } else {
-                    $duration = $booking->bookingDuration ?? 1;
-                }
-                
-                // Calculate like payment form
-                $rentalPrice = $booking->totalPrice ?? 0;
-                $depositAmount = 50;
-                $totalCost = $rentalPrice + $depositAmount;
-                $totalPaid = $booking->totalPaid ?? 0;
-                
-                if(isset($booking->pay_amount_type) && $booking->pay_amount_type == 'deposit') {
-                    $remainingBalance = max(0, $rentalPrice - ($totalPaid - $depositAmount));
-                } else {
-                    $remainingBalance = max(0, $totalCost - $totalPaid);
-                }
             @endphp
             bookingsData.push({
                 bookingID: {{ $booking->bookingID }},
                 startDate: '{{ $booking->startDate }}',
                 endDate: '{{ $booking->endDate }}',
                 bookingStatus: '{{ $booking->bookingStatus }}',
-                totalPrice: {{ $rentalPrice }},
-                totalPaid: {{ $totalPaid }},
-                totalCost: {{ $totalCost }},
-                remainingBalance: {{ $remainingBalance }},
-                depositAmount: {{ $depositAmount }},
+                totalPrice: {{ $booking->totalPrice ?? 0 }},
+                totalPaid: {{ $booking->totalPaid ?? 0 }},
+                totalCost: {{ $booking->totalCost ?? 0 }},
+                remainingBalance: {{ $booking->remainingBalance ?? 0 }},
+                depositAmount: 50,
                 pay_amount_type: '{{ $booking->pay_amount_type ?? '' }}',
                 penamaBank: '{{ $booking->penamaBank ?? '' }}',
                 bank_name: '{{ $booking->bank_name ?? '' }}',
                 bank_owner_name: '{{ $booking->bank_owner_name ?? '' }}',
-                duration: {{ $duration }},
-                bookingDuration: {{ $booking->bookingDuration ?? 0 }},
+                duration: {{ $booking->bookingDuration ?? 1 }},
                 vehicle: {!! json_encode($vehicleData) !!}
             });
         @endforeach
@@ -754,67 +623,26 @@
                     'vehiclePhoto' => $booking->vehicle->vehiclePhoto ?? null,
                     'plateNumber' => $booking->vehicle->plateNumber ?? null,
                 ];
-                
-                // Get bank name - check multiple fields
-                $bankName = 'Not Available';
-                if (!empty($booking->bank_name)) {
-                    $bankName = $booking->bank_name;
-                } elseif (!empty($booking->penamaBank)) {
-                    $bankName = $booking->penamaBank;
-                }
-                
-                // Get bank owner name
-                $bankOwner = $booking->bank_owner_name ?? 'Not Available';
-                
-                // Calculate duration from dates
-                $duration = 1;
-                if ($booking->startDate && $booking->endDate) {
-                    try {
-                        $start = new DateTime($booking->startDate);
-                        $end = new DateTime($booking->endDate);
-                        $diff = $start->diff($end);
-                        $duration = max(1, $diff->days);
-                    } catch (Exception $e) {
-                        $duration = $booking->bookingDuration ?? 1;
-                    }
-                } else {
-                    $duration = $booking->bookingDuration ?? 1;
-                }
-                
-                // Calculate like payment form
-                $rentalPrice = $booking->totalPrice ?? 0;
-                $depositAmount = 50;
-                $totalCost = $rentalPrice + $depositAmount;
-                $totalPaid = $booking->totalPaid ?? 0;
-                
-                if(isset($booking->pay_amount_type) && $booking->pay_amount_type == 'deposit') {
-                    $remainingBalance = max(0, $rentalPrice - ($totalPaid - $depositAmount));
-                } else {
-                    $remainingBalance = max(0, $totalCost - $totalPaid);
-                }
             @endphp
             bookingsData.push({
                 bookingID: {{ $booking->bookingID }},
                 startDate: '{{ $booking->startDate }}',
                 endDate: '{{ $booking->endDate }}',
                 bookingStatus: '{{ $booking->bookingStatus }}',
-                totalPrice: {{ $rentalPrice }},
-                totalPaid: {{ $totalPaid }},
-                totalCost: {{ $totalCost }},
-                remainingBalance: {{ $remainingBalance }},
-                depositAmount: {{ $depositAmount }},
+                totalPrice: {{ $booking->totalPrice ?? 0 }},
+                totalPaid: {{ $booking->totalPaid ?? 0 }},
+                totalCost: {{ $booking->totalCost ?? 0 }},
+                remainingBalance: {{ $booking->remainingBalance ?? 0 }},
+                depositAmount: 50,
                 pay_amount_type: '{{ $booking->pay_amount_type ?? '' }}',
                 penamaBank: '{{ $booking->penamaBank ?? '' }}',
                 bank_name: '{{ $booking->bank_name ?? '' }}',
                 bank_owner_name: '{{ $booking->bank_owner_name ?? '' }}',
-                duration: {{ $duration }},
-                bookingDuration: {{ $booking->bookingDuration ?? 0 }},
+                duration: {{ $booking->bookingDuration ?? 1 }},
                 vehicle: {!! json_encode($vehicleData) !!}
             });
         @endforeach
     @endif
-
-    console.log('Bookings data loaded:', bookingsData);
 
     function findBookingById(id) {
         return bookingsData.find(b => b.bookingID == id);
@@ -861,11 +689,11 @@
         }
         document.getElementById('detail-status').textContent = statusDisplay;
         
-        // Use duration field (calculated from PHP)
+        // Use duration field
         document.getElementById('detail-duration').textContent = 
             (booking.duration || 1) + ' day(s)';
         
-        // Set payment details - MATCHES PAYMENT FORM LOGIC
+        // Set payment details
         document.getElementById('detail-total-cost').textContent = 'RM' + (booking.totalCost || 0).toFixed(2);
         document.getElementById('detail-paid').textContent = 'RM' + (booking.totalPaid || 0).toFixed(2);
         document.getElementById('detail-remaining').textContent = 'RM' + (booking.remainingBalance || 0).toFixed(2);

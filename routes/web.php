@@ -43,6 +43,7 @@ Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles.ind
 // Pickup
 Route::get('/pickup/{bookingID}', [PickUpController::class, 'show'])->name('pickup.show');
 Route::post('/pickup/store', [PickUpController::class, 'store'])->name('pickup.store');
+Route::get('/pickup/form/{bookingID}', [PickUpController::class, 'show'])->name('pickup.form');
 
 // Return
 Route::post('/return/store', [PickUpController::class, 'storeReturn'])->name('return.store');
