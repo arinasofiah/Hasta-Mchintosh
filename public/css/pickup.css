@@ -423,3 +423,14 @@ canvas{
 .d-grid{
     margin-top: 20px;
 }
+.error-msg {
+    color: #CB3737;
+    font-size: 11px;
+    display: none;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+.field-error {
+    border: 2px solid #CB3737 !important;
+    background-color: #fff8f8;
+}
