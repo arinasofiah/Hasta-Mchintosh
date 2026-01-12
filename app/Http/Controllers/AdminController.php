@@ -492,233 +492,59 @@ public function storeStaff(Request $request)
         abort(403, 'Unauthorized. Admin access only.');
     }
     
-    $request->validate([
-        'email' => 'required|email|unique:users',
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|string|email|max:255|unique:users',
+        'icNumber' => 'required|string|unique:users,icNumber',
+        'phoneNumber' => 'required|string|unique:telephone,phoneNumber',
+        'password' => 'required|string|min:8|confirmed',
+        'position' => 'required|string|max:100',
         'userType' => 'required|in:staff,admin',
     ]);
     
     \DB::beginTransaction();
     
     try {
-        // Check for existing invitation or user
-        $existingUser = User::where('email', $request->email)->first();
+        // Create user
+        $userID = \DB::table('users')->insertGetId([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
+            'icNumber' => $validated['icNumber'],
+            'userType' => $validated['userType'],
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
         
-        if ($existingUser) {
-            if ($existingUser->invitation_status === 'pending') {
-                return back()->withInput()->with('error', 'A pending invitation already exists for this email.');
-            } elseif ($existingUser->invitation_status === 'accepted') {
-                return back()->withInput()->with('error', 'This email is already registered.');
-            } elseif ($existingUser->invitation_status === 'cancelled') {
-                // If cancelled, we can reuse the user record
-                $user = $existingUser;
-            }
-        }
+        // Create phone record in telephone table
+        \DB::table('telephone')->insert([
+            'phoneNumber' => $validated['phoneNumber'],
+            'userID' => $userID,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
         
-        if (!isset($user)) {
-            // Generate temporary values
-            $timestamp = time();
-            $random = rand(1000, 9999);
-            
-            // Name from email
-            $emailName = explode('@', $request->email)[0];
-            $tempName = ucfirst($emailName);
-            $tempIcNumber = 'TEMP-' . $timestamp . '-' . $random;
-            
-            // Create new user
-            $user = User::create([
-                'email' => $request->email,
-                'userType' => $request->userType,
-                'name' => $tempName,
-                'icNumber' => $tempIcNumber,
-                'password' => \Hash::make(\Str::random(16)),
-            ]);
-        }
-        
-        // Set invitation details
-        $invitationToken = \Str::random(60);
-        
-        $user->invitation_token = $invitationToken;
-        $user->invitation_sent_at = now();
-        $user->invitation_expires_at = now()->addDays(7);
-        $user->invitation_status = 'pending';
-        $user->invited_by = auth()->id();
-        $user->save();
+        // Create staff record
+        \DB::table('staff')->insert([
+            'userID' => $userID,
+            'position' => $validated['position'],
+            'commissionCount' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
         
         \DB::commit();
         
-        // ✅ Generate registration URL
-        $registrationUrl = route('staff.register.form', ['token' => $invitationToken]);
-        
-        // ✅ Send invitation email
-        try {
-            $inviterName = auth()->user()->name;
-            Mail::to($user->email)->send(new \App\Mail\StaffInvitationMail($user, $registrationUrl, $inviterName));
-            
-            \Log::info('✅ Invitation email sent to: ' . $user->email);
-            \Log::info('📧 Email sent via: ' . config('mail.mailer'));
-            
-        } catch (\Exception $e) {
-            \Log::error('❌ Email sending failed: ' . $e->getMessage());
-            // Don't fail the whole process if email fails
-        }
-        
-        // Log for debugging
-        \Log::info('=== INVITATION SUCCESS ===');
-        \Log::info('User ID: ' . $user->userID);
-        \Log::info('Email: ' . $user->email);
-        \Log::info('Token: ' . $invitationToken);
-        \Log::info('URL: ' . $registrationUrl);
-        \Log::info('Inviter: ' . auth()->user()->name);
-        
-        // ✅ Redirect back with success message
-        return redirect()->route('admin.staff.create')
-            ->with('success', "Invitation created successfully!")
-            ->with('registration_link', $registrationUrl)
-            ->with('email_sent', isset($e) ? false : true);
+        return redirect()->route('admin.staff')
+            ->with('success', 'Staff member added successfully!');
             
     } catch (\Exception $e) {
         \DB::rollBack();
+        \Log::error('Staff creation failed: ' . $e->getMessage());
         
-        \Log::error('❌ Store Staff Error: ' . $e->getMessage());
-        \Log::error($e->getTraceAsString());
-        
-        return back()->withInput()->with('error', 'Failed to create invitation: ' . $e->getMessage());
+        return back()->withInput()->with('error', 'Failed to create staff member. Please try again.');
     }
 }
-
-    // Show registration form for invited staff (PUBLIC ROUTE - no auth required)
-    public function showStaffRegistrationForm($token)
-    {
-        $user = User::where('invitation_token', $token)->first();
-
-        if (!$user) {
-            return redirect()->route('login')->with('error', 'Invalid invitation link.');
-        }
-
-        if (!$user->isInvitationValid()) {
-            $message = match ($user->invitation_status) {
-                'accepted' => 'This invitation has already been used.',
-                'expired' => 'Invitation link has expired.',
-                default => 'Invitation is no longer valid.',
-            };
-            
-            return redirect()->route('login')->with('error', $message);
-        }
-
-        return view('auth.staff-register', compact('user'));
-    }
-
-    // Complete registration for invited staff (PUBLIC ROUTE - no auth required)
-    public function completeStaffRegistration(Request $request, $token)
-    {
-        $user = User::where('invitation_token', $token)->first();
-
-        if (!$user || !$user->isInvitationValid()) {
-            return redirect()->route('login')->with('error', 'Invalid or expired invitation.');
-        }
-
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'icNumber' => 'required|string|max:20|unique:users,icNumber',
-            'phoneNumber' => 'required|string|max:15|unique:telephone,phoneNumber',
-            'password' => 'required|string|min:8|confirmed',
-            'position' => 'required|string|max:100',
-        ]);
-
-        DB::beginTransaction();
-        
-        try {
-            // Update user with personal information
-            $user->update([
-                'name' => $request->name,
-                'icNumber' => $request->icNumber,
-                'password' => Hash::make($request->password),
-                'invitation_token' => null,
-                'invitation_accepted_at' => now(),
-                'invitation_status' => 'accepted',
-                'email_verified_at' => now(),
-            ]);
-
-            // Create telephone record
-            DB::table('telephone')->insert([
-                'phoneNumber' => $request->phoneNumber,
-                'userID' => $user->userID,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-            // Create staff record
-            DB::table('staff')->insert([
-                'userID' => $user->userID,
-                'position' => $request->position,
-                'commissionCount' => 0,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-            DB::commit();
-
-            // Log the user in automatically
-            auth()->login($user);
-
-            // Redirect based on user type
-            if ($user->userType === 'admin') {
-                return redirect()->route('admin.dashboard')
-                    ->with('success', 'Registration completed successfully! Welcome to Hasta Admin.');
-            } else {
-                return redirect()->route('staff.dashboard')
-                    ->with('success', 'Registration completed successfully! Welcome to Hasta Staff.');
-            }
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            \Log::error('Registration failed: ' . $e->getMessage());
-            return back()->withInput()->withErrors(['error', 'Registration failed. Please try again.']);
-        }
-    }
-
-    // Resend invitation
-    public function resendStaffInvitation($id)
-    {
-        if (!in_array(auth()->user()->userType, ['admin', 'staff'])) {
-            abort(403, 'Unauthorized.');
-        }
-        
-        $user = User::findOrFail($id);
-
-        if ($user->invitation_status === 'accepted') {
-            return back()->with('error', 'This user has already registered.');
-        }
-
-        // Create new invitation
-        $user->createInvitation(auth()->user()->userID, $user->userType);
-
-        // Resend email
-        Mail::to($user->email)->send(new StaffInvitationMail($user));
-
-        return back()->with('success', 'Invitation resent successfully.');
-    }
-
-    // Cancel invitation
-    public function cancelStaffInvitation($id)
-    {
-        if (!in_array(auth()->user()->userType, ['admin', 'staff'])) {
-            abort(403, 'Unauthorized.');
-        }
-        
-        $user = User::findOrFail($id);
-
-        if ($user->invitation_status === 'pending') {
-            $user->update([
-                'invitation_token' => null,
-                'invitation_status' => 'cancelled',
-            ]);
-            
-            return back()->with('success', 'Invitation cancelled successfully.');
-        }
-
-        return back()->with('error', 'Cannot cancel this invitation.');
-    }
 
     // Update existing staff member (for admin to edit staff details)
     public function updateStaff(Request $request, $id)
