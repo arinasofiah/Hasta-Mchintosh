@@ -171,10 +171,10 @@
     
     <main class="hero-wrapper">
         <div class="gradient-card">
-            <h1>Rent A Car in Malaysia</h1>
+            <h1>Rent Vehicle with HASTA</h1>
             <div class="booking-container">
                 <div class="tab-header">
-                    <div class="tab-item"><i class="fas fa-car"></i> CAR</div>
+                    <div class="tab-item"><i class="fas fa-car"></i> VEHICLES</div>
                 </div>
                 
                 <!-- FORM GOES TO VEHICLES.INDEX -->
