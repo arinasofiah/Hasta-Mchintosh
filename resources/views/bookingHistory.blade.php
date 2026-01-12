@@ -333,13 +333,6 @@
                     @endforelse
                 </div>
             </div>
-                    @empty
-                        <div class="empty-state">
-                            <i class="fas fa-calendar-check" style="font-size: 24px; margin-bottom: 10px;"></i><br>
-                            No active or upcoming bookings.
-                        </div>
-                    @endforelse
-                </div>
                 
                 @if(count($active) > 3)
                 <div class="show-more-container">
