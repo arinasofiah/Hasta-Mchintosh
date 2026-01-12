@@ -91,7 +91,7 @@ class ReportController extends Controller
         $filteredFacultyCount = $faculty ? ($facultyDistribution[$faculty] ?? 0) : 0;
         $filteredCollegeCount = $college ? ($collegeDistribution[$college] ?? 0) : 0;
 
-        // Recent bookings with vehicle details - SIMPLIFIED VERSION
+        // Recent bookings with vehicle details - FIXED VERSION WITH DATES
         $recentBookingsQuery = DB::table('booking')
             ->join('vehicles', 'booking.vehicleID', '=', 'vehicles.vehicleID')
             ->select(
@@ -101,6 +101,8 @@ class ReportController extends Controller
                 'booking.bookingDuration',
                 'booking.totalPrice',
                 'booking.created_at',
+                'booking.startDate',      // ADDED
+                'booking.endDate',        // ADDED
                 'vehicles.model as vehicleModel',
                 'vehicles.vehicleType',
                 'vehicles.plateNumber as plateNo'
