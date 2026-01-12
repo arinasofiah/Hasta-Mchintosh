@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\User;
 use App\Models\Vehicles;
 use App\Models\Bookings;
+use App\Models\Commission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Hash; 
@@ -936,4 +937,295 @@ public function storeStaff(Request $request)
 
         return redirect()->back()->with('success', 'Vehicle returned successfully!');
     }
+
+  public function profile()
+{
+    $user = auth()->user();
+    
+    // Initialize variables for all user types
+    $commissions = collect(); // Empty collection
+    $totalCommissions = 0;
+    $monthlyCommissions = 0;
+    $latestCommissionDate = null;
+    
+    if ($user->userType === 'staff') {
+        // Check if commission table exists
+        if (Schema::hasTable('commission')) {
+            // First, let's check if we need to add the staff_id column
+            if (!Schema::hasColumn('commission', 'staff_id')) {
+                // Add staff_id column to the commission table
+                Schema::table('commission', function ($table) {
+                    $table->unsignedBigInteger('staff_id')->nullable()->after('commissionID');
+                });
+            }
+            
+            // Now get commissions for this staff member
+            $commissions = DB::table('commission')
+                ->where('staff_id', $user->userID)
+                ->orderBy('commissionDate', 'desc')
+                ->orderBy('created_at', 'desc')
+                ->get();
+            
+            // Calculate statistics
+            $totalCommissions = $commissions->count();
+            
+            // Calculate monthly commissions
+            $monthStart = now()->startOfMonth()->format('Y-m-d');
+            $monthEnd = now()->endOfMonth()->format('Y-m-d');
+            $monthlyCommissions = DB::table('commission')
+                ->where('staff_id', $user->userID)
+                ->whereBetween('commissionDate', [$monthStart, $monthEnd])
+                ->count();
+            
+            $latestCommissionDate = $commissions->first()->commissionDate ?? null;
+        } else {
+            // Commission table doesn't exist, create it
+            Schema::create('commission', function ($table) {
+                $table->id('commissionID');
+                $table->unsignedBigInteger('staff_id');
+                $table->string('commissionType');
+                $table->date('commissionDate');
+                $table->text('notes')->nullable();
+                $table->timestamps();
+                
+                $table->foreign('staff_id')->references('userID')->on('users')->onDelete('cascade');
+            });
+        }
+    }
+    
+    // Also get staff details if available
+    $staffDetails = null;
+    if ($user->userType === 'staff') {
+        $staffDetails = DB::table('staff')->where('userID', $user->userID)->first();
+    }
+    
+    return view('admin.profile', compact(
+        'user',
+        'commissions',
+        'totalCommissions',
+        'monthlyCommissions',
+        'latestCommissionDate',
+        'staffDetails'
+    ));
+}
+
+/**
+ * Add new commission record
+ */
+public function addCommission(Request $request)
+{
+    if (auth()->user()->userType !== 'staff') {
+        return redirect()->back()->with('error', 'Only staff can add commission records.');
+    }
+    
+    $request->validate([
+        'commissionType' => 'required|string|in:booking,referral,upsell,special,corporate,group,other',
+        'commissionDate' => 'required|date|before_or_equal:today',
+        'notes' => 'nullable|string|max:500',
+    ]);
+    
+    // Make sure commission table has staff_id column
+    if (!Schema::hasColumn('commission', 'staff_id')) {
+        Schema::table('commission', function ($table) {
+            $table->unsignedBigInteger('staff_id')->nullable()->after('commissionID');
+        });
+    }
+    
+    DB::table('commission')->insert([
+        'staff_id' => auth()->id(),
+        'commissionType' => $request->commissionType,
+        'commissionDate' => $request->commissionDate,
+        'notes' => $request->notes,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    
+    return redirect()->back()->with('success', 'Commission record added successfully!');
+}
+
+/**
+ * Get commission for editing
+ */
+public function editCommission($id)
+{
+    $commission = DB::table('commission')->where('commissionID', $id)->first();
+    
+    if (!$commission) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Commission not found'
+        ], 404);
+    }
+    
+    // Check ownership
+    if ($commission->staff_id != auth()->id()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Unauthorized'
+        ], 403);
+    }
+    
+    return response()->json([
+        'success' => true,
+        'commission' => $commission
+    ]);
+}
+
+/**
+ * Update commission record
+ */
+public function updateCommission(Request $request, $id)
+{
+    $commission = DB::table('commission')->where('commissionID', $id)->first();
+    
+    if (!$commission) {
+        return redirect()->back()->with('error', 'Commission record not found.');
+    }
+    
+    // Check ownership
+    if ($commission->staff_id != auth()->id()) {
+        return redirect()->back()->with('error', 'Unauthorized.');
+    }
+    
+    $request->validate([
+        'commissionType' => 'required|string|in:booking,referral,upsell,special,corporate,group,other',
+        'commissionDate' => 'required|date|before_or_equal:today',
+        'notes' => 'nullable|string|max:500',
+    ]);
+    
+    DB::table('commission')
+        ->where('commissionID', $id)
+        ->update([
+            'commissionType' => $request->commissionType,
+            'commissionDate' => $request->commissionDate,
+            'notes' => $request->notes,
+            'updated_at' => now(),
+        ]);
+    
+    return redirect()->back()->with('success', 'Commission record updated successfully!');
+}
+
+/**
+ * Delete commission record
+ */
+public function destroyCommission($id)
+{
+    $commission = DB::table('commission')->where('commissionID', $id)->first();
+    
+    if (!$commission) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Commission not found'
+        ], 404);
+    }
+    
+    // Check ownership
+    if ($commission->staff_id != auth()->id()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Unauthorized'
+        ], 403);
+    }
+    
+    DB::table('commission')->where('commissionID', $id)->delete();
+    
+    return response()->json([
+        'success' => true,
+        'message' => 'Commission record deleted'
+    ]);
+}
+
+/**
+ * Update staff bank details
+ */
+public function updateBankDetails(Request $request)
+{
+    if (auth()->user()->userType !== 'staff') {
+        return redirect()->back()->with('error', 'Only staff can update bank details.');
+    }
+    
+    $request->validate([
+        'bank_name' => 'required|string|max:100',
+        'bank_account_number' => 'required|string|max:50',
+    ]);
+    
+    $staff = DB::table('staff')->where('userID', auth()->id())->first();
+    
+    if (!$staff) {
+        // Create staff record if it doesn't exist
+        DB::table('staff')->insert([
+            'userID' => auth()->id(),
+            'bank_name' => $request->bank_name,
+            'bank_account_number' => $request->bank_account_number,
+            'commissionCount' => 0,
+            'position' => 'Staff',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    } else {
+        // Update existing staff record
+        DB::table('staff')
+            ->where('userID', auth()->id())
+            ->update([
+                'bank_name' => $request->bank_name,
+                'bank_account_number' => $request->bank_account_number,
+                'updated_at' => now(),
+            ]);
+    }
+    
+    return redirect()->back()->with('success', 'Bank details updated successfully!');
+}
+
+/**
+ * Request commission redemption
+ */
+public function requestRedemption(Request $request)
+{
+    if (auth()->user()->userType !== 'staff') {
+        return redirect()->back()->with('error', 'Only staff can request redemption.');
+    }
+    
+    $staff = DB::table('staff')->where('userID', auth()->id())->first();
+    
+    if (!$staff) {
+        return redirect()->back()->with('error', 'Staff record not found.');
+    }
+    
+    // Get total commission value (you might need to calculate this differently)
+    $totalCommissionValue = DB::table('commission')
+        ->where('staff_id', auth()->id())
+        ->count(); // This is just count, you might want to sum amounts if you add an amount column
+    
+    if ($totalCommissionValue <= 0) {
+        return redirect()->back()->with('error', 'No commission available for redemption.');
+    }
+    
+    // Create redemption request (you need a redemption_requests table)
+    if (!Schema::hasTable('redemption_requests')) {
+        Schema::create('redemption_requests', function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('staff_id');
+            $table->decimal('amount', 10, 2)->default(0);
+            $table->integer('commission_count')->default(0);
+            $table->string('status')->default('pending'); // pending, approved, rejected, paid
+            $table->text('notes')->nullable();
+            $table->timestamps();
+            
+            $table->foreign('staff_id')->references('userID')->on('users')->onDelete('cascade');
+        });
+    }
+    
+    DB::table('redemption_requests')->insert([
+        'staff_id' => auth()->id(),
+        'commission_count' => $totalCommissionValue,
+        'amount' => $totalCommissionValue * 10, // Example: RM10 per commission
+        'status' => 'pending',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    
+    return redirect()->back()->with('success', 'Redemption request submitted! Admin will process it shortly.');
+}
+
+
 }
