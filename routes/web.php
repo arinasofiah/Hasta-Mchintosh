@@ -208,6 +208,15 @@ Route::get('/test-mailtrap', function () {
     }
 });
 
+// Commission routes
+Route::middleware(['auth'])->group(function () {
+    Route::post('/staff/commission/add', [AdminController::class, 'addCommission'])->name('staff.commission.add');
+    Route::get('/staff/commission/{id}/edit', [AdminController::class, 'editCommission'])->name('staff.commission.edit');
+    Route::put('/staff/commission/{id}', [AdminController::class, 'updateCommission'])->name('staff.commission.update');
+    Route::delete('/staff/commission/{id}', [AdminController::class, 'destroyCommission'])->name('staff.commission.destroy');
+    Route::post('/staff/bank/update', [AdminController::class, 'updateBankDetails'])->name('staff.bank.update');
+    Route::post('/staff/redemption/request', [AdminController::class, 'requestRedemption'])->name('staff.redemption.request');
+});
 
 Route::get('/pickup/form/{bookingID}', [PickupController::class, 'form'])->name('pickup.form');
 Route::get('/return/form/{bookingID}', [ReturnController::class, 'showForm'])->name('return.form');

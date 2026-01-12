@@ -139,6 +139,9 @@
             <img id="pfp" src="{{ asset('img/racc_icon.png') }}">
             <div id="profile-dropdown">
                 @auth
+                 @if(Auth::user()->userType === 'staff')
+                          <a href="{{ route('admin.profile') }}" class="dropdown-item">My Profile</a>
+                        @endif
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="dropdown-item">Logout</button>

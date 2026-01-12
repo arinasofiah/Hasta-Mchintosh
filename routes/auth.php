@@ -52,7 +52,8 @@ Route::middleware('auth')->group(function () {
         
         Route::get('/customers', [AdminController::class, 'customers'])->name('admin.customers');
         Route::put('/customers/{id}', [AdminController::class, 'updateCustomer'])->name('admin.customers.update');
-        
+         Route::get('/profile', [AdminController::class, 'profile'])->name('profile');
+
        // Staff management routes
     Route::get('/staff', [AdminController::class, 'staff'])->name('admin.staff');
     Route::get('/staff/create', [AdminController::class, 'createStaff'])->name('admin.staff.create');
@@ -61,6 +62,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('/staff/{id}', [AdminController::class, 'destroyStaff'])->name('admin.staff.destroy');
     Route::post('/staff/{id}/resend-invitation', [AdminController::class, 'resendStaffInvitation'])->name('admin.staff.resendInvitation');
     Route::post('/staff/{id}/cancel-invitation', [AdminController::class, 'cancelStaffInvitation'])->name('admin.staff.cancelInvitation');
+});
+
+// For admin/staff routes
+Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/profile', [AdminController::class, 'profile'])->name('profile');
+    // Add other admin routes as needed
 });
 
 // Public routes for staff registration (no auth required)
