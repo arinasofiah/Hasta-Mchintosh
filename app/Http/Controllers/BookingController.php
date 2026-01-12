@@ -344,7 +344,7 @@ class BookingController extends Controller
 
         // BOOKING
         $booking = new Bookings();
-        $booking->userID = auth()->id(); // ✅ FIXED
+        $booking->userID = auth()->id(); 
         $booking->vehicleID = $vehicle->vehicleID;
         $booking->startDate = $request->pickup_date;
         $booking->endDate = $request->return_date;
@@ -374,11 +374,11 @@ class BookingController extends Controller
 
         $booking->save();
 
-        // PAYMENT (COMPLETED)
+        // PAYMENT
         Payment::create([
             'bookingID' => $booking->bookingID,
-            'bank_name' => $request->bank_name,
-            'bank_owner_name' => $request->bank_owner_name,
+            'bankName' => $request->bank_name,
+            'bankOwnerName' => $request->bank_owner_name,
             'amount' => $request->payAmount === 'deposit' ? 50 : ($finalPrice + 50),
             'paymentType' => $request->payAmount,
             'paymentStatus' => 'completed',
