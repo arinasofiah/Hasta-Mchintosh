@@ -94,7 +94,7 @@ class PickUpController extends Controller
             // Save as a JSON string: ["path1.jpg", "path2.jpg"]
             $return->trafficTicketPhoto = json_encode($paths);
         }
-
+        $pickup->pickupComplete = true;
         $pickup->save();
        return redirect('/customer/customer/bookings')->with('showModal', true);
     }

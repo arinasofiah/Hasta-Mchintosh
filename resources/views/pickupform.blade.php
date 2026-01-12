@@ -80,7 +80,7 @@
         </div>
 
         <div class="pickup_form">
-            @if(!$pickup->photo_front)
+            @if(!$pickup->pickupComplete)
             <form action="{{ route('pickup.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="pickupID" value="{{ $pickup->pickupID }}">
@@ -94,24 +94,28 @@
                 <div class="photo-grid">
                     <div class="mini-drop-zone" onclick="document.getElementById('imgFront').click()">
                         <p><strong>Front View</strong></p>
+                        <span class="error-msg" id="err_photo_front">Required</span>
                         <img src="{{ asset('img/car_sides/front.png') }}" class="placeholder-img" id="iconFront">
                         <input type="file" id="imgFront" name="photo_front" accept="image/*" hidden onchange="preview(this, 'pFront', 'iconFront')">
                         <img id="pFront" class="preview-img">
                     </div>
                     <div class="mini-drop-zone" onclick="document.getElementById('imgBack').click()">
                         <p><strong>Back View</strong></p>
+                        <span class="error-msg" id="err_photo_front">Required</span>
                         <img src="{{ asset('img/car_sides/back.png') }}" class="placeholder-img" id="iconBack">
                         <input type="file" id="imgBack" name="photo_back" accept="image/*" hidden onchange="preview(this, 'pBack','iconBack')">
                         <img id="pBack" class="preview-img">
                     </div>
                     <div class="mini-drop-zone" onclick="document.getElementById('imgLeft').click()">
                         <p><strong>Left Side</strong></p>
+                        <span class="error-msg" id="err_photo_front">Required</span>
                         <img src="{{ asset('img/car_sides/left.png') }}" class="placeholder-img" id="iconLeft">
                         <input type="file" id="imgLeft" name="photo_left" accept="image/*" hidden onchange="preview(this, 'pLeft','iconLeft')">
                         <img id="pLeft" class="preview-img">
                     </div>
                     <div class="mini-drop-zone" onclick="document.getElementById('imgRight').click()">
                         <p><strong>Right Side</strong></p>
+                        <span class="error-msg" id="err_photo_front">Required</span>
                         <img src="{{ asset('img/car_sides/right.png') }}" class="placeholder-img" id="iconRight">
                         <input type="file" id="imgRight" name="photo_right" accept="image/*" hidden onchange="preview(this, 'pRight','iconRight')">
                         <img id="pRight" class="preview-img">
@@ -124,6 +128,7 @@
                         Terms and Conditions
                     </a>
                 </p>
+                <span class="error-msg" id="err_sig_group" style="margin-left: 10px;">Please provide either a signature or a signed document.</span>
                 <div class="signature-section" style="display: flex; gap: 5px; align-items: flex-start; margin-top: 10px;">
                     <div style="flex: 1;">
                         <canvas id="signature-pad"></canvas>
@@ -520,32 +525,31 @@ function updateTotals() {
 }
 
 document.getElementById('savePickupBtn').addEventListener('click', function() {
-    const btn = this;
-    const form = btn.closest('form');
-    const formData = new FormData(form);
-
-    // Disable button to prevent double clicks
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-
-    // Submit via AJAX
-    fetch(form.action, {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('input[name="_csrf"]')?.value || '{{ csrf_token() }}'
+    let isValid = true;
+    
+    // Check Photos
+    ['imgFront', 'imgBack', 'imgLeft', 'imgRight'].forEach(id => {
+        const input = document.getElementById(id);
+        if (!input.files.length) {
+            isValid = false;
+            input.closest('.mini-drop-zone').classList.add('field-error');
         }
-    })
-    .then(response => {
-        var myModal = new bootstrap.Modal(document.getElementById('pickupSuccessModal'));
-        myModal.show();
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Something went wrong. Please try again.');
-        btn.disabled = false;
-        btn.innerHTML = 'Save Pick Up';
     });
+
+    // Check Signature OR File
+    const hasCanvas = document.getElementById('signature-input').value.length > 0;
+    const hasFile = document.getElementById('imgSigDoc').files.length > 0;
+
+    if (!hasCanvas && !hasFile) {
+        isValid = false;
+        document.getElementById('sig_area_wrapper').classList.add('field-error');
+        document.getElementById('err_sig_group').style.display = 'block';
+    }
+
+    if (isValid) {
+        // Trigger your fetch/AJAX call here
+        this.form.submit(); // Or use your existing Fetch logic
+    }
 });
 </script>
 </body>
