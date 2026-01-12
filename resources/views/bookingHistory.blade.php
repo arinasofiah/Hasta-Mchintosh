@@ -185,7 +185,7 @@
                                             </a>
                                             
                                             {{-- Return Button --}}
-                                            @if(optional($booking->pickup)->pickupComplete)
+                                            @if($booking->pickup?->pickupComplete ?? false)
                                                 <a href="{{ route('return.form', ['bookingID' => $booking->bookingID]) }}" 
                                                 class="btn btn-warning btn-sm return-btn"
                                                 title="Process vehicle return">

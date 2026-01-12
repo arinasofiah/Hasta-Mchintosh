@@ -363,11 +363,6 @@ public function getIsFullyPaidAttribute()
         return $this->hasOne(PickUp::class, 'bookingID', 'bookingID');
     }
 
-    public function getIsPickupCompletedAttribute()
-    {
-        return (bool) optional($this->pickup)->pickupComplete;
-    }
-
     public function returnCar()
     {
         return $this->hasOne(ReturnCar::class, 'bookingID', 'bookingID')

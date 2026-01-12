@@ -554,7 +554,8 @@ class BookingController extends Controller
 
                 $booking->pickupDateTime = "$pickupDate $pickupTime";
                 $booking->returnDateTime = "$returnDate $returnTime";
-                
+                $booking->isPickupCompleted = $booking->pickup?->pickupComplete ?? false;
+
                 return $booking;
             });
 
