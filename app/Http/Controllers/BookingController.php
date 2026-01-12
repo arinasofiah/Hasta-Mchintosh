@@ -542,8 +542,8 @@ class BookingController extends Controller
             $booking->remainingBalance = $remainingBalance;
             $booking->isFullyPaid = $remainingBalance <= 0;
             $booking->pay_amount_type = $paymentType;
-            $booking->bank_name = $bankName;
-            $booking->bank_owner_name = $bankOwnerName;
+            $booking->bank_name = $bank_name;
+            $booking->bank_owner_name = $bank_owner_name;
             $booking->depositAmount = $depositAmount;
             
             // Build datetime strings using related models
