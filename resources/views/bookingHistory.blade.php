@@ -185,10 +185,10 @@
                                             </a>
                                             
                                             {{-- Return Button --}}
-                                            @if($isCurrent)
+                                            @if($booking->isPickupCompleted && !$isUpcoming)
                                                 <a href="{{ route('return.form', ['bookingID' => $booking->bookingID]) }}" 
-                                                   class="btn btn-warning btn-sm return-btn"
-                                                   title="Process vehicle return">
+                                                class="btn btn-warning btn-sm return-btn"
+                                                title="Process vehicle return">
                                                     <i class="fas fa-undo"></i> Return
                                                 </a>
                                             @endif
