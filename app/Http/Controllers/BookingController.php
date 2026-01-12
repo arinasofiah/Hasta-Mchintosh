@@ -498,32 +498,31 @@ public function showPaymentForm(Request $request)
                 ->sortByDesc('paymentDate')
                 ->first();
             
-            $paymentType = $latestPayment ? $latestPayment->paymentType : null;
-            $bankName = $latestPayment ? $latestPayment->bankName : null;
-            $bankOwnerName = $latestPayment ? $latestPayment->bankOwnerName : null;
+            // Use booking's pay_amount_type if no payment found
+            $paymentType = $latestPayment ? $latestPayment->paymentType : $booking->pay_amount_type;
+            $bankName = $latestPayment ? $latestPayment->bankName : $booking->bank_name;
+            $bankOwnerName = $latestPayment ? $latestPayment->bankOwnerName : $booking->bank_owner_name;
             
             // Calculate amounts correctly
             $rentalPrice = $booking->totalPrice ?? 0;
-            $depositAmount = 50;
+            $depositAmount = 50; // Fixed deposit amount
             
-            // TOTAL COST depends on payment type
+            // Calculate like the frontend expects
+            // Total Cost is ALWAYS rental + RM50 deposit
+            $totalCost = $rentalPrice + $depositAmount;
+            
+            // Calculate remaining balance based on payment type
             if ($paymentType == 'deposit') {
-                // For deposit payments: Total Cost = Rental + Deposit
-                $totalCost = $rentalPrice + $depositAmount;
-                
-                // Remaining balance is the rental portion if deposit is paid
-                $remainingBalance = $rentalPrice;
-                
-                // Check if deposit is actually paid
-                $depositPaid = $totalPaid >= $depositAmount;
-                if (!$depositPaid) {
-                    // Deposit not paid yet, customer owes deposit + rental
-                    $remainingBalance = $totalCost - $totalPaid;
-                }
-            } else {
-                // For full or remaining payments: Total Cost = Rental + Deposit
-                $totalCost = $rentalPrice + $depositAmount;
+                // For deposit payments: customer owes rental portion after paying RM50
+                // They might have paid more than RM50 (partial payment of rental)
+                // So remaining = totalCost - totalPaid
                 $remainingBalance = max(0, $totalCost - $totalPaid);
+            } elseif ($paymentType == 'full') {
+                // For full payments: remaining = totalCost - totalPaid
+                $remainingBalance = max(0, $totalCost - $totalPaid);
+            } else {
+                // No payment type or other type: full amount due
+                $remainingBalance = $totalCost;
             }
             
             // Add dynamic properties
@@ -548,8 +547,6 @@ public function showPaymentForm(Request $request)
             return $booking;
         });
 
-    // Rest of your categorization logic...
-
     $now = Carbon::now();
 
     $active = $bookings->filter(function($booking) use ($now) {
@@ -571,4 +568,5 @@ public function showPaymentForm(Request $request)
 
     return view('bookingHistory', compact('active', 'pending', 'completed', 'cancelled'));
 }
+
 }
