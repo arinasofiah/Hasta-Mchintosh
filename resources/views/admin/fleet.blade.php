@@ -101,7 +101,7 @@
         @endif
 
         <div class="header-flex">
-            <h2>Vehicles Management</h2>
+            <h2>Fleet Management</h2>
             <a href="{{ route('admin.vehicles.create') }}" class="btn btn-success" style="border-radius: 20px; background-color: #1a8f36;">
                 + Add New 
             </a>
