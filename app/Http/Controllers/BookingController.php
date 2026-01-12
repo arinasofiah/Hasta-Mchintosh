@@ -49,7 +49,6 @@ class BookingController extends Controller
         }
         
         $totalPrice = $durationDays * $vehicle->pricePerDay;
-        $totalPrice = $durationDays * $vehicle->pricePerDay;
 
         $user = Auth::user();
         $vouchers = [];
