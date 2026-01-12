@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Auth; 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Models\Vehicles;
 use App\Models\Bookings;
 use App\Models\PickUp;
@@ -37,15 +38,16 @@ class BookingController extends Controller
         $start = Carbon::parse("$pickupDate $pickupTime");
         $end = Carbon::parse("$returnDate $returnTime");
         $durationHours = $end->diffInHours($start);
-        $durationDays = floor($durationHours / 24);
-        $remainingHours = $durationHours % 24;
-
-        if ($durationHours < 1) {
-            $durationHours = 1;
+        
+        // FIX: Use ceil() instead of floor() to round up partial days
+        $durationDays = ceil($durationHours / 24);
+        
+        // Ensure minimum 1 day for any booking
+        if ($durationDays < 1) {
+            $durationDays = 1;
         }
         
-        // Calculate price: days + hours
-        $totalPrice = ($durationDays * $vehicle->pricePerDay) + ($remainingHours * ($vehicle->pricePerHour ?? 0));
+        $totalPrice = $durationDays * $vehicle->pricePerDay;
 
         return view('bookingform', [
             'vehicle' => $vehicle,
@@ -61,32 +63,71 @@ class BookingController extends Controller
 
     public function checkPromotion(Request $request)
     {
-        $bookingDuration = $request->input('duration'); 
-        $amount = $request->amount;
+        try {
+            $duration = $request->input('duration');
+            $amount = $request->input('amount');
+            $vehicleID = $request->input('vehicleID');
 
-        $promotion = Promotion::where('applicableDays', '<=', $bookingDuration)
-            ->orderBy('discountValue', 'desc')
-            ->first();
+            \Illuminate\Support\Facades\Log::info("DEBUG CHECK: Duration={$duration}, Amount={$amount}, VehicleID={$vehicleID}");
 
-        if ($promotion) {
-            if ($promotion->discountType == 'percentage') {
-                $discount = ($amount * $promotion->discountValue) / 100;
-            } else {
-                $discount = $promotion->discountValue;
+            if (!$vehicleID) {
+                throw new \Exception("Vehicle ID is missing from the request!");
             }
 
+            $vehicle = \App\Models\Vehicles::find($vehicleID);
+            if (!$vehicle) {
+                throw new \Exception("Vehicle found in DB is NULL for ID: {$vehicleID}");
+            }
+
+            \Illuminate\Support\Facades\Log::info("DEBUG CHECK: Vehicle Found -> " . $vehicle->model);
+
+            $promotion = \App\Models\Promotion::where('applicableDays', '<=', $duration)
+                ->where(function($query) use ($vehicle) {
+                    $query->where('applicableModel', 'All')
+                          ->orWhere('applicableModel', $vehicle->model);
+                })
+                ->orderBy('discountValue', 'desc')
+                ->first();
+
+            if ($promotion) {
+                \Illuminate\Support\Facades\Log::info("DEBUG CHECK: Promo Match -> " . $promotion->title);
+                
+                $discount = 0;
+                if ($promotion->discountType == 'percentage') {
+                    $discount = $amount * ($promotion->discountValue / 100);
+                } else {
+                    $discount = $promotion->discountValue;
+                }
+
+                return response()->json([
+                    'hasPromotion' => true,
+                    'discount' => min($discount, $amount),
+                    'promoID' => $promotion->promoID,
+                    'message' => 'Applied: ' . $promotion->title,
+                    'debug_info' => 'Success'
+                ]);
+            }
+
+            \Illuminate\Support\Facades\Log::info("DEBUG CHECK: No promo matched.");
             return response()->json([
-                'hasPromotion' => true,
-                'promoID' => $promotion->promoID,
-                'discount' => $discount,
-                'message' => 'Applied: ' . $promotion->title
+                'hasPromotion' => false, 
+                'discount' => 0, 
+                'debug_info' => 'No rules matched your criteria (Duration: '.$duration.')'
+            ]);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("CHECK PROMOTION CRASHED: " . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error($e->getTraceAsString());
+
+            return response()->json([
+                'hasPromotion' => false,
+                'discount' => 0,
+                'error' => true,
+                'message' => 'CRITICAL ERROR: ' . $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
             ]);
         }
-
-        return response()->json([
-            'hasPromotion' => false,
-            'discount' => 0
-        ]);
     }
 
     public function showPaymentForm(Request $request)
@@ -229,38 +270,36 @@ class BookingController extends Controller
 
     public function validateVoucher(Request $request)
     {
-        $code = $request->code;
+        $code = $request->input('code');
+        $vehicleID = session('pending_booking.vehicleID') ?? $request->input('vehicleID'); // We need vehicle to calc free hours
         
         $voucher = Voucher::where('voucherCode', $code)
-                          ->where('userID', Auth::id())
-                          ->first();
+            ->where('isUsed', 0)
+            ->where('expiryTime', '>=', now()->timestamp) // Assuming expiryTime is stored as timestamp per your model
+            ->first();
 
         if (!$voucher) {
-            return response()->json([
-                'valid' => false,
-                'message' => 'Invalid Voucher Code'
-            ]);
+            return response()->json(['valid' => false, 'message' => 'Invalid or expired voucher.']);
         }
 
-        if ($voucher->isUsed) {
-            return response()->json([
-                'valid' => false,
-                'message' => 'This voucher has already been used'
-            ]);
-        }
+        // Calculate Discount Amount
+        $discountAmount = 0;
 
-        if ($voucher->expiryTime < time()) {
-            return response()->json([
-                'valid' => false,
-                'message' => 'This voucher has expired'
-            ]);
+        if ($voucher->voucherType == 'cash_reward') {
+            $discountAmount = $voucher->value;
+        } elseif ($voucher->voucherType == 'free_hour') {
+            // If it's free hours, we need the vehicle price per hour
+            $vehicle = Vehicles::find($vehicleID);
+            if ($vehicle) {
+                $discountAmount = $voucher->value * $vehicle->pricePerHour;
+            }
         }
 
         return response()->json([
             'valid' => true,
-            'message' => 'Voucher Applied Successfully!',
-            'amount' => $voucher->value,
-            'voucher_id' => $voucher->voucherID
+            'voucher_id' => $voucher->voucherCode,
+            'amount' => $discountAmount,
+            'message' => 'Voucher Applied: ' . ucfirst(str_replace('_', ' ', $voucher->voucherType))
         ]);
     }
 
@@ -332,15 +371,30 @@ class BookingController extends Controller
             // Total before discounts
             $totalBeforeDiscounts = $baseRentalPrice + $deliveryCharge;
             
-            // Get promotion discount if any
-            $promotionDiscount = floatval($request->input('promotion_discount', 0));
-            
-            // Get voucher discount if any
+            $promoDiscount = 0;
+            if ($request->promo_id) {
+                $promo = Promotion::find($request->promo_id);
+                if ($promo) {
+                    if ($promo->discountType == 'percentage') {
+                        $promoDiscount = $basePrice * ($promo->discountValue / 100);
+                    } else {
+                        $promoDiscount = $promo->discountValue;
+                    }
+                }
+            }
             $voucherDiscount = 0;
-            if ($request->input('voucher_id')) {
-                $voucher = Voucher::find($request->input('voucher_id'));
-                if ($voucher && !$voucher->isUsed) {
-                    $voucherDiscount = floatval($voucher->value);
+            if ($request->voucher_id) {
+                $voucher = Voucher::where('voucherCode', $request->voucher_id)->where('isUsed', 0)->first();
+                if ($voucher) {
+                    if ($voucher->voucherType == 'cash_reward') {
+                        $voucherDiscount = $voucher->value;
+                    } elseif ($voucher->voucherType == 'free_hour') {
+                        $voucherDiscount = $voucher->value * $vehicle->pricePerHour;
+                    }
+                    
+                    // Mark voucher as used
+                    $voucher->isUsed = 1;
+                    $voucher->save();
                 }
             }
             
