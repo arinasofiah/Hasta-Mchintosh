@@ -159,6 +159,9 @@
     <a href="{{ route('admin.reporting') }}" class="nav-item">Reporting</a>
     <a href="{{ route('admin.fleet') }}" class="nav-item">Fleet</a> 
     <a href="{{ route('admin.customers') }}" class="nav-item">Customer</a>
+    @if(Auth::user()->userType === 'admin')
+        <a href="{{ route('admin.staff') }}" class="nav-item">Staff</a>
+    @endif
     <a href="{{ route('admin.staff') }}" class="nav-item">Staff</a>
     <a href="{{ route('admin.promotions') }}" class="nav-item">Promotions</a>
 </div>

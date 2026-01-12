@@ -119,11 +119,10 @@
                 </div>
 
                 <div id="btn_div"> 
-                    <button class="btn-primary" {{ $onlyDepositPaid ? 'disabled style=opacity:0.5;' : '' }}>Save Pick Up</button>
+                    <button type="button" id="savePickupBtn" class="btn-primary" {{ $onlyDepositPaid ? 'disabled style=opacity:0.5;' : '' }}>Save Pick Up</button>
                 </div>
             </form>
             @else
-        {{-- SHOW TILE: Pickup is finished, show a summary tile --}}
         <div class="completed-tile" style="background: #f8f9fa; padding: 15px; border-radius: 15px; border-left: 5px solid #28a745; margin-bottom: 20px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span><i class="fas fa-check-circle text-success"></i> <strong>Pickup Completed</strong></span>
@@ -248,7 +247,6 @@
         </div>
         </form>
         @else
-                {{-- STEP 3: RETURN IS DONE, SHOW SUMMARY --}}
                 <div class="completed-tile return-done" style="background: #f8f9fa; padding: 15px; border-radius: 15px; border-left: 5px solid #28a745; margin-bottom: 20px;">
                         <span><i class="fas fa-check-circle text-success"></i> <strong>Return completed</strong></span>
                 </div>
@@ -257,12 +255,12 @@
                         <div class="fee-header">Payment Summary</div>
     
                         <div class="fee-row">
-                            <span class="fee-label">Late Return Fee</span>
+                            <span class="fee-label">Late Return Fee (50 RM for every 30min)</span>
                             <span class="fee-value">RM {{ number_format($return->late_fee, 2) }}</span>
                         </div>
 
                         <div class="fee-row">
-                            <span class="fee-label">Refuel Surcharge</span>
+                            <span class="fee-label">Refuel Surcharge (50 RM per 10%) </span>
                             <span class="fee-value">RM {{ number_format($return->fuel_fee, 2) }}</span>
                         </div>
 
@@ -274,13 +272,12 @@
                         </div>
                     </div>
                 @endif
-                </div> {{-- End of return_form --}}
-            @endif {{-- End of pickup check --}}
-        </div> {{-- End of pickup_form --}}
-    </div> {{-- End of pickup-layout --}}
-</div> {{-- End of container --}}
-</div> {{-- End of body --}}        
-
+                </div>
+            @endif 
+        </div>
+    </div>
+</div>
+</div>
 
 <div class="modal fade" id="tncModal" tabindex="-1" aria-labelledby="tncModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -302,21 +299,37 @@
     </div>
 </div>
 
+<div class="modal fade" id="pickupSuccessModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 15px; border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">
+            <div class="modal-body text-center" style="padding: 30px;">
+                <div style="color: #28a745; font-size: 50px; margin-bottom: 15px;">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h4 style="font-weight: 700;">Pickup Confirmed!</h4>
+                <p class="text-muted">Your vehicle pickup details have been successfully recorded.</p>
+                
+                <div class="d-grid gap-2 mt-4">
+                    <a href="http://127.0.0.1:8000/customer/customer/bookings" class="btn btn-primary" style="background-color: #CB3737; border: none; padding: 10px; border-radius: 8px;">
+                        Go to Booking History
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
     function preview(input, previewId, placeholderId) {
     if (input.files && input.files[0]) {
         var reader = new FileReader();
         reader.onload = function(e) {
-            // Show the actual photo
             let img = document.getElementById(previewId);
             img.src = e.target.result;
             img.style.display = 'block';
             
-            // Hide the placeholder outline
             document.getElementById(placeholderId).style.display = 'none';
             
-            // Optional: Change text color to show success
             input.parentElement.querySelector('p').style.color = '#CB3737';
         }
         reader.readAsDataURL(input.files[0]);
@@ -329,13 +342,12 @@
     const clearBtn = document.getElementById('clear-signature');
     const ctx = canvas.getContext('2d');
 
-    // 1. Match canvas resolution to its display size
     function resizeCanvas() {
         const ratio = Math.max(window.devicePixelRatio || 1, 1);
         canvas.width = canvas.offsetWidth * ratio;
         canvas.height = canvas.offsetHeight * ratio;
         ctx.scale(ratio, ratio);
-        ctx.strokeStyle = "#333"; // Ink color
+        ctx.strokeStyle = "#333";
         ctx.lineWidth = 2;
         ctx.lineCap = "round";
     }
@@ -345,7 +357,6 @@
 
     let drawing = false;
 
-    // 2. Coordinate calculation helper
     function getXY(e) {
         const rect = canvas.getBoundingClientRect();
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -356,7 +367,6 @@
         };
     }
 
-    // 3. Drawing Events
     function start(e) {
         drawing = true;
         const pos = getXY(e);
@@ -376,22 +386,18 @@
     function stop() {
         if (drawing) {
             drawing = false;
-            // Transfer canvas data to hidden input
             input.value = canvas.toDataURL("image/png");
         }
     }
 
-    // Mouse listeners
     canvas.addEventListener('mousedown', start);
     canvas.addEventListener('mousemove', move);
     window.addEventListener('mouseup', stop);
 
-    // Touch listeners (for Mobile/iPad)
     canvas.addEventListener('touchstart', start, { passive: false });
     canvas.addEventListener('touchmove', move, { passive: false });
     canvas.addEventListener('touchend', stop);
 
-    // Clear function
     clearBtn.addEventListener('click', function() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         input.value = "";
@@ -404,7 +410,6 @@ function toggleTicketBox(radio) {
         ticketBox.style.display = 'block';
     } else {
         ticketBox.style.display = 'none';
-        // Optional: Clear the file input if they switch back to "No"
         document.getElementById('imgTicket').value = "";
         document.getElementById('pTicket').style.display = "none";
         document.getElementById('iconTicket').style.display = "block";
@@ -414,10 +419,10 @@ function toggleTicketBox(radio) {
 function previewFileNames(input, listId, iconId) {
         const listContainer = document.getElementById(listId);
         const icon = document.getElementById(iconId);
-        listContainer.innerHTML = ""; // Clear existing list
+        listContainer.innerHTML = "";
 
         if (input.files && input.files.length > 0) {
-            icon.style.display = 'none'; // Hide plus icon
+            icon.style.display = 'none';
             for (let i = 0; i < input.files.length; i++) {
                 const nameItem = document.createElement("div");
                 nameItem.style.cssText = "padding:4px 8px; margin-bottom:4px; background:#f0f0f0; border-radius:5px; border-left:3px solid #CB3737;";
@@ -442,7 +447,7 @@ function previewFileNames(input, listId, iconId) {
         const diff = actualMinutes - scheduledMinutes;
 
         if (diff <= 0) return 0;
-        return Math.ceil(diff / 30) * 50; // RM 50 per 30 mins
+        return Math.ceil(diff / 30) * 50;
     }
     const fuelInput = document.getElementById('fuel');
         const timeInput = document.getElementById('ac_ret_time');
@@ -451,12 +456,10 @@ function previewFileNames(input, listId, iconId) {
         const scheduledTime = "{{ $return->returnTime }}";
 
         function updateTotals() {
-            // 1. Calculate Late Fee
             const lateFee = calculateLateFee(scheduledTime, timeInput.value);
             document.getElementById('late-fee-display').innerText = `RM ${lateFee.toFixed(2)}`;
             document.getElementById('late_fee_input').value = lateFee;
 
-            // 2. Calculate Fuel Fee (Example: RM 50 per 10% missing)
             const currentFuel = parseFloat(fuelInput.value) || pickupFuel;
             let fuelFee = 0;
             if (currentFuel < pickupFuel) {
@@ -465,7 +468,6 @@ function previewFileNames(input, listId, iconId) {
             document.getElementById('fuel-fee-display').innerText = `RM ${fuelFee.toFixed(2)}`;
             document.getElementById('fuel_fee_input').value = fuelFee;
 
-            // 3. Grand Total
             const total = lateFee + fuelFee;
             document.getElementById('total_fee_input').value = total;
         }
@@ -482,11 +484,41 @@ function updateTotals() {
     }
     const total = lateFee + fuelFee;
 
-    // Update hidden inputs for DB submission
     if(document.getElementById('late_fee_input')) document.getElementById('late_fee_input').value = lateFee;
     if(document.getElementById('fuel_fee_input')) document.getElementById('fuel_fee_input').value = fuelFee;
     if(document.getElementById('total_fee_input')) document.getElementById('total_fee_input').value = total;
 }
+
+document.getElementById('savePickupBtn').addEventListener('click', function() {
+    const btn = this;
+    const form = btn.closest('form');
+    const formData = new FormData(form);
+
+    // Disable button to prevent double clicks
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+    // Submit via AJAX
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('input[name="_csrf"]')?.value || '{{ csrf_token() }}'
+        }
+    })
+    .then(response => {
+        // Show the modal regardless of response for now, 
+        // but ideally check if(response.ok)
+        var myModal = new bootstrap.Modal(document.getElementById('pickupSuccessModal'));
+        myModal.show();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Something went wrong. Please try again.');
+        btn.disabled = false;
+        btn.innerHTML = 'Save Pick Up';
+    });
+});
 </script>
 </body>
 </html>

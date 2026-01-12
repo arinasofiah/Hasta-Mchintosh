@@ -96,7 +96,7 @@ class PickUpController extends Controller
         }
 
         $pickup->save();
-        return redirect()->back()->with('showModal', true);
+       return redirect('/customer/customer/bookings')->with('showModal', true);
     }
 
     public function storeReturn(Request $request)

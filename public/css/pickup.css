@@ -24,12 +24,12 @@ html, body {
 
 .pickup-layout {
     display: grid;
-    grid-template-columns: 35% 65%; /* Keeps your sidebar/form split */
+    grid-template-columns: 35% 65%;
     width: 100%;
     min-height: calc(100vh - 80px);
 }
 
-/* Sidebar Styling */
+
 .vehicle-card {
     background: #FFF4F4;
     padding: 40px 30px;
@@ -107,13 +107,13 @@ html, body {
     color: gray;
 }
 
-/* Form Section Styling */
+
 .pickup_form {
     padding: 30px 60px;
 }
 
 #form_name {
-    text-align: left; /* Aligned left to match content flow */
+    text-align: left;
     font-weight: bold;
     font-size: 30px;
     margin-bottom: 10px;
@@ -132,10 +132,10 @@ html, body {
     margin-top: 10px;
 }
 
-/* 4-Photo Grid CSS */
+
 .photo-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 2x2 grid */
+    grid-template-columns: repeat(2, 1fr);
     gap: 20px;
     margin-top: 20px;
     margin-bottom: 30px;
@@ -170,19 +170,17 @@ html, body {
 
 .preview-img {
     position: absolute;
-    top: 0;
-    left: 50%;           /* Move the left edge to the center of the box */
-    transform: translateX(-50%); /* Pull the image back by half its own width */
-    height: 100%;
-    width: auto;         /* Keeps original aspect ratio */
-    min-width: 100%;     /* Optional: Ensures the box is always filled */
-    object-fit: contain; /* Changed from 'cover' to 'contain' if you want to see the whole car */
-    border-radius: 10px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); 
+    height: 150px;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
     display: none; 
     z-index: 2;
 }
 
-/* Checkbox & Button Styling */
 .checkbox {
     display: flex;
     align-items: center;
@@ -228,7 +226,7 @@ html, body {
     margin-bottom: 25px;
 }
 .placeholder-img {
-    opacity: 0.5; /* Keeps them subtle like the Pickup ones */
+    opacity: 0.5;
     margin-top: 5px;
 
 }
@@ -301,17 +299,16 @@ canvas{
 }
 .return-info-grid {
     display: grid;
-    grid-template-columns: auto auto 1fr; /* 3 columns */
+    grid-template-columns: auto auto 1fr;
     gap: 20px;
     width: 100%;
-    align-items: end; /* Optional: aligns inputs to the bottom if labels have different heights */
+    align-items: end;
 }
 
-/* This forces Label to be ABOVE Input */
 .input-group {
     display: flex;
     flex-direction: column;
-    gap: 5px; /* Space between label and input */
+    gap: 5px;
 }
 
 .input-group label {
@@ -321,7 +318,7 @@ canvas{
 }
 
 .input-group input {
-    width: 210px; /* Small width for numbers/time */
+    width: 210px;
     height: 40px;
     border: 1px solid #ccc;
     border-radius: 15px;
@@ -330,12 +327,12 @@ canvas{
 }
 
 .full-width {
-    grid-column: span 3; /* Spans across all three columns */
+    grid-column: span 3;
     width: 100%;
 }
 
 #feed {
-    width: 100%; /* Now takes full width of the container */
+    width: 100%;
     border: 1px solid #ccc;
     border-radius: 15px;
     padding: 10px;
@@ -347,9 +344,9 @@ canvas{
 }
 
 #fileNameList {
-    pointer-events: none; /* Allows clicks to pass through to the parent div */
+    pointer-events: none;
     max-height: 150px;
-    overflow-y: auto; /* Adds a scrollbar if they upload too many tickets */
+    overflow-y: auto;
 }
 .fee-summary-card {
     background: #ffffff;
