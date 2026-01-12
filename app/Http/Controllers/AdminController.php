@@ -21,8 +21,8 @@ class AdminController extends Controller
     // Dashboard
     public function index()
     {
-        if (auth()->user()->userType !== 'admin') {
-            abort(403, 'Unauthorized. Admin access only.');
+        if (!in_array(auth()->user()->userType, ['admin', 'staff'])) {
+            abort(403, 'Unauthorized.');
         }
         
         // Update vehicle statuses first
@@ -206,8 +206,8 @@ class AdminController extends Controller
     // Fleet Management
     public function fleet(Request $request)
     {
-        if (auth()->user()->userType !== 'admin') {
-            abort(403, 'Unauthorized. Admin access only.');
+        if (!in_array(auth()->user()->userType, ['admin', 'staff'])) {
+            abort(403, 'Unauthorized.');
         }
         
         // Update vehicle statuses based on current bookings
@@ -250,8 +250,8 @@ class AdminController extends Controller
     // Show create vehicle form
     public function createVehicle()
     {
-        if (auth()->user()->userType !== 'admin') {
-            abort(403, 'Unauthorized. Admin access only.');
+        if (!in_array(auth()->user()->userType, ['admin', 'staff'])) {
+            abort(403, 'Unauthorized.');
         }
         
         return view('admin.fleet_create');
@@ -260,8 +260,8 @@ class AdminController extends Controller
     // Store new vehicle
     public function storeVehicle(Request $request)
     {
-        if (auth()->user()->userType !== 'admin') {
-            abort(403, 'Unauthorized. Admin access only.');
+        if (!in_array(auth()->user()->userType, ['admin', 'staff'])) {
+            abort(403, 'Unauthorized.');
         }
         
         $validated = $request->validate([
@@ -307,8 +307,8 @@ class AdminController extends Controller
     // Update vehicle
     public function updateVehicle(Request $request, $vehicleID)
     {
-        if (auth()->user()->userType !== 'admin') {
-            abort(403, 'Unauthorized. Admin access only.');
+        if (!in_array(auth()->user()->userType, ['admin', 'staff'])) {
+            abort(403, 'Unauthorized.');
         }
         
         $vehicle = Vehicles::findOrFail($vehicleID);
@@ -354,8 +354,8 @@ class AdminController extends Controller
     // Delete vehicle
     public function destroyVehicle($vehicleID)
     {
-        if (auth()->user()->userType !== 'admin') {
-            abort(403, 'Unauthorized. Admin access only.');
+        if (!in_array(auth()->user()->userType, ['admin', 'staff'])) {
+            abort(403, 'Unauthorized.');
         }
         
         $vehicle = Vehicles::findOrFail($vehicleID);
@@ -404,8 +404,8 @@ class AdminController extends Controller
     // Customers Management
     public function customers(Request $request)
     {
-        if (auth()->user()->userType !== 'admin') {
-            abort(403, 'Unauthorized. Admin access only.');
+        if (!in_array(auth()->user()->userType, ['admin', 'staff'])) {
+            abort(403, 'Unauthorized.');
         }
         
         $status = $request->get('status', 'active');
@@ -434,8 +434,8 @@ class AdminController extends Controller
 
     public function updateCustomer(Request $request, $id)
     {
-        if (auth()->user()->userType !== 'admin') {
-            abort(403, 'Unauthorized. Admin access only.');
+        if (!in_array(auth()->user()->userType, ['admin', 'staff'])) {
+            abort(403, 'Unauthorized.');
         }
         
         $request->validate([
@@ -629,8 +629,8 @@ class AdminController extends Controller
     // Resend invitation
     public function resendStaffInvitation($id)
     {
-        if (auth()->user()->userType !== 'admin') {
-            abort(403, 'Unauthorized. Admin access only.');
+        if (!in_array(auth()->user()->userType, ['admin', 'staff'])) {
+            abort(403, 'Unauthorized.');
         }
         
         $user = User::findOrFail($id);
@@ -651,8 +651,8 @@ class AdminController extends Controller
     // Cancel invitation
     public function cancelStaffInvitation($id)
     {
-        if (auth()->user()->userType !== 'admin') {
-            abort(403, 'Unauthorized. Admin access only.');
+        if (!in_array(auth()->user()->userType, ['admin', 'staff'])) {
+            abort(403, 'Unauthorized.');
         }
         
         $user = User::findOrFail($id);
@@ -776,8 +776,8 @@ class AdminController extends Controller
     // Reporting
     public function reporting()
     {
-        if (auth()->user()->userType !== 'admin') {
-            abort(403, 'Unauthorized. Admin access only.');
+        if (!in_array(auth()->user()->userType, ['admin', 'staff'])) {
+            abort(403, 'Unauthorized.');
         }
         
         return view('admin.reporting');
@@ -786,8 +786,8 @@ class AdminController extends Controller
     // Promotions
     public function promotions()
     {
-        if (auth()->user()->userType !== 'admin') {
-            abort(403, 'Unauthorized. Admin access only.');
+        if (!in_array(auth()->user()->userType, ['admin', 'staff'])) {
+            abort(403, 'Unauthorized.');
         }
         
         return view('admin.promotions');
@@ -795,6 +795,10 @@ class AdminController extends Controller
 
     public function bookings()
     {
+        if (!in_array(auth()->user()->userType, ['admin', 'staff'])) {
+            abort(403, 'Unauthorized.');
+        }
+
         $pendingPayments = Bookings::where('bookingStatus', 'pending')->get();
 
         $pendingApprovals = Bookings::whereIn('bookingStatus', ['paid', 'pending'])->get(); 
@@ -821,6 +825,10 @@ class AdminController extends Controller
 
     public function showBooking($id)
     {
+        if (!in_array(auth()->user()->userType, ['admin', 'staff'])) {
+            abort(403, 'Unauthorized.');
+        }
+
         $booking = Bookings::with('customer', 'vehicle', 'payment')->findOrFail($id);
         return view('admin.bookings.show', compact('booking'));
     }
@@ -828,6 +836,10 @@ class AdminController extends Controller
 
     public function approvePayment($id)
     {
+        if (!in_array(auth()->user()->userType, ['admin', 'staff'])) {
+            abort(403, 'Unauthorized.');
+        }
+
         $booking = Bookings::findOrFail($id);
         $booking->update(['bookingStatus' => 'paid']); 
         
@@ -836,6 +848,10 @@ class AdminController extends Controller
 
     public function approveBooking($id)
     {
+        if (!in_array(auth()->user()->userType, ['admin', 'staff'])) {
+            abort(403, 'Unauthorized.');
+        }
+
         $booking = Bookings::findOrFail($id);
         $booking->update(['bookingStatus' => 'approved']);
         
@@ -845,6 +861,10 @@ class AdminController extends Controller
 
     public function rejectBooking($id)
     {
+        if (!in_array(auth()->user()->userType, ['admin', 'staff'])) {
+            abort(403, 'Unauthorized.');
+        }
+
         $booking = Bookings::findOrFail($id);
         $booking->update(['bookingStatus' => 'rejected']);
                 
@@ -853,6 +873,10 @@ class AdminController extends Controller
 
     public function completeReturn($id)
     {
+        if (!in_array(auth()->user()->userType, ['admin', 'staff'])) {
+            abort(403, 'Unauthorized.');
+        }
+
         $booking = Bookings::findOrFail($id);
         $booking->update(['bookingStatus' => 'completed']);
         

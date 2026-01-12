@@ -102,6 +102,17 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::post('/bookings/{id}/approve', [AdminController::class, 'approveBooking'])->name('admin.bookings.approve');
     Route::post('/bookings/{id}/reject', [AdminController::class, 'rejectBooking'])->name('admin.bookings.reject');
     Route::post('/bookings/{id}/complete', [AdminController::class, 'completeReturn'])->name('admin.bookings.complete');
+
+    Route::get('/customers', [AdminController::class, 'customers'])->name('admin.customers');
+    Route::put('/customers/{id}', [AdminController::class, 'updateCustomer'])->name('admin.customers.update');
+
+    Route::get('/staff', [AdminController::class, 'staff'])->name('admin.staff');
+    Route::post('/staff', [AdminController::class, 'storeStaff'])->name('admin.staff.store'); 
+    Route::put('/staff/{id}', [AdminController::class, 'updateStaff'])->name('admin.staff.update'); 
+    Route::delete('/staff/{id}', [AdminController::class, 'destroyStaff'])->name('admin.staff.destroy'); 
+    
+    Route::post('/staff/{id}/resend', [AdminController::class, 'resendStaffInvitation'])->name('admin.staff.resendInvitation');
+    Route::post('/staff/{id}/cancel', [AdminController::class, 'cancelStaffInvitation'])->name('admin.staff.cancelInvitation');
 });
 
 //  Booking routes (customer)
