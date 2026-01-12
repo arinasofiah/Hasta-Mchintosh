@@ -21,9 +21,9 @@
             <p id="car_name">{{$vehicle->model}}</p>
 
             @if($vehicle->vehiclePhoto)
-                    <img src="{{ Storage::url($vehicle->vehiclePhoto) }}"style="width: 100%; margin-bottom: 15px;" class="vehicle-image" alt="{{ $vehicle->model }}">
+                    <img src="{{ Storage::url($vehicle->vehiclePhoto) }}" style="width: 100%; margin-bottom: 15px;" class="vehicle-image" alt="{{ $vehicle->model }}">
             @else
-                    <img src="{{ asset('img/default-car.jpg') }}"style="width: 100%; margin-bottom: 15px;" class="vehicle-image" alt="Default Car">
+                    <img src="{{ asset('img/default-car.jpg') }}" style="width: 100%; margin-bottom: 15px;" class="vehicle-image" alt="Default Car">
             @endif
 
             <p id="car_det">Vehicle Details</p>
@@ -61,10 +61,6 @@
                 <input type="hidden" name="pickupID" value="{{ $pickup->pickupID }}">
                 <input type="hidden" name="bookingID" value="{{ $booking->bookingID }}">
                 <input type="hidden" name="returnID" value="{{ $return->returnID }}">
-                
-                @if($onlyDepositPaid)
-                    <div class="no-pay"><p>Before confirming Pick Up details, Please pay.</p></div>
-                @endif
 
                 <p id="form_name">Pick up vehicle form</p>
                 <p class="main_txt">Upload 4 Angle Photos</p>
@@ -123,7 +119,7 @@
                 </div>
 
                 <div id="btn_div"> 
-                    <button type="button" id="savePickupBtn" class="btn-primary" {{ $onlyDepositPaid ? 'disabled style=opacity:0.5;' : '' }}>Save Pick Up</button>
+                    <button type="button" id="savePickupBtn" class="btn-primary">Save Pick Up</button>
                 </div>
             </form>
             @else
