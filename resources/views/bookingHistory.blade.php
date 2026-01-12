@@ -178,7 +178,7 @@
                                     @if($booking->bookingStatus === 'approved' && !$isUpcoming)
                                         <div class="action-buttons" style="margin-top: 10px;">
                                             {{-- Pickup Button --}}
-                                            <a href="{{ route('pickup.form', ['bookingID' => $booking->bookingID]) }}" 
+                                            <a href="{{ url('/pickup/' . $booking->bookingID) }}"
                                                class="btn btn-primary btn-sm pickup-btn"
                                                title="Process vehicle pickup">
                                                 <i class="fas fa-car"></i> Pickup
