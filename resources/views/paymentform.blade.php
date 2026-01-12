@@ -728,6 +728,13 @@
                 <span class="info-value" id="deposit_display">RM 50.00</span>
             </div>
             
+            @if(($deliveryCharge ?? 0) > 0)
+                <div class="payment-row">
+                <span>Delivery Charge</span>
+                <span id="summary_delivery_charge_display">RM {{ number_format($deliveryCharge, 2) }}</span>
+                </div>
+                @endif
+
             <!-- Payment Summary Section -->
             <div class="payment-summary">
                 <div class="payment-row total-row">
@@ -1268,33 +1275,26 @@ function handleDrop(e) {
     uploadContainer.classList.remove('drag-over');
     const file = e.dataTransfer.files[0];
     if (file) {
-        const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(file);
-        fileInput.files = dataTransfer.files;
+        // Directly assign to fileInput — this is more reliable
+        fileInput.files = e.dataTransfer.files;
         validateAndPreview(file);
     }
-}
-
-function removeFile() {
-    fileInput.value = '';
-    previewContainer.style.display = 'none';
-    hideError();
 }
 
 function validateAndPreview(file) {
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
     if (!validTypes.includes(file.type)) {
         showError('Please select a valid image file (JPEG, JPG, PNG, or GIF)');
-        fileInput.value = '';
+        fileInput.value = ''; // Clear invalid file
         return;
     }
-    
     if (file.size > 5 * 1024 * 1024) {
         showError('File size exceeds 5MB. Please select a smaller file');
         fileInput.value = '';
         return;
     }
-    
+
+    // Preview
     const reader = new FileReader();
     reader.onload = (e) => {
         previewImage.src = e.target.result;
@@ -1302,6 +1302,11 @@ function validateAndPreview(file) {
         hideError();
     };
     reader.readAsDataURL(file);
+
+    // Important: Re-assign file to input so FormData picks it up
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+    fileInput.files = dataTransfer.files;
 }
 
 // Form Submission
