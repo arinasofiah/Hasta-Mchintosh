@@ -467,6 +467,7 @@ class AdminController extends Controller
         // Get staff users with invitation status
         $staffs = User::with(['telephone', 'staff', 'inviter'])
             ->whereIn('userType', ['staff', 'admin'])
+            ->whereNotIn('invitation_status', ['cancelled']) 
             ->orderByRaw("FIELD(invitation_status, 'pending', 'accepted', 'expired', 'cancelled', 'none')")
             ->orderBy('created_at', 'desc')
             ->get();
@@ -498,47 +499,56 @@ public function storeStaff(Request $request)
     \DB::beginTransaction();
     
     try {
-        // 1. Create the user first
+        // Generate temporary values
+        $timestamp = time();
+        $random = rand(1000, 9999);
+        
+        // Name from email
+        $emailName = explode('@', $request->email)[0];
+        $tempName = ucfirst($emailName);
+        $tempIcNumber = 'TEMP-' . $timestamp . '-' . $random;
+        
+        // Create the user
         $user = User::create([
             'email' => $request->email,
             'userType' => $request->userType,
-            'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(16)),
+            'name' => $tempName,
+            'icNumber' => $tempIcNumber,
+            'password' => \Hash::make(\Str::random(16)),
         ]);
         
-        // 2. Set up invitation
-        $user->invitation_token = \Illuminate\Support\Str::random(60);
+        // Set invitation details
+        $invitationToken = \Str::random(60);
+        
+        $user->invitation_token = $invitationToken;
         $user->invitation_sent_at = now();
         $user->invitation_expires_at = now()->addDays(7);
         $user->invitation_status = 'pending';
-        $user->invited_by = auth()->user()->userID;
+        $user->invited_by = auth()->id();
         $user->save();
         
         \DB::commit();
         
-        // 3. Generate registration URL
-        $registrationUrl = route('staff.register', ['token' => $user->invitation_token]);
+        // ✅ Generate registration URL (IMPORTANT!)
+        $registrationUrl = url('/staff/register/' . $invitationToken);
         
-        // 4. Send the email
-        \Illuminate\Support\Facades\Mail::send('emails.staff-invitation', [
-            'registrationUrl' => $registrationUrl,
-            'user' => $user,
-            'expiresAt' => $user->invitation_expires_at->format('F j, Y'),
-        ], function ($message) use ($user) {
-            $message->to($user->email)
-                    ->subject('Staff Registration Invitation - Hasta');
-        });
+        // Log for debugging
+        \Log::info('=== INVITATION SUCCESS ===');
+        \Log::info('User: ' . $user->email);
+        \Log::info('Token: ' . $invitationToken);
+        \Log::info('URL: ' . $registrationUrl);
         
+        // ✅ Return SUCCESS WITH LINK (THIS IS THE KEY LINE!)
         return redirect()->route('admin.staff')
-            ->with('success', "Invitation email sent to {$user->email}!");
+            ->with('success', "Invitation created for {$user->email}!")
+            ->with('registration_link', $registrationUrl);  // ← MUST HAVE THIS!
             
     } catch (\Exception $e) {
         \DB::rollBack();
         
-        // Log the error for debugging
-        \Log::error('Staff invitation failed: ' . $e->getMessage());
+        \Log::error('Error: ' . $e->getMessage());
         
-        // Return with error message
-        return back()->withInput()->with('error', 'Failed to send invitation: ' . $e->getMessage());
+        return back()->withInput()->with('error', 'Failed: ' . $e->getMessage());
     }
 }
 
