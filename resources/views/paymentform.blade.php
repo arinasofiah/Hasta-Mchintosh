@@ -711,6 +711,7 @@
                 <span class="info-value" id="delivery_charge_display">RM {{ number_format($deliveryCharge, 2) }}</span>
             </div>
             @endif
+
             <input type="hidden" name="delivery_charge" value="{{ $deliveryCharge ?? 0 }}">
             <input type="hidden" name="base_rental_price" value="{{ $originalRentalPrice ?? 0 }}">
 
@@ -1051,7 +1052,7 @@ const closeSuccess = document.getElementById('closeSuccess');
 
 // Payment Calculation Variables
 const FIXED_DEPOSIT = 50;
-let baseRentalPrice = {{ $originalRentalPrice ?? 0 }}; 
+let baseRentalPrice = {{ $finalSubtotal ?? 0 }}; 
 let deliveryCharge = {{ $deliveryCharge ?? 0 }}; 
 let promotionDiscount = {{ $promotionDiscount ?? 0 }};
 let currentVoucherValue = 0;
@@ -1245,6 +1246,14 @@ function updatePaymentSummary() {
     document.getElementById('total_vehicle_cost_display').textContent = 'RM ' + totalVehicleCost.toFixed(2);
 }
 
+document.querySelectorAll('input[name="payAmount"]').forEach(radio => {
+    radio.addEventListener('change', updatePaymentSummary);
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    updatePaymentSummary(); // Call once on page load
+});
+
 function handleFileSelect(e) {
     const file = e.target.files[0];
     if (file) validateAndPreview(file);
@@ -1301,9 +1310,9 @@ function validateAndPreview(file) {
     reader.readAsDataURL(file);
 }
 
-// Form Submission
-document.getElementById('paymentForm').addEventListener('submit', function(e) {
-    e.preventDefault();
+    // Form Submission
+    document.getElementById('paymentForm').addEventListener('submit', function(e) {
+        e.preventDefault();
 
     if (!termsCheckbox.checked) {
         alert('Please accept Terms and Conditions');
@@ -1374,6 +1383,7 @@ window.addEventListener('click', (e) => {
     if (e.target === termsModal) termsModal.style.display = 'none';
     if (e.target === successModal) successModal.style.display = 'none';
 });
+
 </script>
 </body>
 </html>

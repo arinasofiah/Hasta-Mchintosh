@@ -175,9 +175,10 @@ public function showPaymentForm(Request $request)
     $dateRange = $pickup->format('d M Y') . ' - ' . $return->format('d M Y');
     
     $finalSubtotal = $request->subtotal;
+    $originalRentalPrice = $finalSubtotal;
     $promotionDiscount = $request->promotionDiscount ?? 0;
     $finalTotal = $request->total;
-    $deposit = $finalTotal * 0.5; // 50% deposit
+    $deposit = 50;
 
     // ✅ 1. Get delivery charge (critical fix!)
     $deliveryCharge = $request->input('delivery_charge', 0);
@@ -244,7 +245,8 @@ public function showPaymentForm(Request $request)
         'promoDetails' => $promoDetails,
         'eligibleVouchers' => $eligibleVouchers,
         'loyaltyCard' => $loyaltyCard,
-        'deliveryCharge' => $deliveryCharge, // ✅ Now included!
+        'originalRentalPrice' => $originalRentalPrice,
+        'deliveryCharge' => $deliveryCharge,
     ]);
 }
 
