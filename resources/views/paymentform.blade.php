@@ -6,627 +6,137 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link href="{{ asset('css/header.css') }}" rel="stylesheet">
     <title>HASTA - Payment</title>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; }
+        body { font-family: 'Inter', sans-serif; background: #f5f5f5; }
         button { cursor: pointer; }
 
         /* Header */
-        #header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 20px 40px; 
-            background: #d94444; 
-            color: white; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
+        #header { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; background: #d94444; color: white; }
         #logo { height: 45px; }
-        #profile-container { 
-            width: 45px; 
-            height: 45px; 
-            border-radius: 50%; 
-            overflow: hidden; 
-            background: white; 
-        }
-        #pfp { width: 100%; height: 100%; object-fit: cover; }
-        #username { 
-            color: white; 
-            margin-left: 10px; 
-            text-decoration: none; 
+
+        #menu a {
+            margin-right: 10px;
+            background: transparent;
+            border: none;
+            color: white;
             font-weight: 600;
+            text-decoration: none;
         }
 
+        #profile-container { width: 45px; height: 45px; border-radius: 50%; overflow: hidden; background: white; }
+        #pfp { width: 100%; height: 100%; object-fit: cover; }
+        #username { color: white; margin-left: 10px; text-decoration: none; }
+
         /* Progress Steps */
-        .progress-container { 
-            max-width: 1200px; 
-            margin: 40px auto; 
-            padding: 0 20px; 
-        }
-        .steps { 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 8px; 
-            margin-bottom: 40px; 
-            flex-wrap: wrap;
-        }
+        .progress-container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        .steps { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 40px; }
+
         .step {
             display: flex;
             align-items: center;
             gap: 8px;
             padding: 12px 25px;
-            border-radius: 50px;
+            border-radius: 25px;
             font-size: 14px;
             font-weight: 600;
-            min-width: 140px;
-            text-align: center;
-            transition: all 0.3s ease;
         }
-        .step.filled { 
-            background: #d94444; 
-            color: white; 
-            border: none;
-        }
-        .step.active { 
-            border: 2px solid #d94444; 
-            color: #d94444; 
-            background: white;
-        }
-        .step-connector { 
-            width: 80px; 
-            height: 2px; 
-            background: #ddd;
-        }
+
+        .step a { text-decoration: none; color: inherit; }
+
+        .step.filled { background: #d94444; color: white; }
+        .step.active { border: 2px solid #d94444; color: #d94444; background: white; }
+        .step-connector { width: 80px; height: 2px; background: #ddd; }
 
         /* Layout */
-        .container { 
-            max-width: 1200px; 
-            margin: 0 auto 60px; 
-            padding: 0 20px;
-            display: grid; 
-            grid-template-columns: 1fr; 
-            gap: 30px;
-        }
-        @media (min-width: 992px) {
-            .container {
-                grid-template-columns: 1fr 1fr;
-                gap: 40px;
-                padding: 0 40px;
-            }
-        }
-        .section { 
-            background: white; 
-            padding: 30px; 
-            border-radius: 16px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            transition: transform 0.3s ease;
-        }
-        .section:hover {
-            transform: translateY(-2px);
-        }
-        h2 { 
-            font-size: 24px; 
-            margin-bottom: 25px; 
-            color: #333;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        h2 i {
-            color: #d94444;
-        }
+        .container { max-width: 1200px; margin: 0 auto 60px; padding: 0 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        .section { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h2 { font-size: 24px; margin-bottom: 25px; color: #333; }
 
         /* Car Info */
-        .car-info { 
-            display: flex; 
-            gap: 20px; 
-            margin-bottom: 25px; 
-            padding-bottom: 25px; 
-            border-bottom: 1px solid #eee; 
-            flex-wrap: wrap;
-        }
-        .car-image { 
-            width: 150px; 
-            height: 100px;
-            border-radius: 12px; 
-            object-fit: cover;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .car-model { 
-            font-weight: bold; 
-            color: #d94444; 
-        }
-        .car-type { 
-            font-size: 14px; 
-            color: #666; 
-            margin-bottom: 10px; 
-        }
-        .car-features { 
-            display: flex; 
-            gap: 15px; 
-            font-size: 12px; 
-            color: #666; 
-            flex-wrap: wrap;
-        }
-        .feature-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .feature-item i {
-            color: #d94444;
-            font-size: 14px;
-        }
+        .car-info { display: flex; gap: 20px; margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 25px; }
+        .car-image { width: 150px; border-radius: 8px; }
+        .car-model { font-weight: bold; color: #d94444; }
+        .car-type { font-size: 14px; color: #999; margin-bottom: 10px; }
+        .car-features { display: flex; gap: 15px; font-size: 12px; color: #666; }
 
-        .info-row { 
-            display: flex; 
-            justify-content: space-between; 
-            padding: 12px 0; 
-            border-bottom: 1px solid #f0f0f0; 
-        }
-        .info-label { 
-            color: #666; 
-            font-weight: 500; 
-        }
-        .info-value { 
-            font-weight: 600; 
-            color: #333; 
-        }
-        .discount-row { 
-            color: #28a745; 
-        }
-        .total-row { 
-            display: flex; 
-            justify-content: space-between; 
-            padding: 15px 0; 
-            font-weight: bold; 
-            font-size: 18px; 
-            margin-top: 15px;
-            border-top: 2px solid #333;
-        }
+        .info-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+        .info-label { color: #666; font-weight: 500; }
+        .info-value { font-weight: 600; color: #333; }
+        .discount-row { color: #28a745; }
+        .total-row { display: flex; justify-content: space-between; padding: 15px 0; font-weight: bold; font-size: 16px; margin-top: 10px; }
 
         /* Form */
-        .form-group { 
-            margin-bottom: 24px; 
-        }
-        label { 
-            display: block; 
-            margin-bottom: 10px; 
-            color: #333; 
-            font-weight: 600;
-            font-size: 15px;
-        }
-        .form-control {
-            width: 100%;
-            padding: 14px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            font-size: 15px;
-            transition: all 0.3s ease;
-            font-family: 'Inter', sans-serif;
-        }
-        .form-control:focus {
-            outline: none;
-            border-color: #d94444;
-            box-shadow: 0 0 0 3px rgba(217, 68, 68, 0.1);
-        }
-        select.form-control {
-            appearance: none;
-            background: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") no-repeat right 12px center/15px 12px;
-            padding-right: 40px;
-        }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
 
-        .radio-group { 
-            display: flex; 
-            gap: 20px; 
-            flex-wrap: wrap;
+        .radio-group { display: flex; gap: 20px; margin-bottom: 20px; }
+        .radio-group label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+
+        * Voucher Tabs */
+        .voucher-tabs { display: flex; gap: 10px; margin-bottom: 15px; }
+        .tab-btn { 
+            flex: 1; 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            background: white; 
+            border-radius: 5px;
+            transition: all 0.3s;
+            font-size: 14px;
         }
-        .radio-option {
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .tab-btn.active { background: #d94444; color: white; border-color: #d94444; }
+        .tab-btn:hover { background: #f5f5f5; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .voucher-item {
+            padding: 15px;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            margin-bottom: 10px;
             cursor: pointer;
-            padding: 10px 20px;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
         }
-        .radio-option:hover {
-            border-color: #d94444;
-        }
-        .radio-option input {
-            width: auto;
-        }
-        .radio-option.selected {
-            border-color: #d94444;
-            background-color: #fff5f5;
-        }
+        .voucher-item:hover { border-color: #d94444; background: #fff5f5; }
+        .voucher-item.selected { border-color: #d94444; background: #ffe6e6; }
 
         /* QR */
-        .qr-section { 
-            text-align: center; 
-            margin: 25px 0;
-            padding: 25px 0;
-            border-top: 1px solid #eee;
-            border-bottom: 1px solid #eee;
-        }
-        .qr-title {
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: #333;
-        }
-        .qr-code { 
-            width: 180px; 
-            height: 180px; 
-            border: 3px solid #d94444; 
-            border-radius: 12px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            margin: 0 auto 15px; 
-            background: white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .qr-code img { 
-            max-width: 100%; 
-            max-height: 100%; 
-        }
-        .company-name { 
-            font-weight: bold; 
-            margin-top: 10px; 
-            color: #d94444;
-            font-size: 16px;
-        }
+        .qr-section { text-align: center; margin: 25px 0; }
+        .qr-code { width: 200px; height: 200px; border: 3px solid #d94444; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 15px auto; background: white; }
+        .qr-code img { max-width: 100%; max-height: 100%; }
+        .company-name { font-weight: bold; margin-top: 10px; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
 
         /* Upload */
-<<<<<<< Updated upstream
-        .upload-container {
-            border: 2px dashed #ddd;
-            border-radius: 12px;
-            padding: 30px;
-            text-align: center;
-            background: #fafafa;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .upload-container:hover, .upload-container.drag-over {
-            border-color: #d94444;
-            background: #fff;
-        }
-        .upload-icon {
-            font-size: 48px;
-            color: #999;
-            margin-bottom: 15px;
-        }
-        .upload-text {
-            color: #666;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-        .browse-btn {
-            background: #d94444;
-            color: white;
-            border: none;
-            padding: 10px 25px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-        .browse-btn:hover {
-            background: #c23535;
-        }
-        .file-input {
-            display: none;
-        }
-        .preview-container {
-            margin-top: 20px;
-            display: none;
-        }
-        .preview-image {
-            max-width: 100%;
-            max-height: 200px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .remove-btn {
-            background: #dc3545;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-        .remove-btn:hover {
-            background: #c82333;
-        }
-        .error-message {
-            color: #dc3545;
-            font-size: 13px;
-            margin-top: 8px;
-            display: none;
-        }
-=======
-        .upload-area { 
-            border: 2px dashed #ddd; 
-            border-radius: 10px; 
-            padding: 40px; 
-            text-align: center; 
-            background: #fafafa; 
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
+        .upload-area { border: 2px dashed #ddd; border-radius: 10px; padding: 40px; text-align: center; background: #fafafa; transition: all 0.3s ease; }
         .upload-area:hover { border-color: #d94444; background: #fff; }
-        .upload-area.drag-over { border-color: #d94444; background: #fff; }
-        .browse-btn { 
-            background: #999; 
-            color: white; 
-            padding: 10px 30px; 
-            border: none; 
-            border-radius: 5px;
-            margin-top: 10px;
-        }
-        .browse-btn:hover { background: #888; }
-
-        #imagePreview { margin-top: 15px; }
-        #imagePreview img { max-width: 100%; max-height: 200px; border-radius: 8px; }
->>>>>>> Stashed changes
+        .browse-btn { background: #999; color: white; padding: 10px 30px; border: none; border-radius: 5px; }
 
         /* Terms */
-        .terms-container {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            margin: 25px 0;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 12px;
-        }
-        .terms-checkbox {
-            margin-top: 4px;
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-        .terms-text {
-            font-size: 14px;
-            line-height: 1.6;
-        }
-        .terms-link {
-            color: #d94444;
-            text-decoration: none;
-            font-weight: 600;
-        }
-        .terms-link:hover {
-            text-decoration: underline;
-        }
+        .terms { text-align: center; margin: 30px 0; display: flex; justify-content: center; align-items: center; }
+        .terms a { color: #d94444; }
 
         /* Submit */
-        .submit-btn { 
-<<<<<<< Updated upstream
-            width: 100%;
-            background: #d94444; 
-            color: white; 
-            padding: 16px; 
-            border: none; 
-            border-radius: 12px; 
-            font-size: 18px; 
-            font-weight: 700; 
-            cursor: pointer;
-            transition: background 0.3s ease;
-            box-shadow: 0 4px 12px rgba(217, 68, 68, 0.3);
-        }
-        .submit-btn:hover { 
-            background: #c23535; 
-        }
-        .submit-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
+        .submit-btn { display: block; margin: 0 auto; background: #d94444; color: white; padding: 15px 60px; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; }
+        .submit-btn:hover { background: #c23939; }
 
         /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            overflow: auto;
-        }
-        .modal-content {
-            background: white;
-            margin: 80px auto;
-            padding: 40px;
-            border-radius: 20px;
-            max-width: 500px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            animation: modalAppear 0.4s ease;
-        }
-        @keyframes modalAppear {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .modal-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: #d94444;
-            margin-bottom: 20px;
-        }
-        .modal-text {
-            margin-bottom: 30px;
-            line-height: 1.7;
-            color: #333;
-            text-align: left;
-        }
-        .modal-actions {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-        }
-        .modal-btn {
-            padding: 12px 25px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            font-size: 15px;
-            transition: all 0.3s ease;
-        }
-        .btn-primary {
-            background: #d94444;
-            color: white;
-        }
-        .btn-primary:hover {
-            background: #c23535;
-        }
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-
-        /* Voucher Tabs */
-        .voucher-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-        .tab-btn {
-            padding: 8px 16px;
-            background: #f0f0f0;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        .tab-btn:hover {
-            background: #e0e0e0;
-        }
-        .tab-btn.active {
-            background: #d94444;
-            color: white;
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-        .voucher-list {
-            max-height: 150px;
-            overflow-y: auto;
-            border: 1px solid #eee;
-            border-radius: 10px;
-            padding: 10px;
-            margin-bottom: 15px;
-        }
-        .voucher-item {
-            padding: 12px;
-            background: #f9f9f9;
-            margin-bottom: 8px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .voucher-item:hover {
-            background: #e9e9e9;
-        }
-        .voucher-item.selected {
-            background: #d94444;
-            color: white;
-        }
-        .apply-voucher-section {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .apply-voucher-section input {
-            flex: 1;
-        }
-
-        /* Payment Summary */
-        .payment-summary {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
-        }
-        .payment-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-        .payment-row:last-child {
-            border-bottom: none;
-            font-weight: bold;
-            font-size: 18px;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .header {
-                padding: 15px 20px;
-            }
-            .steps {
-                gap: 5px;
-            }
-            .step {
-                padding: 10px 15px;
-                min-width: 120px;
-                font-size: 12px;
-            }
-            .car-info {
-                flex-direction: column;
-                text-align: center;
-            }
-            .car-image {
-                width: 120px;
-                height: 80px;
-                margin: 0 auto 15px;
-            }
-            .radio-group {
-                gap: 10px;
-            }
-            .radio-option {
-                padding: 8px 15px;
-                font-size: 14px;
-            }
-            .submit-btn {
-                padding: 14px;
-                font-size: 16px;
-            }
-        }
-=======
-            display: block; 
-            margin: 0 auto; 
-            background: #d94444; 
-            color: white; 
-            padding: 15px 60px; 
-            border: none; 
-            border-radius: 5px; 
-            font-size: 16px; 
-            font-weight: bold;
-            transition: background 0.3s ease;
-        }
-        .submit-btn:hover { background: #c23939; }
-        .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
->>>>>>> Stashed changes
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        .modal-content { background: white; margin: 10% auto; padding: 30px; border-radius: 10px; max-width: 500px; }
+        .modal-content h3 { margin-bottom: 15px; color: #333; }
+        .modal-btns { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+        .modal-btn { padding: 12px 30px; border: none; border-radius: 5px; font-weight: 600; cursor: pointer; }
+        .btn-primary { background: #d94444; color: white; }
+        .btn-primary:hover { background: #c23939; }
+        .btn-secondary { background: #ddd; color: #333; }
+        .btn-secondary:hover { background: #ccc; }
     </style>
 </head>
 
@@ -634,26 +144,24 @@
 
 <!-- Header -->
 <div id="header">
-    <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}" alt="HASTA Logo">
+    <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}">
 
     <div id="menu">
-<<<<<<< Updated upstream
-        <a href="{{ url('/') }}"><button class="head_button">Home</button></a>
+
+        <button class="head_button">Home</button>
+
         <button class="head_button">Vehicles</button>
+
         <button class="head_button">Details</button>
-=======
-        <a href="#" class="head_button">Home</a>
-        <a href="#" class="head_button">Vehicles</a>
-        <a href="#" class="head_button">Details</a>
-        <a href="#" class="head_button">About Us</a>
-        <a href="#" class="head_button">Contact Us</a>
->>>>>>> Stashed changes
+        <button class="head_button">About Us</button>
+        <button class="head_button">Contact Us</button>
     </div>
 
     <div id="profile">
         <div id="profile-container">
-            <img id="pfp" src="{{ asset('img/racc_icon.png') }}" alt="Profile">
+            <img id="pfp" src="{{ asset('img/racc_icon.png') }}">
         </div>
+
         @guest
             <a id="username" href="{{ route('login') }}">Log in</a>
         @endguest
@@ -661,848 +169,151 @@
 </div>
 
 <!-- Progress Steps -->
-<div class="progress-container">
-    <div class="steps">
-<<<<<<< Updated upstream
-        <div class="step filled">
-            <i class="fas fa-car"></i>
-            <span>Vehicle</span>
+    <div class="progress-container">
+        <div class="steps">
+            <div class="step fill" id="step-vehicle"><span class="step-icon">✓</span><span>Vehicle</span></div>
+            <div class="step-connector"></div>
+            <div class="step fill" id="step-booking"><span class="step-icon">✓</span><span>Booking Details</span></div>
+            <div class="step-connector"></div>
+            <div class="step active" id="step-payment"><span class="step-icon">✓</span><span>Payment</span></div>
         </div>
-        <div class="step-connector"></div>
-        <div class="step filled">
-            <i class="fas fa-calendar-check"></i>
-            <span>Booking Details</span>
-        </div>
-        <div class="step-connector"></div>
-        <div class="step active">
-            <i class="fas fa-credit-card"></i>
-            <span>Payment</span>
-        </div>
-=======
-        <div class="step filled" id="step-vehicle"><span class="step-icon">✓</span><span>Vehicle</span></div>
-        <div class="step-connector"></div>
-        <div class="step filled" id="step-booking"><span class="step-icon">✓</span><span>Booking Details</span></div>
-        <div class="step-connector"></div>
-        <div class="step active" id="step-payment"><span class="step-icon">✓</span><span>Payment</span></div>
->>>>>>> Stashed changes
     </div>
-</div>
 
 <!-- Payment Form -->
-<form id="paymentForm" method="POST" enctype="multipart/form-data">
-    @csrf
-    <input type="hidden" name="vehicleID" value="{{ $vehicle->vehicleID }}">
-    <input type="hidden" name="pickup_date" value="{{ $pickupDate }}">
-    <input type="hidden" name="pickup_time" value="{{ $pickupTime }}">
-    <input type="hidden" name="return_date" value="{{ $returnDate }}">
-    <input type="hidden" name="return_time" value="{{ $returnTime }}">
-    <input type="hidden" name="pickupLocation" value="{{ $pickupLocation }}">
-    <input type="hidden" name="returnLocation" value="{{ $returnLocation }}">
-    <input type="hidden" name="destination" value="{{ $destination ?? '' }}">
-    <input type="hidden" name="remark" value="{{ $remark ?? '' }}">
-    <input type="hidden" name="for_someone_else" value="{{ $forSomeoneElse ?? 0 }}">
-    <input type="hidden" name="matricNumber" value="{{ $matricNumber ?? '' }}">
-    <input type="hidden" name="licenseNumber" value="{{ $licenseNumber ?? '' }}">
-    <input type="hidden" name="college" value="{{ $college ?? '' }}">
-    <input type="hidden" name="faculty" value="{{ $faculty ?? '' }}">
-    <input type="hidden" name="depoBalance" value="{{ $depoBalance ?? 0 }}">
-    <input type="hidden" name="promo_id" value="{{ $promoDetails?->promoID ?? '' }}">
-    <input type="hidden" name="voucher_id" id="selected_voucher_id" value="">
-    <input type="hidden" name="delivery_charge" value="{{ $deliveryCharge ?? 0 }}">
-    <input type="hidden" name="base_rental_price" value="{{ $originalRentalPrice ?? 0 }}">
+<form id="paymentForm" method="POST" action="{{ route('booking.confirm') }}" enctype="multipart/form-data">
+@csrf
 
-    <div class="container">
-        <!-- Order Summary -->
-        <div class="section">
-            <h2><i class="fas fa-receipt"></i> Order Summary</h2>
+<!-- Hidden Booking Data -->
+<input type="hidden" name="vehicleID" value="{{ $vehicle->vehicleID }}">
+<input type="hidden" name="pickup_date" value="{{ $pickupDate }}">
+<input type="hidden" name="pickup_time" value="{{ $pickupTime }}">
+<input type="hidden" name="return_date" value="{{ $returnDate }}">
+<input type="hidden" name="return_time" value="{{ $returnTime }}">
+<input type="hidden" name="pickupLocation" value="{{ $pickupLocation }}">
+<input type="hidden" name="returnLocation" value="{{ $returnLocation }}">
+<input type="hidden" name="destination" value="{{ $destination ?? '' }}">
+<input type="hidden" name="remark" value="{{ $remark ?? '' }}">
+<input type="hidden" name="for_someone_else" value="{{ $forSomeoneElse ?? 0 }}">
+<input type="hidden" name="matricNumber" value="{{ $matricNumber ?? '' }}">
+<input type="hidden" name="licenseNumber" value="{{ $licenseNumber ?? '' }}">
+<input type="hidden" name="college" value="{{ $college ?? '' }}">
+<input type="hidden" name="faculty" value="{{ $faculty ?? '' }}">
+<input type="hidden" name="depoBalance" value="{{ $depoBalance ?? 0 }}">
+<input type="hidden" name="promo_id" value="{{ $promoDetails?->promoID ?? '' }}">
+<input type="hidden" name="voucher_id" id="selected_voucher_id" value="">
+<input type="hidden" name="deposit_amount" id="depositInput" value="{{ $deposit }}">
+<input type="hidden" name="final_total" id="finalTotalInput" value="{{ $finalTotal }}">
 
-            <div class="car-info">
-                @if($vehicle->image)
-                    <img src="{{ asset('storage/' . $vehicle->image) }}" alt="{{ $vehicle->model }}" class="car-image">
-                @else
-                    <div class="car-image" style="background:#f0f0f0;display:flex;align-items:center;justify-content:center;color:#999;">
-                        <i class="fas fa-car" style="font-size:40px;"></i>
-                    </div>
-                @endif
+<div class="container">
 
-                <div>
-                    <h3>
-                        {{ $vehicle->model }} {{ $vehicle->year }}
-                        <span class="car-model">RM{{ number_format($vehicle->pricePerDay, 2) }}/day</span>
-                    </h3>
+    <!-- Order Summary -->
+    <div class="section">
+        <h2>Order Summary</h2>
 
-<<<<<<< Updated upstream
-                    <p class="car-type">{{ $vehicle->type ?? 'Vehicle' }}</p>
-
-                    <div class="car-features">
-                        <span class="feature-item"><i class="fas fa-user-friends"></i> {{ $vehicle->seats ?? 5 }} seats</span>
-                        <span class="feature-item"><i class="fas fa-wind"></i> {{ $vehicle->ac ? 'AC' : 'No AC' }}</span>
-                        <span class="feature-item"><i class="fas fa-cog"></i> {{ $vehicle->transmission ?? 'Auto' }}</span>
-                        <span class="feature-item"><i class="fas fa-gas-pump"></i> {{ $vehicle->fuelType ?? 'Petrol' }}</span>
-                    </div>
-=======
         <div class="car-info">
             @if($vehicle->image)
-                <img src="{{ asset('storage/' . $vehicle->image) }}" class="car-image" alt="Vehicle">
+                <img src="{{ asset('storage/' . $vehicle->image) }}" class="car-image">
             @else
                 <div class="car-image" style="background:#f0f0f0;display:flex;align-items:center;justify-content:center;color:#999;">
                     No Image
->>>>>>> Stashed changes
                 </div>
-            </div>
-
-            <div class="info-row">
-                <span class="info-label">Pickup Location</span>
-                <span class="info-value">{{ $pickupLocation }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Return Location</span>
-                <span class="info-value">{{ $returnLocation }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Rental Period</span>
-                <span class="info-value">{{ $dateRange }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Duration</span>
-                <span class="info-value">{{ $durationText }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Rental Price</span>
-                <span class="info-value" id="rental_price_display">RM {{ number_format($finalSubtotal, 2) }}</span>
-            </div>
-            
-            @if(($deliveryCharge ?? 0) > 0)
-            <div class="info-row">
-                <span class="info-label">Delivery Charge</span>
-                <span class="info-value" id="delivery_charge_display">RM {{ number_format($deliveryCharge, 2) }}</span>
-            </div>
             @endif
 
-            @if($promotionDiscount > 0)
-            <div class="info-row discount-row">
-                <span class="info-label">Promotion Discount</span>
-                <span class="info-value">- RM {{ number_format($promotionDiscount, 2) }}</span>
-            </div>
-            @endif
+            <div>
+                <h3>
+                    {{ $vehicle->model }} {{ $vehicle->year }}
+                    <span class="car-model">RM{{ number_format($vehicle->pricePerDay, 2) }}/day</span>
+                </h3>
 
-            <div class="info-row" id="voucher_discount_row" style="display:none; color: #d94444;">
-                <span class="info-label">Voucher Discount</span>
-                <span class="info-value" id="voucher_discount_display">- RM 0.00</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Fixed Deposit</span>
-                <span class="info-value" id="deposit_display">RM 50.00</span>
-            </div>
-            
-            @if(($deliveryCharge ?? 0) > 0)
-                <div class="payment-row">
-                <span>Delivery Charge</span>
-                <span id="summary_delivery_charge_display">RM {{ number_format($deliveryCharge, 2) }}</span>
-                </div>
-                @endif
+                <p class="car-type">{{ $vehicle->type ?? 'Vehicle' }}</p>
 
-            <!-- Payment Summary Section -->
-            <div class="payment-summary">
-                <div class="payment-row total-row">
-                    <span><strong>Total Vehicle Cost</strong></span>
-                    <span id="total_vehicle_cost_display">RM {{ number_format(($finalSubtotal + ($deliveryCharge ?? 0)) - $promotionDiscount + 50, 2) }}</span>
-                </div>
-                
-                <div class="payment-row">
-                    <span>
-                        Subtotal
-                        @if($promotionDiscount > 0)
-                            (After Promotion Discount)
-                        @endif
-                    </span>
-                    <span id="subtotal_display">RM {{ number_format(($finalSubtotal + ($deliveryCharge ?? 0)) - $promotionDiscount, 2) }}</span>
-                </div>
-                
-                <div class="payment-row">
-                    <span>Deposit</span>
-                    <span id="summary_deposit_display">RM 50.00</span>
-                </div>
-                
-                <div class="payment-row" id="pay_now_section">
-                    <span>Pay Now (<span id="payment_type_label">Deposit Only</span>)</span>
-                    <span id="pay_now_display">RM 50.00</span>
-                </div>
-                
-                <div class="payment-row">
-                    <span>Remaining Balance</span>
-                    <span id="remaining_balance_display">RM {{ number_format(($finalSubtotal + ($deliveryCharge ?? 0)) - $promotionDiscount - 50, 2) }}</span>
+                <div class="car-features">
+                    <span>🚗 {{ $vehicle->transmission ?? 'Auto' }}</span>
+                    <span>❄️ AC</span>
+                    <span>👤 {{ $vehicle->seats ?? 5 }} seats</span>
                 </div>
             </div>
         </div>
 
-        <!-- Payment Details -->
-        <div class="section">
-            <h2><i class="fas fa-credit-card"></i> Payment Details</h2>
+        <div class="info-row"><span class="info-label">Pickup :</span><span class="info-value">{{ $pickupLocation }}</span></div>
+        <div class="info-row"><span class="info-label">Return :</span><span class="info-value">{{ $returnLocation }}</span></div>
+        <div class="info-row"><span class="info-label">Date :</span><span class="info-value">{{ $dateRange }}</span></div>
+        <div class="info-row"><span class="info-label">Duration :</span><span class="info-value">{{ $durationText }}</span></div>
+        <div class="info-row"><span class="info-label">Rental :</span><span class="info-value">MYR {{ number_format($finalSubtotal, 2) }}</span></div>
+        
+        @if(($deliveryCharge ?? 0) > 0)
+        <div class="info-row">
+            <span class="info-label">Delivery Charge :</span>
+            <span class="info-value">MYR {{ number_format($deliveryCharge, 2) }}</span>
+        </div>
+        @endif
 
-            <!-- Loyalty Stamp Tracker -->
-            <div class="form-group">
-                <label><i class="fas fa-gift"></i> Hasta Rewards</label>
-                <div style="background: linear-gradient(135deg, #fff8f0 0%, #fefefe 100%); padding:18px; border-radius:14px; font-size:14px; border:1px solid #ffe0cc; box-shadow: 0 2px 8px rgba(217, 68, 68, 0.08);">
-                    
-                    @if($loyaltyCard)
-                        @php
-                            $rewardTiers = [
-                                1 => 'RM10', 2 => 'RM10', 3 => 'RM20',
-                                4 => 'RM10', 5 => 'RM10', 6 => 'RM30',
-                                7 => 'RM10', 8 => 'RM10', 9 => 'RM20',
-                                10 => 'RM10', 11 => 'RM10', 12 => 'HALFDAY'
-                            ];
-                            $next = $loyaltyCard->stampCount + 1;
-                            $nextReward = ($next <= 12 && isset($rewardTiers[$next])) ? $rewardTiers[$next] : null;
-                        @endphp
+        @if(($promotionDiscount ?? 0) > 0)
+        <div class="info-row discount-row">
+            <span class="info-label">Promotion Discount :</span>
+            <span class="info-value">- MYR {{ number_format($promotionDiscount, 2) }}</span>
+        </div>
+        @endif
 
-                        <!-- Progress Header -->
-                        <div style="display:flex; justify-content:space-between; margin-bottom:12px; align-items:center;">
-                            <strong style="color:#d94444;">{{ $loyaltyCard->stampCount }}/12 Stamps</strong>
-                            @if($nextReward)
-                                <span style="font-weight:600; font-size:14px; color:#28a745;">
-                                    @if($nextReward == 'HALFDAY')
-                                        🎁 Final Reward!
-                                    @else
-                                        ➕ {{ $nextReward }}
-                                    @endif
-                                </span>
-                            @else
-                                <span style="color:#6c757d; font-style:italic;">Completed!</span>
-                            @endif
-                        </div>
+        <div class="total-row">
+            <span>Deposit Payable :</span>
+            <span id="depositAmount">MYR {{ number_format($deposit, 2) }}</span>
+        </div>
 
-                        <!-- Fancy Stamp Circles -->
-                        <div style="display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:10px 0;">
-                            @for($i = 1; $i <= 12; $i++)
-                                @php
-                                    $isFilled = $i <= $loyaltyCard->stampCount;
-                                    $color = '#e9e9e9'; // default empty
-                                    $textColor = '#aaa';
+        <div class="total-row">
+            <span>Total Payable :</span>
+            <span id="totalAmount">MYR {{ number_format($finalTotal, 2) }}</span>
+        </div>
 
-                                    if ($isFilled) {
-                                        if ($i == 3) {
-                                            $color = '#4CAF50'; // green
-                                            $textColor = 'white';
-                                        } elseif ($i == 6) {
-                                            $color = '#2196F3'; // blue
-                                            $textColor = 'white';
-                                        } elseif ($i == 9) {
-                                            $color = '#9C27B0'; // purple
-                                            $textColor = 'white';
-                                        } elseif ($i == 12) {
-                                            $color = 'gold';
-                                            $textColor = '#5a3a00';
-                                        } else {
-                                            $color = '#d94444'; // red for normal stamps
-                                            $textColor = 'white';
-                                        }
-                                    }
-                                @endphp
-
-                                <div style="
-                                    width:24px; height:24px;
-                                    border-radius:50%;
-                                    background:{{ $color }};
-                                    display:flex; align-items:center; justify-content:center;
-                                    font-size:10px; color:{{ $textColor }};
-                                    font-weight:bold;
-                                    box-shadow: {{ $i == 12 ? '0 0 6px rgba(255,215,0,0.8)' : ($isFilled ? '0 0 4px rgba(0,0,0,0.2)' : 'none') }};
-                                    transition: transform 0.2s ease;
-                                " title="Stamp {{ $i }}: {{ $rewardTiers[$i] ?? 'RM10' }}">
-                                    @if($i == 12)
-                                        ★
-                                    @else
-                                        {{ $i }}
-                                    @endif
-                                </div>
-                            @endfor
-                        </div>
-
-                        <!-- Info Message -->
-                        <div style="margin-top:10px; font-size:12px; color:#555; text-align:center; line-height:1.5;">
-                            🎟️ <strong>Every booking ≥7 hours</strong> earns you a <strong style="color:#d94444;">RM10 voucher</strong>!<br>
-                            Special rewards at stamps 3, 6, 9 & 12!
-                        </div>
-                    @else
-                        <div style="text-align:center; color:#666; font-style:italic; padding:10px;">
-                            Complete your profile to unlock Hasta Rewards! 🎁
-                        </div>
-                    @endif
-                </div>
-            </div>
-
-            <!-- Voucher Section -->
-            <div class="form-group">
-                <label>Apply Voucher (Optional)</label>
-                <div class="voucher-tabs">
-                    <button type="button" class="tab-btn active" data-tab="eligible">Eligible Vouchers</button>
-                    <button type="button" class="tab-btn" data-tab="enter">Enter Code</button>
-                </div>
-
-                <div id="tab-eligible" class="tab-content active">
-                    <div class="voucher-list">
-                        @if(isset($eligibleVouchers) && count($eligibleVouchers) > 0)
-                            @foreach($eligibleVouchers as $v)
-                                <div class="voucher-item" 
-                                     data-id="{{ $v->promoID }}" 
-                                     data-val="{{ $v->discountValue }}"
-                                     onclick="selectVoucher(this)">
-                                    <strong>{{ $v->title }}</strong><br>
-                                    <small>Code: {{ $v->code }} (Disc: RM{{ $v->discountValue }})</small>
-                                </div>
-                            @endforeach
-                        @else
-                            <p style="color:#999; font-size:13px; padding:10px; text-align:center;">No eligible vouchers found.</p>
-                        @endif
-                    </div>
-                </div>
-
-                <div id="tab-enter" class="tab-content">
-                    <div class="apply-voucher-section">
-                        <input type="text" id="voucher_code" class="form-control" placeholder="Enter voucher code">
-                        <button type="button" id="apply_voucher" class="browse-btn">Apply</button>
-                    </div>
-                    <div id="voucher_message" style="margin-top:10px; font-size:13px;"></div>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Bank Name</label>
-                <select name="bank_name" class="form-control" required>
-                    <option value="">Select Bank</option>
-                    <option value="Maybank">Maybank</option>
-                    <option value="CIMB Bank">CIMB Bank</option>
-                    <option value="Public Bank">Public Bank</option>
-                    <option value="RHB Bank">RHB Bank</option>
-                    <option value="Hong Leong Bank">Hong Leong Bank</option>
-                    <option value="Affin Bank">Affin Bank</option>
-                    <option value="Alliance Bank">Alliance Bank</option>
-                    <option value="AmBank">AmBank</option>
-                    <option value="BSN">BSN</option>
-                    <option value="Bank Islam">Bank Islam</option>
-                    <option value="Bank Muamalat">Bank Muamalat</option>
-                    <option value="Bank Rakyat">Bank Rakyat</option>
-                    <option value="Touch 'n Go eWallet">Touch 'n Go eWallet</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Account Holder Name</label>
-                <input type="text" name="bank_owner_name" class="form-control" placeholder="Enter full name" required>
-            </div>
-
-            <div class="form-group">
-                <label>Payment Type</label>
-                <div class="radio-group">
-                    <label class="radio-option">
-                        <input type="radio" name="payAmount" value="deposit" checked>
-                        Pay Deposit Only (RM50)
-                    </label>
-                    <label class="radio-option">
-                        <input type="radio" name="payAmount" value="full">
-                        Pay Full Amount
-                    </label>
-                </div>
-            </div>
-
-            <div class="qr-section">
-                <div class="qr-title">Scan QR Code to Pay</div>
-                <div class="qr-code">
-                    @if(file_exists(public_path('storage/qrImage.jpeg')))
-                        <img src="{{ asset('storage/qrImage.jpeg') }}" alt="HASTA Payment QR Code">
-                    @else
-                        <div style="color:#999; font-size:14px;">QR Code Not Available</div>
-                    @endif
-                </div>
-                <div class="company-name">HASTA TRAVEL SDN BHD</div>
-            </div>
-
-            <div class="form-group">
-                <label>Upload Payment Receipt</label>
-                <div class="upload-container" id="uploadContainer">
-                    <div class="upload-icon">
-                        <i class="fas fa-file-image"></i>
-                    </div>
-                    <div class="upload-text">Drag & drop your payment receipt here</div>
-                    <button type="button" class="browse-btn" id="browseBtn">Browse Files</button>
-                    <input type="file" id="fileInput" name="payment_receipt" class="file-input" accept="image/*" required>
-                    <div class="error-message" id="fileError"></div>
-                </div>
-                
-                <div class="preview-container" id="previewContainer">
-                    <img id="previewImage" class="preview-image" src="" alt="Receipt Preview">
-                    <button type="button" class="remove-btn" id="removeBtn">Remove Receipt</button>
-                </div>
-            </div>
-
-            <!-- Terms and Conditions -->
-            <div class="terms-container">
-                <input type="checkbox" id="termsCheckbox" class="terms-checkbox" required>
-                <div class="terms-text">
-                    I have read and accepted the 
-                    <a href="#" class="terms-link" id="termsLink">Terms and Conditions</a>
-                </div>
-            </div>
-
-            <button type="submit" class="submit-btn" id="submitBtn">
-                <i class="fas fa-paper-plane"></i> Confirm Payment
-            </button>
+        <div class="total-row" id="remainingRow" style="display: none;">
+            <span>Remaining Balance :</span>
+            <span id="remainingAmount">MYR 0.00</span>
         </div>
     </div>
-<<<<<<< Updated upstream
-</form>
 
-<!-- Terms Modal -->
-<div id="termsModal" class="modal">
-    <div class="modal-content">
-        <h3 class="modal-title">Terms and Conditions</h3>
-        <p class="modal-text">
-            By proceeding with this booking, you agree to the following terms:<br><br>
-            <strong>1. Payment Requirements</strong><br>
-            • Payments must be made within 10 minutes of booking confirmation.<br>
-            • Failure to upload valid proof of payment will result in automatic cancellation.<br><br>
-            
-            <strong>2. Vehicle Usage</strong><br>
-            • Vehicle must be returned in the same condition as received.<br>
-            • Full liability applies for damages, excessive cleaning, or late returns.<br>
-            • Late returns will incur additional charges of RM50 per hour.<br><br>
-            
-            <strong>3. Cancellation Policy</strong><br>
-            • Full refund for cancellations made 24 hours before pickup<br>
-            • 50% refund for cancellations made within 24 hours of pickup<br>
-            • No refund for cancellations after pickup time<br><br>
-            
-            <strong>4. General Terms</strong><br>
-            • HASTA Travel reserves the right to cancel bookings for suspicious activity.<br>
-            • Driver must have valid license and meet age requirements (21+ years).<br>
-            • Maximum 2 drivers allowed per booking.<br>
-            • Smoking and pets are strictly prohibited in vehicles.
-        </p>
-        <div class="modal-actions">
-            <button class="modal-btn btn-primary" id="closeTerms">I Agree</button>
-        </div>
-    </div>
-</div>
-
-<!-- Success Modal -->
-<div id="successModal" class="modal">
-    <div class="modal-content">
-        <div style="color: #28a745; font-size: 60px; margin-bottom: 20px;">
-            <i class="fas fa-check-circle"></i>
-        </div>
-        <h3 class="modal-title">Booking Submitted!</h3>
-        <p class="modal-text">
-            Your booking form has been submitted successfully!<br><br>
-            We have notified our staff and will confirm your booking shortly.<br>
-            Kindly trace your booking below.
-        </p>
-        <div class="modal-actions">
-            <button type="button" class="modal-btn btn-primary" id="viewBookings">
-                View My Bookings
-            </button>
-            <button type="button" class="modal-btn btn-secondary" id="closeSuccess">
-                Close
-            </button>
-        </div>
-    </div>
-</div>
-
-<script>
-// DOM Elements
-const fileInput = document.getElementById('fileInput');
-const browseBtn = document.getElementById('browseBtn');
-const uploadContainer = document.getElementById('uploadContainer');
-const previewContainer = document.getElementById('previewContainer');
-const previewImage = document.getElementById('previewImage');
-const removeBtn = document.getElementById('removeBtn');
-const fileError = document.getElementById('fileError');
-const termsLink = document.getElementById('termsLink');
-const termsModal = document.getElementById('termsModal');
-const closeTerms = document.getElementById('closeTerms');
-const termsCheckbox = document.getElementById('termsCheckbox');
-const submitBtn = document.getElementById('submitBtn');
-const successModal = document.getElementById('successModal');
-const viewBookings = document.getElementById('viewBookings');
-const closeSuccess = document.getElementById('closeSuccess');
-
-// Payment Calculation Variables
-const FIXED_DEPOSIT = 50;
-let baseRentalPrice = {{ $originalRentalPrice ?? 0 }}; 
-let originalTotal = {{ ($finalTotal + $deliveryCharge) ?? 0 }};
-let deliveryCharge = {{ $deliveryCharge ?? 0 }}; 
-let promotionDiscount = {{ $promotionDiscount ?? 0 }};
-let currentVoucherValue = 0;
-
-let baseTotal = baseRentalPrice + deliveryCharge - promotionDiscount;
-let originalTotal = baseTotal + FIXED_DEPOSIT;
-let currentVoucherValue = 0;
-
-// Initialize payment calculations
-document.addEventListener('DOMContentLoaded', function() {
-    updatePaymentSummary();
-    
-    // Add payment type change listener
-    document.querySelectorAll('input[name="payAmount"]').forEach(radio => {
-        radio.addEventListener('change', updatePaymentSummary);
-    });
-});
-
-// Event Listeners
-if (browseBtn) {
-    browseBtn.addEventListener('click', () => fileInput.click());
-}
-
-if (fileInput) {
-    fileInput.addEventListener('change', handleFileSelect);
-}
-
-if (uploadContainer) {
-    uploadContainer.addEventListener('dragover', handleDragOver);
-    uploadContainer.addEventListener('dragleave', handleDragLeave);
-    uploadContainer.addEventListener('drop', handleDrop);
-}
-
-if (removeBtn) {
-    removeBtn.addEventListener('click', removeFile);
-}
-
-if (termsLink) {
-    termsLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        termsModal.style.display = 'block';
-    });
-}
-
-if (closeTerms) {
-    closeTerms.addEventListener('click', () => {
-        termsModal.style.display = 'none';
-        termsCheckbox.checked = true;
-    });
-}
-
-if (viewBookings) {
-    viewBookings.addEventListener('click', () => {
-        window.location.href = "{{ route('booking.history') }}";
-    });
-}
-
-if (closeSuccess) {
-    closeSuccess.addEventListener('click', () => {
-        window.location.href = "/";
-    });
-}
-
-// Voucher Handling
-document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-    });
-});
-
-if (document.getElementById('apply_voucher')) {
-    document.getElementById('apply_voucher').addEventListener('click', applyVoucherCode);
-}
-
-// Functions
-function selectVoucher(element) {
-    document.querySelectorAll('.voucher-item').forEach(item => item.classList.remove('selected'));
-    element.classList.add('selected');
-    
-    const id = element.dataset.id;
-    const amount = parseFloat(element.dataset.val);
-    applyVoucherMath(id, amount);
-}
-
-function applyVoucherCode() {
-    const code = document.getElementById('voucher_code')?.value;
-    const msgEl = document.getElementById('voucher_message');
-    
-    if (!code) {
-        if (msgEl) msgEl.innerHTML = '<span style="color:red;">Please enter a code</span>';
-        return;
-    }
-    
-    fetch("{{ route('validate.voucher') }}", {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: JSON.stringify({ code: code })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (msgEl) {
-            if (data.valid) {
-                msgEl.innerHTML = '<span style="color:green;">' + data.message + '</span>';
-                applyVoucherMath(data.voucher_id, parseFloat(data.amount));
-            } else {
-                msgEl.innerHTML = '<span style="color:red;">' + (data.message || 'Invalid voucher') + '</span>';
-                resetVoucher();
-            }
-        }
-    })
-    .catch(() => {
-        if (msgEl) msgEl.innerHTML = '<span style="color:red;">Error validating voucher</span>';
-    });
-}
-
-function applyVoucherMath(id, amount) {
-    // Set voucher value
-    document.getElementById('selected_voucher_id').value = id;
-    currentVoucherValue = amount;
-    
-    // Update voucher discount display
-    const discountRow = document.getElementById('voucher_discount_row');
-    const discountDisplay = document.getElementById('voucher_discount_display');
-    
-    if (discountRow && discountDisplay) {
-        discountRow.style.display = 'flex';
-        discountDisplay.textContent = '- RM ' + amount.toFixed(2);
-    }
-    
-    // Recalculate all payments
-    updatePaymentSummary();
-}
-
-function resetVoucher() {
-    document.getElementById('selected_voucher_id').value = '';
-    currentVoucherValue = 0;
-    
-    const discountRow = document.getElementById('voucher_discount_row');
-    if (discountRow) discountRow.style.display = 'none';
-    
-    updatePaymentSummary();
-}
-
-function updatePaymentSummary() {
-    // Calculate rental price with delivery
-    const rentalPriceWithDelivery = baseRentalPrice + deliveryCharge;
-    
-    // Calculate subtotal after all discounts
-    const subtotal = Math.max(0, rentalPriceWithDelivery - promotionDiscount - currentVoucherValue);
-    
-    // Get payment type
-    const paymentType = document.querySelector('input[name="payAmount"]:checked').value;
-    
-    // Calculate amounts
-    let payNow, remainingBalance;
-    let paymentTypeLabel = '';
-    
-    if (paymentType === 'deposit') {
-        // Pay deposit only
-        payNow = FIXED_DEPOSIT;
-        remainingBalance = subtotal; // They still owe the full rental amount
-        paymentTypeLabel = 'Deposit Only';
-    } else {
-        // Pay full amount (rental + deposit)
-        payNow = subtotal + FIXED_DEPOSIT;
-        remainingBalance = 0;
-        paymentTypeLabel = 'Full Amount';
-    }
-    
-    const totalVehicleCost = subtotal + FIXED_DEPOSIT;
-    
-    // Update display values
-    document.getElementById('rental_price_display').textContent = 'RM ' + baseRentalPrice.toFixed(2);
-    
-    // Update delivery charge display if it exists
-    if (deliveryCharge > 0) {
-        const deliveryDisplay = document.getElementById('delivery_charge_display');
-        if (deliveryDisplay) {
-            deliveryDisplay.textContent = 'RM ' + deliveryCharge.toFixed(2);
-        }
-    }
-    
-    document.getElementById('subtotal_display').textContent = 'RM ' + subtotal.toFixed(2);
-    document.getElementById('summary_deposit_display').textContent = 'RM ' + FIXED_DEPOSIT.toFixed(2);
-    document.getElementById('deposit_display').textContent = 'RM ' + FIXED_DEPOSIT.toFixed(2);
-    document.getElementById('payment_type_label').textContent = paymentTypeLabel;
-    document.getElementById('pay_now_display').textContent = 'RM ' + payNow.toFixed(2);
-    document.getElementById('remaining_balance_display').textContent = 'RM ' + Math.max(0, remainingBalance).toFixed(2);
-    document.getElementById('total_vehicle_cost_display').textContent = 'RM ' + totalVehicleCost.toFixed(2);
-}
-
-function handleFileSelect(e) {
-    const file = e.target.files[0];
-    if (file) validateAndPreview(file);
-}
-
-function handleDragOver(e) {
-    e.preventDefault();
-    uploadContainer.classList.add('drag-over');
-}
-
-function handleDragLeave(e) {
-    e.preventDefault();
-    uploadContainer.classList.remove('drag-over');
-}
-
-function handleDrop(e) {
-    e.preventDefault();
-    uploadContainer.classList.remove('drag-over');
-    const file = e.dataTransfer.files[0];
-    if (file) {
-        // Directly assign to fileInput — this is more reliable
-        fileInput.files = e.dataTransfer.files;
-        validateAndPreview(file);
-    }
-}
-
-function validateAndPreview(file) {
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-    if (!validTypes.includes(file.type)) {
-        showError('Please select a valid image file (JPEG, JPG, PNG, or GIF)');
-        fileInput.value = ''; // Clear invalid file
-        return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-        showError('File size exceeds 5MB. Please select a smaller file');
-        fileInput.value = '';
-        return;
-    }
-
-    // Preview
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        previewImage.src = e.target.result;
-        previewContainer.style.display = 'block';
-        hideError();
-    };
-    reader.readAsDataURL(file);
-
-    // Important: Re-assign file to input so FormData picks it up
-    const dataTransfer = new DataTransfer();
-    dataTransfer.items.add(file);
-    fileInput.files = dataTransfer.files;
-}
-
-// Form Submission
-document.getElementById('paymentForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    if (!termsCheckbox.checked) {
-        alert('Please accept Terms and Conditions');
-        return;
-    }
-
-    if (!fileInput.files.length) {
-        showError('Please upload a payment receipt.');
-        return;
-    }
-    
-    // Disable submit button
-    if(submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-    }
-
-    const formData = new FormData(this);
-    
-    // Add promotion discount to form data
-    formData.append('promotion_discount', promotionDiscount);
-
-    fetch("{{ route('booking.confirm') }}", {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            successModal.style.display = 'block';
-        } else {
-            alert(data.message || 'Submission failed. Please try again.');
-            if(submitBtn) { 
-                submitBtn.disabled = false; 
-                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Confirm Payment'; 
-            }
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred. Please try again.');
-        if(submitBtn) { 
-            submitBtn.disabled = false; 
-            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Confirm Payment'; 
-        }
-    });
-});
-
-function unction updateGrandTotal() {
-        console.log('=== UPDATING GRAND TOTAL ===');
-        console.log('Base Rental:', baseRentalPrice);
-        console.log('Delivery Charge:', deliveryCharge);
-        console.log('Promotion Discount:', promotionDiscount);
-        console.log('Voucher Discount:', currentVoucherValue);
-        
-        // Calculate: Rental + Delivery - Promotion - Voucher
-        let subtotal = baseRentalPrice + deliveryCharge - promotionDiscount - currentVoucherValue;
-        subtotal = Math.max(0, subtotal); // Never negative
-        
-        let depositAmount = fixedDeposit;
-        let totalWithDeposit = subtotal + depositAmount;
-        
-        console.log('Final Subtotal:', subtotal);
-        console.log('Deposit:', depositAmount);
-        console.log('Total with Deposit:', totalWithDeposit);
-
-        // Update Deposit Payable display
-        const depositEl = document.getElementById('depositAmount');
-        if (depositEl) {
-            depositEl.textContent = 'MYR ' + depositAmount.toFixed(2);
-        }
-
-        // Update Total Payable display
-        const totalEl = document.getElementById('totalAmount');
-        if (totalEl) {
-            totalEl.textContent = 'MYR ' + totalWithDeposit.toFixed(2);
-        }
-        
-        // Update hidden inputs for form submission
-        const depositInput = document.getElementById('depositInput');
-        if (depositInput) {
-            depositInput.value = depositAmount;
-        }
-        
-        const finalTotalInput = document.getElementById('finalTotalInput');
-        if (finalTotalInput) {
-            finalTotalInput.value = totalWithDeposit;
-        }
-}
-
-function showError(message) {
-    if (fileError) {
-        fileError.textContent = message;
-        fileError.style.display = 'block';
-    }
-}
-
-function hideError() {
-    if (fileError) {
-        fileError.style.display = 'none';
-        fileError.textContent = '';
-    }
-}
-
-// Close modals when clicking outside
-window.addEventListener('click', (e) => {
-    if (e.target === termsModal) termsModal.style.display = 'none';
-    if (e.target === successModal) successModal.style.display = 'none';
-});
-</script>
-=======
-
-    <!-- Payment Section -->
+    <!-- Payment Details -->
     <div class="section">
         <h2>Payment Details</h2>
+        
+        <!-- Voucher Section -->
+        <div class="form-group">
+            <label>Apply Voucher (Optional)</label>
+            <div class="voucher-tabs">
+                <button type="button" class="tab-btn active" data-tab="eligible">Eligible</button>
+                <button type="button" class="tab-btn" data-tab="enter">Enter Code</button>
+            </div>
+
+            <div id="tab-eligible" class="tab-content active">
+                <div class="voucher-list">
+                    @if(isset($eligibleVouchers) && count($eligibleVouchers) > 0)
+                        @foreach($eligibleVouchers as $v)
+                            <div class="voucher-item" 
+                                    data-id="{{ $v->promoID }}" 
+                                    data-val="{{ $v->discountValue }}"
+                                    onclick="selectVoucher(this)">
+                                <strong>{{ $v->title }}</strong><br>
+                                <small>Code: {{ $v->code }} (Disc: RM{{ $v->discountValue }})</small>
+                            </div>
+                        @endforeach
+                    @else
+                        <p style="color:#999; font-size:13px; padding:10px;">No eligible vouchers found.</p>
+                    @endif
+                </div>
+            </div>
+
+            <div id="tab-enter" class="tab-content">
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="voucher_code" placeholder="Enter voucher code">
+                    <button type="button" id="apply_voucher" class="browse-btn" style="padding:10px 20px;">Apply</button>
+                </div>
+                <div id="voucher_message" style="margin-top:5px; font-size:13px;"></div>
+            </div>
+        </div>
+        
+        <div class="info-row discount-row" id="voucher_discount_row" style="display:none;">
+            <span class="info-label">Voucher Discount :</span>
+            <span class="info-value" id="voucher_discount_display">- MYR 0.00</span>
+        </div>
 
         <div class="form-group">
             <label>Bank Name</label>
@@ -1513,6 +324,13 @@ window.addEventListener('click', (e) => {
                 <option value="Public Bank">Public Bank</option>
                 <option value="RHB Bank">RHB Bank</option>
                 <option value="Hong Leong Bank">Hong Leong Bank</option>
+                <option value="Affin Bank">Affin Bank</option>
+                <option value="Alliance Bank">Alliance Bank</option>
+                <option value="AmBank">AmBank</option>
+                <option value="BSN">BSN</option>
+                <option value="Bank Islam">Bank Islam</option>
+                <option value="Bank Muamalat">Bank Muamalat</option>
+                <option value="Bank Rakyat">Bank Rakyat</option>
                 <option value="Touch 'n Go eWallet">Touch 'n Go eWallet</option>
             </select>
         </div>
@@ -1525,191 +343,331 @@ window.addEventListener('click', (e) => {
         <div class="form-group">
             <label>Pay Amount</label>
             <div class="radio-group">
-                <label><input type="radio" name="payAmount" value="full" checked> Full</label>
-                <label><input type="radio" name="payAmount" value="deposit"> Deposit</label>
+                <label>
+                    <input type="radio" name="payAmount" value="full" checked> Full
+                </label>
+                <label>
+                    <input type="radio" name="payAmount" value="deposit"> Deposit
+                </label>
             </div>
         </div>
 
         <div class="qr-section">
-            <label>Scan QR here to pay</label>
-
+            <label>Scan QR here to make the payment</label>
             <div class="qr-code">
                 @if(file_exists(public_path('storage/qrImage.jpeg')))
-                    <img src="{{ asset('storage/qrImage.jpeg') }}" alt="QR Code">
+                    <img src="{{ asset('storage/qrImage.jpeg') }}" alt="HASTA Payment QR Code">
                 @else
                     <div style="color:#999;">QR Code Not Available</div>
                 @endif
             </div>
-
             <p class="company-name">HASTA TRAVEL SDN BHD</p>
         </div>
 
-        <div class="form-group">
-            <label>Upload Receipt <span style="color: red;">*</span></label>
 
+        <div class="form-group">
+            <label>Upload Receipt</label>
+            <p style="color: #999; font-size: 13px; margin-bottom: 10px;">Kindly upload a screenshot of receipt payment</p>
             <div class="upload-area" id="uploadArea">
                 <div class="upload-icon">📄</div>
-                <p id="uploadText">Drag files here or click "Browse"</p>
-
+                <p class="upload-text" id="uploadText">Drag files here or click "Browse" to upload</p>
                 <button type="button" class="browse-btn" id="browseBtn">Browse</button>
-
-                <input type="file" id="fileInput" name="payment_receipt" accept="image/*" style="display:none;" required>
-
-                <div id="imagePreview" style="display:none;"></div>
+                <input type="file" id="fileInput" name="payment_receipt" accept="image/*" style="display: none;" required>
+                <!-- Preview container -->
+                <div id="imagePreview" style="display: none; margin-top: 15px;">
+                    <img id="previewImage" src="" alt="Receipt Preview" style="max-width: 100%; max-height: 200px; border: 1px solid #ddd; border-radius: 5px;">
+                    <button type="button" id="removeImage" style="margin-top: 10px; background: #d94444; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Remove</button>
+                </div>
+                <!-- Error message container -->
+                <div id="fileError" style="color: red; font-size: 12px; margin-top: 5px; display: none;"></div>
             </div>
         </div>
 
         <div class="terms">
             <label>
-                <input type="checkbox" id="termsCheckbox" required>
-                I agree to the <a href="#">Terms & Conditions</a>
+                <input type="checkbox" required>
+                I agree to the <a href="#" onclick="showTermsModal(); return false;">Terms & Conditions</a>
             </label>
         </div>
 
         <button type="submit" class="submit-btn">Confirm Payment</button>
     </div>
 
+    </div>
+    </form>
+
+<!-- Terms Modal -->
+<div id="termsModal" class="modal">
+    <div class="modal-content">
+        <h3>Terms and Conditions</h3>
+        <p style="text-align:left;margin:20px 0;line-height:1.5;">
+            By proceeding with this booking, you agree to the following terms:<br>
+            - Vehicle must be returned in the same condition as received.<br>
+            - Full liability applies for damages or late return.<br>
+            - HASTA Travel reserves the right to cancel bookings for suspicious activity.
+        </p>
+        <button class="modal-btn btn-primary" onclick="document.getElementById('termsModal').style.display='none'">Close</button>
+    </div>
 </div>
-</form>
+
+<!-- Success Modal -->
+<div id="successModal" class="modal">
+    <div class="modal-content">
+        <h3>Booking Submitted!</h3>
+        <p style="margin:20px 0;">
+            Your booking form has been submitted.<br>
+            We have notified our staff and will confirm your booking shortly.<br>
+            Kindly trace your booking below.
+        </p>
+        <div class="modal-btns">
+            <button class="modal-btn btn-primary" onclick="window.location='{{ route('booking.history') }}'">View My Bookings</button>
+            <button class="modal-btn btn-secondary" onclick="window.location='{{ route('booking.history') }}'">Close</button>
+        </div>
+    </div>
+</div>
 
 <script>
-    // File upload functionality
+    // Initial values
+    const baseTotal = {{ $finalTotal ?? 0 }};
+    const baseDeposit = {{ $deposit ?? 0 }};
+    let currentVoucherValue = 0;
+    let currentTotal = baseTotal;
+
+    // Toggle voucher tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+        });
+    });
+
+    // Apply voucher
+    function applyVoucher(id, amount) {
+        document.getElementById('selected_voucher_id').value = id;
+        currentVoucherValue = amount;
+        currentTotal = Math.max(0, baseTotal - amount);
+        updatePaymentDisplay();
+        
+        // Show voucher discount
+        document.getElementById('voucher_discount_row').style.display = 'flex';
+        document.getElementById('voucher_discount_display').textContent = '- MYR ' + amount.toFixed(2);
+    }
+
+    function resetVoucher() {
+        document.getElementById('selected_voucher_id').value = '';
+        currentVoucherValue = 0;
+        currentTotal = baseTotal;
+        document.getElementById('voucher_discount_row').style.display = 'none';
+        updatePaymentDisplay();
+    }
+
+    // Voucher selection
+    document.querySelectorAll('.voucher-item').forEach(item => {
+        item.addEventListener('click', () => {
+            document.querySelectorAll('.voucher-item').forEach(i => i.classList.remove('selected'));
+            item.classList.add('selected');
+            applyVoucher(item.dataset.id, parseFloat(item.dataset.val));
+        });
+    });
+
+    // Apply voucher code
+    document.getElementById('apply_voucher')?.addEventListener('click', function() {
+        const code = document.getElementById('voucher_code').value.trim();
+        if (!code) {
+            document.getElementById('voucher_message').innerHTML = '<span style="color:red;">Please enter a code</span>';
+            return;
+        }
+
+        fetch("{{ route('validate.voucher') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ code: code })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.valid) {
+                document.getElementById('voucher_message').innerHTML = '<span style="color:green;">Valid voucher!</span>';
+                applyVoucher(data.voucher_id, parseFloat(data.amount));
+            } else {
+                document.getElementById('voucher_message').innerHTML = '<span style="color:red;">Invalid voucher</span>';
+                resetVoucher();
+            }
+        })
+        .catch(() => {
+            document.getElementById('voucher_message').innerHTML = '<span style="color:red;">Error validating voucher</span>';
+        });
+    });
+
+    // Update payment display based on selection
+    function updatePaymentDisplay() {
+        const isDeposit = document.querySelector('input[name="payAmount"]:checked').value === 'deposit';
+        const depositAmount = currentTotal * 0.5;
+        
+        if (isDeposit) {
+            document.getElementById('payNowAmount').textContent = 'MYR ' + depositAmount.toFixed(2);
+            document.getElementById('remainingRow').style.display = 'flex';
+            document.getElementById('remainingAmount').textContent = 'MYR ' + depositAmount.toFixed(2);
+            document.getElementById('depositInput').value = depositAmount;
+        } else {
+            document.getElementById('payNowAmount').textContent = 'MYR ' + currentTotal.toFixed(2);
+            document.getElementById('remainingRow').style.display = 'none';
+            document.getElementById('depositInput').value = currentTotal;
+        }
+        document.getElementById('finalTotalInput').value = currentTotal;
+    }
+
+    // Handle payment type change
+    document.querySelectorAll('input[name="payAmount"]').forEach(radio => {
+        radio.addEventListener('change', updatePaymentDisplay);
+    });
+
+    // Initialize
+    updatePaymentDisplay();
+
+    // File upload (keep your existing file upload code - it looks correct now)
     const fileInput = document.getElementById('fileInput');
-    const uploadArea = document.getElementById('uploadArea');
     const browseBtn = document.getElementById('browseBtn');
+    const uploadArea = document.getElementById('uploadArea');
     const uploadText = document.getElementById('uploadText');
     const imagePreview = document.getElementById('imagePreview');
+    const previewImage = document.getElementById('previewImage');
+    const removeImageBtn = document.getElementById('removeImage');
+    const fileError = document.getElementById('fileError');
 
-    // Click to browse
-    browseBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        fileInput.click();
-    });
+    function setFile(file) {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        fileInput.files = dt.files;
+        uploadText.textContent = file.name;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            previewImage.src = e.target.result;
+            imagePreview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+        hideError();
+    }
 
-    // Click anywhere in upload area to browse
-    uploadArea.addEventListener('click', (e) => {
-        if (e.target !== browseBtn) {
+    function validateFile(file) {
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        if (!validTypes.includes(file.type)) {
+            showError('Please select a valid image file.');
+            return false;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            showError('File size must be under 5MB.');
+            return false;
+        }
+        return true;
+    }
+
+    if (browseBtn) {
+        browseBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             fileInput.click();
+        });
+    }
+
+    if (fileInput) {
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                if (validateFile(file)) setFile(file);
+            }
+        });
+    }
+
+    if (uploadArea) {
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#d94444';
+            uploadArea.style.backgroundColor = '#fff';
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = '#ddd';
+            uploadArea.style.backgroundColor = '#fafafa';
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#ddd';
+            uploadArea.style.backgroundColor = '#fafafa';
+            if (e.dataTransfer.files.length > 0) {
+                const file = e.dataTransfer.files[0];
+                if (validateFile(file)) setFile(file);
+            }
+        });
+    }
+
+    if (removeImageBtn) {
+        removeImageBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            fileInput.value = '';
+            uploadText.textContent = 'Drag files here or click "Browse" to upload';
+            imagePreview.style.display = 'none';
+            previewImage.src = '';
+            hideError();
+        });
+    }
+
+    function showError(msg) {
+        if (fileError) {
+            fileError.textContent = msg;
+            fileError.style.display = 'block';
         }
-    });
-
-    // File input change
-    fileInput.addEventListener('change', (e) => {
-        handleFile(e.target.files[0]);
-    });
-
-    // Drag and drop
-    uploadArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadArea.classList.add('drag-over');
-    });
-
-    uploadArea.addEventListener('dragleave', () => {
-        uploadArea.classList.remove('drag-over');
-    });
-
-    uploadArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        uploadArea.classList.remove('drag-over');
-        
-        const file = e.dataTransfer.files[0];
-        if (file && file.type.startsWith('image/')) {
-            fileInput.files = e.dataTransfer.files;
-            handleFile(file);
-        }
-    });
-
-    // Handle file preview
-    function handleFile(file) {
-        if (file && file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            
-            reader.onload = (e) => {
-                imagePreview.innerHTML = `
-                    <img src="${e.target.result}" alt="Receipt Preview">
-                    <p style="margin-top: 10px; color: #28a745; font-weight: 600;">✓ ${file.name}</p>
-                `;
-                imagePreview.style.display = 'block';
-                uploadText.textContent = 'File uploaded successfully! Click to change';
-            };
-            
-            reader.readAsDataURL(file);
+    }
+    function hideError() {
+        if (fileError) {
+            fileError.style.display = 'none';
         }
     }
 
-    // Form submission validation
-    document.getElementById('paymentForm').addEventListener('submit', (e) => {
-        const termsCheckbox = document.getElementById('termsCheckbox');
-        const submitBtn = document.querySelector('.submit-btn');
+    // Form submission
+    document.getElementById('paymentForm').addEventListener('submit', function(e) {
+        e.preventDefault();
         
-        if (!fileInput.files || fileInput.files.length === 0) {
-            e.preventDefault();
-            alert('Please upload a payment receipt before submitting.');
-            return false;
-        }
-        
-        if (!termsCheckbox.checked) {
-            e.preventDefault();
-            alert('Please agree to the Terms & Conditions.');
-            return false;
+        if (!document.querySelector('input[type="checkbox"][required]').checked) {
+            alert('Please accept Terms & Conditions');
+            return;
         }
 
-        // Disable submit button to prevent double submission
+        if (!fileInput.files.length) {
+            showError('Please upload a payment receipt.');
+            return;
+        }
+
+        const formData = new FormData(this);
+        const submitBtn = this.querySelector('.submit-btn');
         submitBtn.disabled = true;
         submitBtn.textContent = 'Processing...';
+
+        fetch("{{ route('booking.confirm') }}", {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('successModal').style.display = 'block';
+            } else {
+                alert(data.message || 'Submission failed.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Confirm Payment';
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('An error occurred.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Confirm Payment';
+        });
     });
-
-    // Check for success message in URL or session
-    window.addEventListener('DOMContentLoaded', () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('success') === 'true') {
-            showSuccessMessage();
-        }
-    });
-
-    function showSuccessMessage() {
-        // Create overlay
-        const overlay = document.createElement('div');
-        overlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        `;
-
-        // Create success message box
-        const messageBox = document.createElement('div');
-        messageBox.style.cssText = `
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            max-width: 400px;
-        `;
-
-        messageBox.innerHTML = `
-            <div style="font-size: 60px; color: #28a745; margin-bottom: 20px;">✓</div>
-            <h2 style="color: #333; margin-bottom: 15px; font-size: 24px;">Successfully Submitted!</h2>
-            <p style="color: #666; margin-bottom: 20px;">Your payment has been received. Redirecting to booking history...</p>
-        `;
-
-        overlay.appendChild(messageBox);
-        document.body.appendChild(overlay);
-
-        // Redirect after 2 seconds
-        setTimeout(() => {
-            window.location.href = "{{ route('bookinghistory') }}";
-        }, 2000);
-    }
 </script>
 
->>>>>>> Stashed changes
 </body>
 </html>
