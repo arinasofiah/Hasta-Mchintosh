@@ -184,6 +184,26 @@ Route::post('/customer/booking/{id}/cancel', [CustomerController::class, 'cancel
 Route::get('/admin/get-vehicle-availability', [AdminController::class, 'getVehicleAvailability'])
     ->name('admin.vehicle-availability');
 
+// Add this to your routes/web.php
+Route::get('/test-mail', function() {
+    try {
+        // Test 1: Check if mail config works
+        \Log::info('Testing mail configuration...');
+        
+        // Test 2: Send a simple email
+        \Mail::raw('Test email from Hasta', function($message) {
+            $message->to('test@example.com')
+                    ->subject('Test Email');
+        });
+        
+        return 'Email test passed! Check laravel.log';
+        
+    } catch (\Exception $e) {
+        \Log::error('Mail test failed: ' . $e->getMessage());
+        return 'Email test failed: ' . $e->getMessage();
+    }
+});
+
 
 Route::get('/pickup/form/{bookingID}', [PickupController::class, 'form'])->name('pickup.form');
 Route::get('/return/form/{bookingID}', [ReturnController::class, 'showForm'])->name('return.form');

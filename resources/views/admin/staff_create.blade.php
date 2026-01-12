@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="{{ asset('css/admin-header.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
         body { font-family: 'Poppins', sans-serif; background-color: #f8f9fa; }
@@ -21,12 +22,12 @@
         .required::after { content: " *"; color: #dc3545; }
         .btn-custom { background-color: #bc3737; color: white; border-radius: 20px; padding: 8px 25px; border: none; font-weight: 500; font-size: 0.9rem; }
         .btn-custom:hover { background-color: #a52e2e; color: white; }
-        .registration-link { background: #f0f9ff; padding: 12px; border-radius: 6px; margin-top: 15px; word-break: break-all; font-size: 0.85rem; }
         .form-text { font-size: 0.85rem; }
         h2 { font-size: 1.8rem; }
         h4 { font-size: 1.4rem; }
         h6 { font-size: 1rem; }
         .text-muted { font-size: 0.9rem; }
+        .step-number { background: #bc3737; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; margin-right: 10px; flex-shrink: 0; }
     </style>
 </head>
 <body>
@@ -66,7 +67,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h2>Invite Staff Member</h2>
-                <p class="text-muted">Create an invitation for new staff registration</p>
+                <p class="text-muted">Send an invitation email for new staff registration</p>
             </div>
             <a href="{{ route('admin.staff') }}" class="btn btn-light" style="border-radius: 20px; padding: 6px 18px; font-size: 0.9rem;">
                 ← Back
@@ -85,19 +86,16 @@
             </div>
         @endif
 
-        @if(session('success') && session('registration_link'))
+        @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show mb-4" role="alert" style="font-size: 0.9rem;">
                 <strong>Success!</strong> {{ session('success') }}
-                <div class="registration-link mt-2">
-                    <strong>Registration Link:</strong><br>
-                    <code>{{ session('registration_link') }}</code>
-                    <button class="btn btn-sm btn-outline-secondary ms-2" onclick="copyToClipboard('{{ session('registration_link') }}')" style="font-size: 0.8rem;">Copy Link</button>
-                </div>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-        @elseif(session('success'))
-            <div class="alert alert-success alert-dismissible fade show mb-4" role="alert" style="font-size: 0.9rem;">
-                <strong>Success!</strong> {{ session('success') }}
+        @endif
+
+        @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert" style="font-size: 0.9rem;">
+                <strong>Error!</strong> {{ session('error') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
@@ -115,16 +113,16 @@
                     <h6 class="mb-3" style="color: #333; font-weight: 600;">Invitation Process</h6>
                     <div style="font-size: 0.9rem; color: #555;">
                         <div class="d-flex align-items-start mb-2">
-                            <div style="background: #bc3737; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; margin-right: 10px; flex-shrink: 0;">1</div>
-                            <div>Enter the staff member's email address</div>
+                            <div class="step-number">1</div>
+                            <div>Enter the staff member's email address and select their role</div>
                         </div>
                         <div class="d-flex align-items-start mb-2">
-                            <div style="background: #bc3737; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; margin-right: 10px; flex-shrink: 0;">2</div>
-                            <div>A unique registration link will be generated</div>
+                            <div class="step-number">2</div>
+                            <div>An invitation email will be sent automatically to the recipient</div>
                         </div>
                         <div class="d-flex align-items-start">
-                            <div style="background: #bc3737; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; margin-right: 10px; flex-shrink: 0;">3</div>
-                            <div>Share the link with the staff member to complete their registration</div>
+                            <div class="step-number">3</div>
+                            <div>The staff member clicks the link in the email to complete their registration</div>
                         </div>
                     </div>
                 </div>
@@ -137,7 +135,7 @@
                            placeholder="staff@example.com" 
                            required
                            style="font-size: 0.9rem; padding: 8px 12px;">
-                    <div class="form-text mt-1">A registration link will be generated for this email</div>
+                    <div class="form-text mt-1">Invitation email will be sent to this address</div>
                 </div>
 
                 <!-- Role Selection -->
@@ -156,7 +154,7 @@
                         Cancel
                     </a>
                     <button type="submit" class="btn btn-custom">
-                        <i class="fas fa-envelope me-2"></i>Generate Invitation Link
+                        <i class="fas fa-paper-plane me-2"></i>Send Invitation Email
                     </button>
                 </div>
             </form>
@@ -164,15 +162,16 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
     <script>
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(function() {
-                alert('Registration link copied to clipboard!');
-            }, function(err) {
-                console.error('Could not copy text: ', err);
-            });
-        }
+        // Simple form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const emailInput = document.querySelector('input[name="email"]');
+            if (!emailInput.value.includes('@')) {
+                e.preventDefault();
+                alert('Please enter a valid email address');
+                emailInput.focus();
+            }
+        });
     </script>
 </body>
 </html>
