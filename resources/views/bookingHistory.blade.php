@@ -175,7 +175,7 @@
                                         </div>
                                     @endif
                                     
-                                    @if($booking->bookingStatus === 'approved' && !$isUpcoming)
+                                    @if($booking->bookingStatus === 'approved')
                                         <div class="action-buttons" style="margin-top: 10px;">
                                             {{-- Pickup Button --}}
                                             <a href="{{ route('pickup.form', ['bookingID' => $booking->bookingID]) }}" 
