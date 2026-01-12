@@ -243,8 +243,7 @@ textarea.input {resize:vertical; min-height:100px;}
                     <div class="field-label">Pickup Location</div>
                     <select id="pickupLocationType" class="input" required onchange="handleLocationChange('pickup')">
                         <option value="">-- Select --</option>
-                        <option value="hasta">HASTA Office</option>
-                        <option value="student_mall">Student Mall</option>
+                        <option value="hasta">HASTA Office, Student Mall</option>
                         <option value="others">Others (within UTM)</option>
                     </select>
                     <input type="hidden" id="pickupLocation" name="pickupLocation">
@@ -267,8 +266,7 @@ textarea.input {resize:vertical; min-height:100px;}
                     <div class="field-label">Return Location</div>
                         <select id="returnLocationType" class="input" required onchange="handleLocationChange('return')">
                             <option value="">-- Select --</option>
-                            <option value="hasta">HASTA Office</option>
-                            <option value="student_mall">Student Mall</option>
+                            <option value="hasta">HASTA Office, Student Mall</option>
                             <option value="others">Others (within UTM)</option>
                         </select>
 
@@ -455,24 +453,9 @@ function handleLocationChange(type) {
     const detailsField = document.getElementById(`${type}Details`);
 
     if (locType === 'hasta') {
-        hiddenInput.value = 'HASTA Office';
+        hiddenInput.value = 'HASTA Office, Student Mall';
         notice.style.display = 'none';
         othersFields.style.display = 'none';
-    } else if (locType === 'student_mall') {
-        hiddenInput.value = 'Student Mall';
-        notice.style.display = 'none';
-        othersFields.style.display = 'none';
-        
-        // Remove required from "Others" fields
-        if (categoryField) {
-            categoryField.removeAttribute('required');
-            categoryField.value = '';
-        }
-        if (detailsField) {
-            detailsField.removeAttribute('required');
-            detailsField.value = '';
-        }
-        
     } else if (locType === 'others') {
         // Show fields and make them required
         hiddenInput.value = 'Waiting for details...';
