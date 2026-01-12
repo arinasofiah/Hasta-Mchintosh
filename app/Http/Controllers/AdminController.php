@@ -499,23 +499,39 @@ public function storeStaff(Request $request)
     \DB::beginTransaction();
     
     try {
-        // Generate temporary values
-        $timestamp = time();
-        $random = rand(1000, 9999);
+        // Check for existing invitation or user
+        $existingUser = User::where('email', $request->email)->first();
         
-        // Name from email
-        $emailName = explode('@', $request->email)[0];
-        $tempName = ucfirst($emailName);
-        $tempIcNumber = 'TEMP-' . $timestamp . '-' . $random;
+        if ($existingUser) {
+            if ($existingUser->invitation_status === 'pending') {
+                return back()->withInput()->with('error', 'A pending invitation already exists for this email.');
+            } elseif ($existingUser->invitation_status === 'accepted') {
+                return back()->withInput()->with('error', 'This email is already registered.');
+            } elseif ($existingUser->invitation_status === 'cancelled') {
+                // If cancelled, we can reuse the user record
+                $user = $existingUser;
+            }
+        }
         
-        // Create the user
-        $user = User::create([
-            'email' => $request->email,
-            'userType' => $request->userType,
-            'name' => $tempName,
-            'icNumber' => $tempIcNumber,
-            'password' => \Hash::make(\Str::random(16)),
-        ]);
+        if (!isset($user)) {
+            // Generate temporary values
+            $timestamp = time();
+            $random = rand(1000, 9999);
+            
+            // Name from email
+            $emailName = explode('@', $request->email)[0];
+            $tempName = ucfirst($emailName);
+            $tempIcNumber = 'TEMP-' . $timestamp . '-' . $random;
+            
+            // Create new user
+            $user = User::create([
+                'email' => $request->email,
+                'userType' => $request->userType,
+                'name' => $tempName,
+                'icNumber' => $tempIcNumber,
+                'password' => \Hash::make(\Str::random(16)),
+            ]);
+        }
         
         // Set invitation details
         $invitationToken = \Str::random(60);
@@ -529,26 +545,43 @@ public function storeStaff(Request $request)
         
         \DB::commit();
         
-        // ✅ Generate registration URL (IMPORTANT!)
-        $registrationUrl = url('/staff/register/' . $invitationToken);
+        // ✅ Generate registration URL
+        $registrationUrl = route('staff.register.form', ['token' => $invitationToken]);
+        
+        // ✅ Send invitation email
+        try {
+            $inviterName = auth()->user()->name;
+            Mail::to($user->email)->send(new \App\Mail\StaffInvitationMail($user, $registrationUrl, $inviterName));
+            
+            \Log::info('✅ Invitation email sent to: ' . $user->email);
+            \Log::info('📧 Email sent via: ' . config('mail.mailer'));
+            
+        } catch (\Exception $e) {
+            \Log::error('❌ Email sending failed: ' . $e->getMessage());
+            // Don't fail the whole process if email fails
+        }
         
         // Log for debugging
         \Log::info('=== INVITATION SUCCESS ===');
-        \Log::info('User: ' . $user->email);
+        \Log::info('User ID: ' . $user->userID);
+        \Log::info('Email: ' . $user->email);
         \Log::info('Token: ' . $invitationToken);
         \Log::info('URL: ' . $registrationUrl);
+        \Log::info('Inviter: ' . auth()->user()->name);
         
-        // ✅ Return SUCCESS WITH LINK (THIS IS THE KEY LINE!)
-        return redirect()->route('admin.staff')
-            ->with('success', "Invitation created for {$user->email}!")
-            ->with('registration_link', $registrationUrl);  // ← MUST HAVE THIS!
+        // ✅ Redirect back with success message
+        return redirect()->route('admin.staff.create')
+            ->with('success', "Invitation created successfully!")
+            ->with('registration_link', $registrationUrl)
+            ->with('email_sent', isset($e) ? false : true);
             
     } catch (\Exception $e) {
         \DB::rollBack();
         
-        \Log::error('Error: ' . $e->getMessage());
+        \Log::error('❌ Store Staff Error: ' . $e->getMessage());
+        \Log::error($e->getTraceAsString());
         
-        return back()->withInput()->with('error', 'Failed: ' . $e->getMessage());
+        return back()->withInput()->with('error', 'Failed to create invitation: ' . $e->getMessage());
     }
 }
 
