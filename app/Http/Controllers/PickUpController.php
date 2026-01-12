@@ -150,6 +150,11 @@ class PickUpController extends Controller
         $return->isfined = ($request->isFined === 'yes') ? 1 : 0;
         $return->fuelAmount = $request->fuelAmount;
         $return->feedback = $request->feedback;
+
+        $return->actual_return_time = $request->acRetTime;
+        $return->late_fee = $request->late_fee ?? 0;
+        $return->fuel_fee = $request->fuel_fee ?? 0;
+        $return->total_fee = $request->total_fee ?? 0;
         
         $return->save();
 

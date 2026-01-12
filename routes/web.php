@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 use App\Http\Controllers\OcrController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\VehicleController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\PromotionController;
 use App\Http\Controllers\LoyaltyController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\PaymentController;
 
 // Public routes
 Route::view('/signup', 'signup');
@@ -68,12 +70,6 @@ Route::post('/store-pending-booking', function (Request $request) {
 
 // Admin vehicle management
 Route::middleware(['auth'])->prefix('admin')->group(function () {
-    //Route::get('/dashboard', [VehicleController::class, 'adminDashboard'])->name('admin.dashboard');
-   // Route::get('/fleet', [VehicleController::class, 'adminVehicles'])->name('admin.fleet');
-   // Route::get('/vehicles/create', [VehicleController::class, 'create'])->name('admin.vehicles.create');
-    //Route::post('/vehicles/store', [VehicleController::class, 'store'])->name('admin.vehicles.store');
-    //Route::put('/vehicles/update/{id}', [VehicleController::class, 'update'])->name('admin.vehicles.update');
-    //Route::delete('/vehicles/delete/{id}', [VehicleController::class, 'destroy'])->name('admin.vehicles.destroy');
     Route::get('/fleet', [AdminController::class, 'fleet'])->name('admin.fleet');
     Route::get('/vehicles/create', [AdminController::class, 'createVehicle'])->name('admin.vehicles.create');
     Route::post('/vehicles', [AdminController::class, 'storeVehicle'])->name('admin.vehicles.store');
@@ -99,6 +95,13 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     // Commission
     Route::post('/commission/reset/{id}', [PromotionController::class, 'resetCommission'])->name('admin.commission.reset');
     Route::put('/commission/update/{id}', [PromotionController::class, 'updateCommission'])->name('admin.commission.update');
+
+    Route::get('/bookings', [AdminController::class, 'bookings'])->name('admin.bookings');
+    Route::get('/bookings/{id}', [AdminController::class, 'showBooking'])->name('admin.bookings.show');    
+    Route::post('/payment/{id}/approve', [AdminController::class, 'approvePayment'])->name('admin.payment.approve');
+    Route::post('/bookings/{id}/approve', [AdminController::class, 'approveBooking'])->name('admin.bookings.approve');
+    Route::post('/bookings/{id}/reject', [AdminController::class, 'rejectBooking'])->name('admin.bookings.reject');
+    Route::post('/bookings/{id}/complete', [AdminController::class, 'completeReturn'])->name('admin.bookings.complete');
 });
 
 //  Booking routes (customer)
@@ -131,21 +134,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/documents/upload', [CustomerController::class, 'uploadDocuments'])->name('customer.documents.upload');
     Route::get('/documents/delete/{type}', [CustomerController::class, 'deleteDocument'])->name('customer.documents.delete');
     Route::get('/my-loyalty', [LoyaltyController::class, 'index'])->name('customer.loyaltycard');
-});
-
-// Staff routes
-Route::middleware(['auth'])->prefix('staff')->name('staff.')->group(function () {
-    Route::get('/dashboard', [StaffController::class, 'index'])->name('dashboard');
-    Route::get('/booking/confirmation', [StaffController::class, 'confirmation'])->name('booking.confirmation');
-    Route::get('/payment/verify', [StaffController::class, 'verifyPayment'])->name('payment.verify');
-    Route::get('/vehicle/pickup', [StaffController::class, 'viewPickup'])->name('vehicle.pickup');
-    Route::get('/vehicle/return', [StaffController::class, 'verifyReturn'])->name('vehicle.return');
-    Route::get('/booking/history', [StaffController::class, 'history'])->name('booking.history'); // staff history
-    Route::get('/vehicle/status', [StaffController::class, 'updateStatus'])->name('vehicle.status');
-    Route::get('/commission', [StaffController::class, 'commission'])->name('commission');
-    Route::put('/commission/update', [StaffController::class, 'updateBank'])->name('commission.update');
-    Route::post('/commission/redeem', [StaffController::class, 'redeem'])->name('commission.redeem');
-    Route::post('/payment/approve/{id}', [StaffController::class, 'approvePayment'])->name('payment.approve');
 });
 
 // Payment routes
@@ -188,9 +176,5 @@ Route::get('/admin/get-vehicle-availability', [AdminController::class, 'getVehic
 
 Route::get('/pickup/form/{bookingID}', [PickupController::class, 'form'])->name('pickup.form');
 Route::get('/return/form/{bookingID}', [ReturnController::class, 'showForm'])->name('return.form');
-
-Route::get('/staff/booking/{id}', [StaffController::class, 'showBooking'])->name('staff.bookings.show');
-Route::post('/staff/booking/{id}/approve', [StaffController::class, 'approveBooking'])->name('staff.bookings.approve');
-Route::post('/staff/booking/{id}/reject', [StaffController::class, 'rejectBooking'])->name('staff.bookings.reject');
 
 require __DIR__.'/auth.php';

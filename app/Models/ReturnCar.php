@@ -25,7 +25,11 @@ class ReturnCar extends Model
         'return_photo_left',
         'return_photo_right',
         'photo_dashboard',
-        'photo_keys'
+        'photo_keys',
+        'actual_return_time',
+        'late_fee',
+        'fuel_fee',
+        'total_fee'
     ];
 
     protected $casts = [

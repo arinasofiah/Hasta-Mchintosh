@@ -97,4 +97,16 @@ class PromotionController extends Controller
 
         return back()->with('success', 'Commission count updated successfully!');
     }
+
+    public function adminCommission()
+    {
+        $user = Auth::user();
+        $admin = Admin::where('userID', $user->userID)->first();
+
+        if (!$admin) {
+            return redirect()->back()->with('error', 'Admin record not found.');
+        }
+
+        return view('admin.commission', compact('user', 'admin'));
+    }
 }

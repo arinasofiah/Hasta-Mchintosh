@@ -792,4 +792,74 @@ class AdminController extends Controller
         
         return view('admin.promotions');
     }
+
+    public function bookings()
+    {
+        $pendingPayments = Bookings::where('bookingStatus', 'pending')->get();
+
+        $pendingApprovals = Bookings::whereIn('bookingStatus', ['paid', 'pending'])->get(); 
+
+        $upcomingPickups = Bookings::where('bookingStatus', 'approved') 
+                                  ->whereDate('startDate', '>=', Carbon::today())
+                                  ->orderBy('startDate', 'asc')
+                                  ->get();
+
+        $pendingReturns = Bookings::whereIn('bookingStatus', ['active', 'rented'])->get();
+
+        $bookingHistory = Bookings::whereIn('bookingStatus', ['completed', 'cancelled', 'rejected'])
+                                 ->orderBy('created_at', 'desc')
+                                 ->paginate(10); 
+
+        return view('admin.bookings', compact(
+            'pendingPayments', 
+            'pendingApprovals', 
+            'upcomingPickups', 
+            'pendingReturns', 
+            'bookingHistory'
+        ));
+    }
+
+    public function showBooking($id)
+    {
+        $booking = Bookings::with('customer', 'vehicle', 'payment')->findOrFail($id);
+        return view('admin.bookings.show', compact('booking'));
+    }
+
+
+    public function approvePayment($id)
+    {
+        $booking = Bookings::findOrFail($id);
+        $booking->update(['bookingStatus' => 'paid']); 
+        
+        return redirect()->back()->with('success', 'Payment verified successfully!');
+    }
+
+    public function approveBooking($id)
+    {
+        $booking = Bookings::findOrFail($id);
+        $booking->update(['bookingStatus' => 'approved']);
+        
+
+        return redirect()->back()->with('success', 'Booking approved successfully!');
+    }
+
+    public function rejectBooking($id)
+    {
+        $booking = Bookings::findOrFail($id);
+        $booking->update(['bookingStatus' => 'rejected']);
+                
+        return redirect()->route('admin.bookings')->with('success', 'Booking rejected.');
+    }
+
+    public function completeReturn($id)
+    {
+        $booking = Bookings::findOrFail($id);
+        $booking->update(['bookingStatus' => 'completed']);
+        
+        if($booking->vehicle) {
+            $booking->vehicle->update(['status' => 'available']);
+        }
+
+        return redirect()->back()->with('success', 'Vehicle returned successfully!');
+    }
 }
