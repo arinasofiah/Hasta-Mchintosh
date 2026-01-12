@@ -486,94 +486,96 @@ class BookingController extends Controller
 
 
     public function bookingHistory()
-{
-    $userId = auth()->id();
-    
-    // Eager load payments to avoid N+1 queries
-    $bookings = Bookings::with(['vehicle', 'pickup', 'returnCar', 'payments'])
-        ->where(function($query) use ($userId) {
-            $query->where('customerID', $userId)
-                ->orWhere('userID', $userId);
-        })
-        ->orderBy('created_at', 'desc')
-        ->get()
-        ->map(function($booking) {
-            // Calculate total paid from COMPLETED payments
-            $totalPaid = $booking->payments
-                ->where('paymentStatus', 'completed')
-                ->sum('amount');
-            
-            // Get the latest payment to determine payment type
-            $latestPayment = $booking->payments
-                ->where('paymentStatus', 'completed')
-                ->sortByDesc('paymentDate')
-                ->first();
-            
-            // Use booking's pay_amount_type if no payment found
-            $paymentType = $latestPayment ? $latestPayment->paymentType : $booking->pay_amount_type;
-            $bankName = $latestPayment ? $latestPayment->bankName : $booking->bank_name;
-            $bankOwnerName = $latestPayment ? $latestPayment->bankOwnerName : $booking->bank_owner_name;
-            
-            // Calculate amounts correctly
-            $rentalPrice = $booking->totalPrice ?? 0;
-            $depositAmount = 50; // Fixed deposit amount
-            
-            // Calculate like the frontend expects
-            // Total Cost is ALWAYS rental + RM50 deposit
-            $totalCost = $rentalPrice + $depositAmount;
-            
-            // Calculate remaining balance based on payment type
-            if ($paymentType == 'deposit') {
-                // For deposit payments: customer owes rental portion after paying RM50
-                // They might have paid more than RM50 (partial payment of rental)
-                // So remaining = totalCost - totalPaid
-                $remainingBalance = max(0, $totalCost - $totalPaid);
-            } elseif ($paymentType == 'full') {
-                // For full payments: remaining = totalCost - totalPaid
-                $remainingBalance = max(0, $totalCost - $totalPaid);
-            } else {
-                // No payment type or other type: full amount due
-                $remainingBalance = $totalCost;
-            }
-            
-            // Add dynamic properties
-            $booking->totalPaid = $totalPaid;
-            $booking->totalCost = $totalCost;
-            $booking->remainingBalance = $remainingBalance;
-            $booking->isFullyPaid = $remainingBalance <= 0;
-            $booking->pay_amount_type = $paymentType;
-            $booking->bank_name = $bank_name;
-            $booking->bank_owner_name = $bank_owner_name;
-            $booking->depositAmount = $depositAmount;
-            
-            // Build datetime strings using related models
-            $pickupDate = $booking->pickup?->pickupDate ?? $booking->startDate;
-            $pickupTime = $booking->pickup?->pickupTime ?? '08:00:00';
-            $returnDate = $booking->returnCar?->returnDate ?? $booking->endDate;
-            $returnTime = $booking->returnCar?->returnTime ?? '16:00:00';
+    {
+        $userId = auth()->id();
+        
+        // Eager load payments to avoid N+1 queries
+        $bookings = Bookings::with(['vehicle', 'pickup', 'returnCar', 'payments'])
+            ->where(function($query) use ($userId) {
+                $query->where('customerID', $userId)
+                    ->orWhere('userID', $userId);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function($booking) {
+                // Calculate total paid from COMPLETED payments
+                $totalPaid = $booking->payments
+                    ->where('paymentStatus', 'completed')
+                    ->sum('amount');
+                
+                // Get the latest payment to determine payment type
+                $latestPayment = $booking->payments
+                    ->where('paymentStatus', 'completed')
+                    ->sortByDesc('paymentDate')
+                    ->first();
+                
+                // Use booking's pay_amount_type if no payment found
+                $paymentType = $latestPayment ? $latestPayment->paymentType : $booking->pay_amount_type;
+                $bankName = $latestPayment ? $latestPayment->bankName : $booking->bank_name;
+                $bankOwnerName = $latestPayment ? $latestPayment->bankOwnerName : $booking->bank_owner_name;
+                
+                // Calculate amounts correctly
+                $rentalPrice = $booking->totalPrice ?? 0;
+                $depositAmount = 50; // Fixed deposit amount
+                
+                // Calculate like the frontend expects
+                // Total Cost is ALWAYS rental + RM50 deposit
+                $totalCost = $rentalPrice + $depositAmount;
+                
+                // Calculate remaining balance based on payment type
+                if ($paymentType == 'deposit') {
+                    // For deposit payments: customer owes rental portion after paying RM50
+                    // They might have paid more than RM50 (partial payment of rental)
+                    // So remaining = totalCost - totalPaid
+                    $remainingBalance = max(0, $totalCost - $totalPaid);
+                } elseif ($paymentType == 'full') {
+                    // For full payments: remaining = totalCost - totalPaid
+                    $remainingBalance = max(0, $totalCost - $totalPaid);
+                } else {
+                    // No payment type or other type: full amount due
+                    $remainingBalance = $totalCost;
+                }
+                
+                // Add dynamic properties
+                $booking->totalPaid = $totalPaid;
+                $booking->totalCost = $totalCost;
+                $booking->remainingBalance = $remainingBalance;
+                $booking->isFullyPaid = $remainingBalance <= 0;
+                $booking->pay_amount_type = $paymentType;
+                $booking->bank_name = $bank_name;
+                $booking->bank_owner_name = $bank_owner_name;
+                $booking->depositAmount = $depositAmount;
+                
+                // Build datetime strings using related models
+                $pickupDate = $booking->pickup?->pickupDate ?? $booking->startDate;
+                $pickupTime = $booking->pickup?->pickupTime ?? '08:00:00';
+                $returnDate = $booking->returnCar?->returnDate ?? $booking->endDate;
+                $returnTime = $booking->returnCar?->returnTime ?? '16:00:00';
 
-            $booking->pickupDateTime = "$pickupDate $pickupTime";
-            $booking->returnDateTime = "$returnDate $returnTime";
-            $booking->isPickupCompleted = $booking->pickup?->pickupComplete ?? false;
+                $booking->pickupDateTime = "$pickupDate $pickupTime";
+                $booking->returnDateTime = "$returnDate $returnTime";
+                $booking->isPickupCompleted = $booking->pickup?->pickupComplete ?? false;
 
-            return $booking;
+                return $booking;
+            });
+
+        \Log::info('Booking type:', ['class' => get_class($bookings->first())]);
+
+        $now = Carbon::now();
+
+        $active = $bookings->filter(function($booking) use ($now) {
+            return in_array($booking->bookingStatus, ['approved', 'confirmed'])
+                && $now->lte(Carbon::parse($booking->returnDateTime));
         });
 
-    $now = Carbon::now();
+        $pending = $bookings->filter(function($booking) use ($now) {
+            return $booking->bookingStatus === 'pending';
+        });
 
-    $active = $bookings->filter(function($booking) use ($now) {
-        return in_array($booking->bookingStatus, ['approved', 'confirmed'])
-            && $now->lte(Carbon::parse($booking->returnDateTime));
-    });
+        $completed = $bookings->where('bookingStatus', 'completed');
+        $cancelled = $bookings->where('bookingStatus', 'cancelled');
 
-    $pending = $bookings->filter(function($booking) use ($now) {
-        return $booking->bookingStatus === 'pending';
-    });
-
-    $completed = $bookings->where('bookingStatus', 'completed');
-    $cancelled = $bookings->where('bookingStatus', 'cancelled');
-
-    return view('bookingHistory', compact('active', 'pending', 'completed', 'cancelled'));
-}
+        return view('bookingHistory', compact('active', 'pending', 'completed', 'cancelled'));
+    }
 
 }
