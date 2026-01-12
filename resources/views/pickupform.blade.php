@@ -20,7 +20,11 @@
             <p id="res_txt">Reserved Vehicle</p>
             <p id="car_name">{{$vehicle->model}}</p>
 
-            <img src="{{ asset($vehicle->vehiclePhoto) }}"style="width: 100%; margin-bottom: 15px;">
+            @if($vehicle->vehiclePhoto)
+                    <img src="{{ Storage::url($vehicle->vehiclePhoto) }}"style="width: 100%; margin-bottom: 15px;" class="vehicle-image" alt="{{ $vehicle->model }}">
+            @else
+                    <img src="{{ asset('img/default-car.jpg') }}"style="width: 100%; margin-bottom: 15px;" class="vehicle-image" alt="Default Car">
+            @endif
 
             <p id="car_det">Vehicle Details</p>
             <ul class="features">
