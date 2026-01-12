@@ -242,12 +242,8 @@ textarea.input {resize:vertical; min-height:100px;}
 <form id="bookingForm" action="{{ route('payment.form') }}" method="POST">
     @csrf
     <input type="hidden" name="vehicleID" value="{{ $vehicle->vehicleID }}">
-<<<<<<< Updated upstream
     <input type="hidden" name="deliveryCharge" id="deliveryChargeInput" value="0">
-
-=======
     
->>>>>>> Stashed changes
     <div class="container">
         <!-- Booking Details Card -->
         <div class="card">
@@ -355,10 +351,6 @@ textarea.input {resize:vertical; min-height:100px;}
             <div id="driverInfoSection" style="display: none; border: 1px solid #ddd; padding: 15px; margin-top: 15px; border-radius: 5px; background: #f9f9f9;">
                 <h5 style="margin-bottom: 15px;">Driver Information</h5>
                 
-<<<<<<< Updated upstream
-                <!-- Success/Error Messages -->
-=======
->>>>>>> Stashed changes
                 <div id="driverMessage" style="display: none; padding: 10px; margin-bottom: 15px; border-radius: 5px;"></div>
                 
                 <div style="margin-bottom: 15px;">
@@ -385,47 +377,27 @@ textarea.input {resize:vertical; min-height:100px;}
                 
                 <div style="margin-bottom: 15px;">
                     <div class="field-label">Matric Number</div>
-<<<<<<< Updated upstream
-                    <input type="text" id="matricNumber" name="matricNumber" class="input" placeholder="e.g. A21CS0001">
-=======
                     <input type="text" id="matricNumber" name="driver_matric" class="input" placeholder="e.g. A21CS0001">
->>>>>>> Stashed changes
                 </div>
                 
                 <div style="margin-bottom: 15px;">
                     <div class="field-label">License Number</div>
-<<<<<<< Updated upstream
-                    <input type="text" id="licenseNumber" name="licenseNumber" class="input" placeholder="Enter license number">
-=======
                     <input type="text" id="licenseNumber" name="driver_license" class="input" placeholder="Enter license number">
->>>>>>> Stashed changes
                 </div>
                 
                 <div style="margin-bottom: 15px;">
                     <div class="field-label">College</div>
-<<<<<<< Updated upstream
-                    <input type="text" id="college" name="college" class="input" placeholder="Enter college">
-=======
                     <input type="text" id="college" name="driver_college" class="input" placeholder="Enter college">
->>>>>>> Stashed changes
                 </div>
                 
                 <div style="margin-bottom: 15px;">
                     <div class="field-label">Faculty</div>
-<<<<<<< Updated upstream
-                    <input type="text" id="faculty" name="faculty" class="input" placeholder="Enter faculty">
-=======
                     <input type="text" id="faculty" name="driver_faculty" class="input" placeholder="Enter faculty">
->>>>>>> Stashed changes
                 </div>
                 
                 <div style="margin-bottom: 15px;">
                     <div class="field-label">Deposit Balance (RM)</div>
-<<<<<<< Updated upstream
-                    <input type="number" step="0.01" id="depoBalance" name="depoBalance" class="input" placeholder="0.00">
-=======
                     <input type="number" step="0.01" id="depoBalance" name="driver_deposit" class="input" placeholder="0.00">
->>>>>>> Stashed changes
                 </div>
                 
                 <button type="button" id="registerDriverBtn" class="next-btn" style="width: 100%;">
@@ -487,51 +459,12 @@ textarea.input {resize:vertical; min-height:100px;}
             <div class="grand-amount" id="bottomBarTotal">RM 0.00</div>
         </div>
         <div>
-<<<<<<< Updated upstream
-            <button type="button" class="next-btn" onclick="goToPayment()">Next →</button>
-=======
             <button type="button" id="nextButton" class="next-btn" onclick="goToPayment()">Next →</button>
->>>>>>> Stashed changes
         </div>
     </div>
 </form>
 
 <script>
-<<<<<<< Updated upstream
-// ===== GLOBAL VARIABLES =====
-let baseGrandTotal = 0;
-let promotionDiscount = 0;
-let deliveryCharge = 0;
-
-const pricePerHour = {{ $vehicle->pricePerHour }};
-const pricePerDay = {{ $vehicle->pricePerDay }};
-
-// ===== LOCATION HANDLING =====
-function handleLocationChange(type) {
-    const locType = document.getElementById(`${type}LocationType`).value;
-    const notice = document.getElementById(`${type}DeliveryNotice`);
-    const othersFields = document.getElementById(`${type}OthersFields`);
-    const hiddenInput = document.getElementById(`${type}Location`);
-    
-    // Get the "Others" fields
-    const categoryField = document.getElementById(`${type}Category`);
-    const detailsField = document.getElementById(`${type}Details`);
-
-    if (locType === 'hasta') {
-        hiddenInput.value = 'HASTA Office, Student Mall';
-        notice.style.display = 'none';
-        othersFields.style.display = 'none';
-    } else if (locType === 'others') {
-        // Show fields and make them required
-        hiddenInput.value = 'Waiting for details...';
-        notice.style.display = 'block';
-        othersFields.style.display = 'block';
-        
-        // Add required to "Others" fields
-        if (categoryField) categoryField.setAttribute('required', 'required');
-        if (detailsField) detailsField.setAttribute('required', 'required');
-        
-=======
 let baseGrandTotal = 0;
 let promotionDiscount = 0;
 
@@ -550,7 +483,6 @@ function openMap(type) {
                              type === 'return' ? document.getElementById('returnMapLink') : 
                              document.getElementById('destinationMapLink');
         mapLinkField.value = mapUrl;
->>>>>>> Stashed changes
     } else {
         hiddenInput.value = '';
         notice.style.display = 'none';
@@ -871,93 +803,6 @@ function showMessage(text, type) {
     message.style.border = type === 'success' ? '1px solid #c3e6cb' : '1px solid #f5c6cb';
 }
 
-<<<<<<< Updated upstream
-function goToPayment() {
-    console.log('=== GO TO PAYMENT DEBUG START ===');
-    
-    const form = document.getElementById('bookingForm');
-    
-    // Debug: Log all form data
-    console.log('Form action:', form.action);
-    console.log('Form method:', form.method);
-    
-    // First, validate "Others" locations
-    console.log('\n=== Validating "Others" locations ===');
-    if (!validateOtherLocations()) {
-        return;
-    }
-    
-    // Debug: Check all required fields (skip hidden "Others" fields)
-    console.log('\n=== Checking required fields ===');
-    const allInputs = form.querySelectorAll('input, select, textarea');
-    let missingFields = [];
-    
-    allInputs.forEach(input => {
-        // Skip "Others" fields that are hidden
-        const isOthersField = ['pickupCategory', 'pickupDetails', 'returnCategory', 'returnDetails'].includes(input.id);
-        const isOthersFieldVisible = !isOthersField || input.closest('div[id$="OthersFields"]')?.style.display !== 'none';
-        
-        if (input.required && !input.value.trim() && isOthersFieldVisible) {
-            missingFields.push(input.name || input.id || input.type);
-            console.log(`❌ Missing: ${input.name || input.id} = "${input.value}"`);
-        } else if (input.required && isOthersFieldVisible) {
-            console.log(`✓ OK: ${input.name || input.id} = "${input.value}"`);
-        }
-    });
-    
-    if (missingFields.length > 0) {
-        console.log('Missing fields:', missingFields);
-        alert(`Please fill in all required fields`);
-        return;
-    }
-    
-    // Validate location fields specifically
-    console.log('\n=== Checking location fields ===');
-    const pickupLocation = document.getElementById('pickupLocation').value;
-    const returnLocation = document.getElementById('returnLocation').value;
-    
-    console.log('Pickup Location:', pickupLocation);
-    console.log('Return Location:', returnLocation);
-    
-    if (!pickupLocation || pickupLocation.trim() === '' || pickupLocation === 'Waiting for details...') {
-        alert('Please select a pickup location');
-        document.getElementById('pickupLocationType').focus();
-        return;
-    }
-    
-    if (!returnLocation || returnLocation.trim() === '' || returnLocation === 'Waiting for details...') {
-        alert('Please select a return location');
-        document.getElementById('returnLocationType').focus();
-        return;
-    }
-    
-    // Check if duration is calculated
-    console.log('\n=== Checking calculated values ===');
-    const durationValue = document.getElementById('durationInput').value;
-    console.log('Duration:', durationValue);
-    
-    if (!durationValue || durationValue === '-') {
-        alert('Please wait for duration calculation to complete');
-        return;
-    }
-    
-    // Ensure totals are calculated
-    if (typeof window.finalTotal === 'undefined') {
-        console.log('Final total not calculated yet, recalculating...');
-        recalculateTotal();
-    }
-    
-    console.log('Base Grand Total:', baseGrandTotal);
-    console.log('Promotion Discount:', promotionDiscount);
-    console.log('Delivery Charge:', deliveryCharge);
-    console.log('Final Total:', window.finalTotal);
-
-    updateDeliveryCharge();
-    recalculateTotal();
-
-    // Add hidden fields for calculated values
-    console.log('\n=== Adding dynamic fields ===');
-=======
 // Calculate duration and prices
 document.addEventListener('DOMContentLoaded', function() {
     const pickupDateInput = document.querySelector('input[name="pickup_date"]');
@@ -1093,7 +938,6 @@ function goToPayment() {
     document.querySelectorAll('input.dynamic-field').forEach(el => el.remove());
     
     // Add calculation fields
->>>>>>> Stashed changes
     const hiddenFields = [
         { name: 'subtotal', value: baseGrandTotal || 0 },
         { name: 'promotionDiscount', value: promotionDiscount || 0 },
@@ -1119,7 +963,6 @@ function goToPayment() {
         console.log(`Added field: ${field.name} = ${field.value}`);
     });
     
-<<<<<<< Updated upstream
     console.log('\n=== Form ready to submit ===');
     console.log('Total fields in form:', form.querySelectorAll('input, select, textarea').length);
     
@@ -1233,6 +1076,3 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
-=======
-    console.log('Form data before submit:', new FormData(form));
->>>>>>> Stashed changes
