@@ -70,6 +70,20 @@
             color: #888;
             margin-top: 5px;
         }
+        
+        /* Booking Dates Styling */
+        .booking-dates {
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+        .date-range {
+            font-weight: 500;
+            color: #333;
+        }
+        .date-arrow {
+            color: #888;
+            margin: 0 5px;
+        }
     </style>
 </head>
 <body>
@@ -222,24 +236,41 @@
                 <div class="row stats-header pb-2 px-2">
                     <div class="col-2">Booking Code</div>
                     <div class="col-3">Car Details</div>
-                    <div class="col-2">Duration</div>
+                    <div class="col-3">Booking Dates</div>
                     <div class="col-2 text-center">Status</div>
-                    <div class="col-3 text-end">Total Price</div>
+                    <div class="col-2 text-end">Total Price</div>
                 </div>
                 @foreach($recentBookings as $booking)
+                @php
+                    // Format the dates
+                    $startDate = \Carbon\Carbon::parse($booking->startDate ?? $booking->start_date);
+                    $endDate = \Carbon\Carbon::parse($booking->endDate ?? $booking->end_date);
+                @endphp
                 <div class="row stats-row align-items-center px-2">
                     <div class="col-2 fw-bold">#{{ $booking->booking_code ?? $booking->bookingID }}</div>
                     <div class="col-3 car-details">
                         {{ $booking->vehicleModel ?? 'N/A' }}<br>
                         <small class="text-muted">{{ $booking->vehicleType ?? '' }} • {{ $booking->plateNo ?? '' }}</small>
                     </div>
-                    <div class="col-2 text-muted">{{ $booking->bookingDuration ?? 'N/A' }} Days</div>
+                    <div class="col-3 booking-dates">
+                        <div class="date-range">
+                            {{ $startDate->format('d M Y') }}
+                            <span class="date-arrow">→</span>
+                            {{ $endDate->format('d M Y') }}
+                        </div>
+                        <small class="text-muted">
+                            @php
+                                $duration = $startDate->diffInDays($endDate);
+                                echo "(" . $duration . " day" . ($duration != 1 ? 's' : '') . ")";
+                            @endphp
+                        </small>
+                    </div>
                     <div class="col-2 text-center">
-                        <span class="badge rounded-pill {{ $booking->bookingStatus == 'approved' ? 'bg-success' : ($booking->bookingStatus == 'pending' ? 'bg-warning' : 'bg-secondary') }}">
+                        <span class="badge rounded-pill {{ $booking->bookingStatus == 'approved' ? 'bg-success' : ($booking->bookingStatus == 'pending' ? 'bg-warning' : ($booking->bookingStatus == 'cancelled' ? 'bg-danger' : 'bg-secondary')) }}">
                             {{ ucfirst($booking->bookingStatus) }}
                         </span>
                     </div>
-                    <div class="col-3 text-end fw-bold text-success">RM {{ number_format($booking->totalPrice, 2) }}</div>
+                    <div class="col-2 text-end fw-bold text-success">RM {{ number_format($booking->totalPrice, 2) }}</div>
                 </div>
                 @endforeach
             </div>
