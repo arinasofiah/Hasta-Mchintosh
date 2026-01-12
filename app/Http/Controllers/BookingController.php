@@ -143,73 +143,110 @@ class BookingController extends Controller
     }
 
     // Show payment form 
-    public function showPaymentForm(Request $request)
-    {
-        \Log::info('Payment form request received', $request->all());
+public function showPaymentForm(Request $request)
+{
+    \Log::info('Payment form request received', $request->all());
 
-        // Validate required fields
-        $validated = $request->validate([
-            'vehicleID' => 'required',
-            'pickup_date' => 'required',
-            'pickup_time' => 'required',
-            'return_date' => 'required',
-            'return_time' => 'required',
-            'pickupLocation' => 'required',
-            'returnLocation' => 'required',
-            'subtotal' => 'required|numeric',
-            'total' => 'required|numeric',
-            'duration' => 'required',
-        ]);
+    // Validate required fields
+    $validated = $request->validate([
+        'vehicleID' => 'required',
+        'pickup_date' => 'required',
+        'pickup_time' => 'required',
+        'return_date' => 'required',
+        'return_time' => 'required',
+        'pickupLocation' => 'required',
+        'returnLocation' => 'required',
+        'subtotal' => 'required|numeric',
+        'total' => 'required|numeric',
+        'duration' => 'required',
+    ]);
 
-        $vehicle = Vehicles::findOrFail($request->vehicleID);
+    $vehicle = Vehicles::findOrFail($request->vehicleID);
 
-        $pickupDate = $request->pickup_date;
-        $pickupTime = $request->pickup_time;
-        $returnDate = $request->return_date;
-        $returnTime = $request->return_time;
+    $pickupDate = $request->pickup_date;
+    $pickupTime = $request->pickup_time;
+    $returnDate = $request->return_date;
+    $returnTime = $request->return_time;
 
-        // Calculate dates and prices
-        $pickup = Carbon::parse($pickupDate . ' ' . $pickupTime);
-        $return = Carbon::parse($returnDate . ' ' . $returnTime);
-        
-        $dateRange = $pickup->format('d M Y') . ' - ' . $return->format('d M Y');
-        
-        $finalSubtotal = $request->subtotal;
-        $promotionDiscount = $request->promotionDiscount ?? 0;
-        $finalTotal = $request->total;
-        $deposit = $finalTotal * 0.5; // 50% deposit
+    // Calculate dates and prices
+    $pickup = Carbon::parse($pickupDate . ' ' . $pickupTime);
+    $return = Carbon::parse($returnDate . ' ' . $returnTime);
+    
+    $dateRange = $pickup->format('d M Y') . ' - ' . $return->format('d M Y');
+    
+    $finalSubtotal = $request->subtotal;
+    $promotionDiscount = $request->promotionDiscount ?? 0;
+    $finalTotal = $request->total;
+    $deposit = $finalTotal * 0.5; // 50% deposit
 
-        // Get promo details if exists
-        $promoDetails = null;
-        if ($request->promo_id) {
-            $promoDetails = Promotion::find($request->promo_id);
-        }
+    // ✅ 1. Get delivery charge (critical fix!)
+    $deliveryCharge = $request->input('delivery_charge', 0);
 
-        return view('paymentform', [
-            'vehicle' => $vehicle,
-            'pickupDate' => $pickupDate,
-            'pickupTime' => $pickupTime,
-            'returnDate' => $returnDate,
-            'returnTime' => $returnTime,
-            'pickupLocation' => $request->pickupLocation,
-            'returnLocation' => $request->returnLocation,
-            'destination' => $request->destination,
-            'remark' => $request->remark,
-            'forSomeoneElse' => $request->for_someone_else ?? 0,
-            'matricNumber' => $request->driver_matric ?? '',
-            'licenseNumber' => $request->driver_license ?? '',
-            'college' => $request->driver_college ?? '',
-            'faculty' => $request->driver_faculty ?? '',
-            'depoBalance' => $request->driver_deposit ?? 0,
-            'finalSubtotal' => $finalSubtotal,
-            'promotionDiscount' => $promotionDiscount,
-            'finalTotal' => $finalTotal,
-            'dateRange' => $dateRange,
-            'durationText' => $request->duration,
-            'deposit' => $deposit,
-            'promoDetails' => $promoDetails,
-        ]);
+    // Get promo details if exists
+    $promoDetails = null;
+    if ($request->promo_id) {
+        $promoDetails = Promotion::find($request->promo_id);
     }
+
+    // ✅ 2. Get eligible vouchers
+    $eligibleVouchers = collect();
+    if (Auth::check()) {
+        $eligibleVouchers = Voucher::where('userID', Auth::id())
+            ->where('isUsed', 0)
+            ->where('expiryTime', '>', now()->timestamp)
+            ->get()
+            ->map(function ($v) {
+                return (object)[
+                    'promoID' => $v->voucherID,
+                    'title' => $v->voucherType == 'free_hour' ? 'Free Hour' : 'Cash Voucher',
+                    'code' => $v->voucherCode,
+                    'discountValue' => $v->value
+                ];
+            });
+    }
+
+    // ✅ 3. Get loyalty card data
+    $loyaltyCard = null;
+    if (Auth::check()) {
+        $user = Auth::user();
+        $customerProfile = DB::table('customer')->where('userID', $user->userID)->first();
+        
+        if ($customerProfile) {
+            $loyaltyCard = LoyaltyCard::firstOrCreate(
+                ['matricNumber' => $customerProfile->matricNumber],
+                ['stampCount' => 0]
+            );
+        }
+    }
+
+    return view('paymentform', [
+        'vehicle' => $vehicle,
+        'pickupDate' => $pickupDate,
+        'pickupTime' => $pickupTime,
+        'returnDate' => $returnDate,
+        'returnTime' => $returnTime,
+        'pickupLocation' => $request->pickupLocation,
+        'returnLocation' => $request->returnLocation,
+        'destination' => $request->destination,
+        'remark' => $request->remark,
+        'forSomeoneElse' => $request->for_someone_else ?? 0,
+        'matricNumber' => $request->driver_matric ?? '',
+        'licenseNumber' => $request->driver_license ?? '',
+        'college' => $request->driver_college ?? '',
+        'faculty' => $request->driver_faculty ?? '',
+        'depoBalance' => $request->driver_deposit ?? 0,
+        'finalSubtotal' => $finalSubtotal,
+        'promotionDiscount' => $promotionDiscount,
+        'finalTotal' => $finalTotal,
+        'dateRange' => $dateRange,
+        'durationText' => $request->duration,
+        'deposit' => $deposit,
+        'promoDetails' => $promoDetails,
+        'eligibleVouchers' => $eligibleVouchers,
+        'loyaltyCard' => $loyaltyCard,
+        'deliveryCharge' => $deliveryCharge, // ✅ Now included!
+    ]);
+}
 
     public function validateVoucher(Request $request)
     {
