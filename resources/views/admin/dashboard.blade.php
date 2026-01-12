@@ -162,7 +162,6 @@
     @if(Auth::user()->userType === 'admin')
         <a href="{{ route('admin.staff') }}" class="nav-item">Staff</a>
     @endif
-    <a href="{{ route('admin.staff') }}" class="nav-item">Staff</a>
     <a href="{{ route('admin.promotions') }}" class="nav-item">Promotions</a>
 </div>
 

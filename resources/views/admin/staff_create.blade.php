@@ -16,7 +16,7 @@
         .main-content { margin-left: 250px; padding: 40px; }
         .form-card { background: #fff; border-radius: 15px; padding: 35px; box-shadow: 0 2px 15px rgba(0,0,0,0.06); max-width: 550px; margin: 0 auto; }
         .form-header { border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 25px; }
-        .invitation-info { background: #f8f9fa; border-left: 3px solid #bc3737; padding: 18px; border-radius: 8px; margin-bottom: 25px; }
+        .invitation-info { background: #f8f9fa; padding: 18px; border-radius: 8px; margin-bottom: 25px; }
         .form-label { font-weight: 600; color: #333; font-size: 0.95rem; }
         .required::after { content: " *"; color: #dc3545; }
         .btn-custom { background-color: #bc3737; color: white; border-radius: 20px; padding: 8px 25px; border: none; font-weight: 500; font-size: 0.9rem; }
