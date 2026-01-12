@@ -44,126 +44,7 @@
         }
         
         .booking-card {
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-            background: #fff;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
             position: relative;
-        }
-
-        .status-badge {
-            position: absolute;
-            top: -10px;
-            right: 12px;
-            background: #f0f0f0;
-            color: #555;
-            font-size: 0.8rem;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-weight: 600;
-        }
-
-        .booking-card.upcoming .status-badge { background: #e3f2fd; color: #1976d2; }
-        .booking-card.active .status-badge   { background: #e8f5e9; color: #2e7d32; }
-        .booking-card.reserved .status-badge { background: #fff8e1; color: #ff8f00; }
-
-        .card-content {
-            margin: 16px 0;
-        }
-
-        .vehicle-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 12px;
-        }
-
-        .vehicle-info h3 {
-            margin: 0 0 4px;
-            font-size: 1.1rem;
-        }
-
-        .vehicle-type {
-            color: #666;
-            margin: 0;
-            font-size: 0.9rem;
-        }
-
-        .price-tag {
-            font-weight: bold;
-            font-size: 1.2rem;
-            color: #1976d2;
-        }
-
-        .booking-dates {
-            margin: 10px 0;
-            font-weight: 500;
-        }
-
-        .time-hint {
-            font-size: 0.85rem;
-            color: #777;
-            margin-top: 4px;
-        }
-
-        .payment-summary {
-            font-size: 0.95rem;
-            margin: 8px 0;
-        }
-
-        .paid-full {
-            color: #2e7d32;
-            font-weight: 600;
-        }
-
-        .balance-amount {
-            color: #d32f2f;
-        }
-
-        .card-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 12px;
-        }
-
-        .btn {
-            padding: 6px 12px;
-            font-size: 0.9rem;
-            border-radius: 6px;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-outline {
-            border: 1px solid #ccc;
-            background: transparent;
-            color: #333;
-        }
-
-        .btn-primary {
-            background: #1976d2;
-            color: white;
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-warning {
-            background: #ff8f00;
-            color: white;
-        }
-
-        .no-bookings {
-            text-align: center;
-            color: #666;
-            padding: 20px;
         }
     </style>
 </head>
@@ -234,105 +115,123 @@
                     @forelse($active as $booking)
                         @php
                             $vehicle = $booking->vehicle ?? null;
+                            // Use values calculated in controller
                             $rentalPrice = $booking->totalPrice ?? 0;
                             $totalCost = $booking->totalCost ?? ($rentalPrice + 50);
                             $totalPaid = $booking->totalPaid ?? 0;
                             $remainingBalance = $booking->remainingBalance ?? 0;
                             $isFullyPaid = $booking->isFullyPaid ?? false;
-
+                            
+                            // Check if booking has started yet
                             $now = \Carbon\Carbon::now();
                             $startDate = \Carbon\Carbon::parse($booking->startDate);
-                            $endDate = \Carbon\Carbon::parse($booking->endDate);
                             $isUpcoming = $now->lt($startDate);
+                            
+                            // Check if booking is currently active
+                            $endDate = \Carbon\Carbon::parse($booking->endDate);
                             $isCurrent = $now->between($startDate, $endDate);
-
+                            
+                            // Determine if balance can be paid
                             $canPayBalance = $remainingBalance > 0 && 
-                                            $booking->bookingStatus === 'approved' && 
-                                            !$isUpcoming;
+                                           $booking->bookingStatus === 'approved' && 
+                                           !$isUpcoming;
                         @endphp
-
-                        <div class="booking-card {{ $isUpcoming ? 'upcoming' : ($isCurrent ? 'active' : 'reserved') }}">
-                            <!-- Status badge (single source of truth) -->
-                            <div class="status-badge">
-                                @if($isUpcoming)
-                                    Upcoming
-                                @elseif($booking->bookingStatus === 'reserved')
-                                    Reserved
-                                @else
-                                    Active
-                                @endif
-                            </div>
-
-                            <div class="card-content">
-                                <!-- Vehicle info + price side-by-side on desktop -->
-                                <div class="vehicle-row">
-                                    <div class="vehicle-info">
-                                        <h3>{{ $vehicle?->model ?? 'Car Model' }}</h3>
-                                        <p class="vehicle-type">{{ $vehicle?->vehicleType ?? 'Vehicle Type' }}</p>
-                                    </div>
-                                    <div class="price-tag">
-                                        RM{{ number_format($rentalPrice, 2) }}
+                        
+                        <div class="booking-card">
+                            @if($isUpcoming)
+                                <div class="upcoming-badge">
+                                    <i class="fas fa-calendar-alt"></i> Upcoming
+                                </div>
+                            @endif
+                            
+                            <div class="booking-details">
+                                <div class="car-info">
+                                    <h3>{{ $vehicle->model ?? 'Car Model' }}</h3>
+                                    <p>{{ $vehicle->vehicleType ?? 'Vehicle Type' }}</p>
+                                    
+                                    <!-- Payment Information -->
+                                    <div class="payment-info">
+                                        @if($remainingBalance > 0)
+                                            <div class="paid">Paid: RM{{ number_format($totalPaid, 2) }}</div>
+                                            <div class="remaining">Balance: RM{{ number_format($remainingBalance, 2) }}</div>
+                                        @elseif($isFullyPaid)
+                                            <div class="paid">Fully Paid</div>
+                                        @endif
                                     </div>
                                 </div>
 
-                                <!-- Dates -->
-                                <div class="booking-dates">
-                                    {{ $startDate->format('d M Y') }} – {{ $endDate->format('d M Y') }}
+                                <div class="price">
+                                    RM{{ number_format($rentalPrice, 2) }}
+                                </div>
+
+                                <div class="dates">
+                                    {{ date('d M Y', strtotime($booking->startDate)) }} - 
+                                    {{ date('d M Y', strtotime($booking->endDate)) }}
+                                    
                                     @if($isUpcoming)
-                                        <div class="time-hint">
-                                            <i class="far fa-clock"></i> Starts {{ $startDate->diffForHumans() }}
+                                        <div class="time-until">
+                                            <i class="far fa-clock"></i> 
+                                            Starts in {{ \Carbon\Carbon::parse($booking->startDate)->diffForHumans() }}
+                                        </div>
+                                    @endif
+                                    
+                                    @if($booking->bookingStatus === 'approved' && !$isUpcoming)
+                                        <div class="action-buttons" style="margin-top: 10px;">
+                                            {{-- Pickup Button --}}
+                                            <a href="{{ route('pickup.form', ['bookingID' => $booking->bookingID]) }}" 
+                                               class="btn btn-primary btn-sm pickup-btn"
+                                               title="Process vehicle pickup">
+                                                <i class="fas fa-car"></i> Pickup
+                                            </a>
+                                            
+                                            {{-- Return Button --}}
+                                            @if($isCurrent)
+                                                <a href="{{ route('return.form', ['bookingID' => $booking->bookingID]) }}" 
+                                                   class="btn btn-warning btn-sm return-btn"
+                                                   title="Process vehicle return">
+                                                    <i class="fas fa-undo"></i> Return
+                                                </a>
+                                            @endif
                                         </div>
                                     @endif
                                 </div>
 
-                                <!-- Payment summary -->
-                                <div class="payment-summary">
-                                    @if($isFullyPaid)
-                                        <span class="paid-full">✓ Fully Paid</span>
+                                <div class="status 
+                                    @if($isUpcoming) upcoming
+                                    @elseif($booking->bookingStatus === 'reserved') reserved
+                                    @else active @endif">
+                                    @if($isUpcoming)
+                                        Upcoming
+                                    @elseif($booking->bookingStatus === 'reserved')
+                                        Reserved
                                     @else
-                                        <span class="paid-amount">Paid: RM{{ number_format($totalPaid, 2) }}</span>
-                                        @if($remainingBalance > 0)
-                                            <span class="balance-amount">• Balance: RM{{ number_format($remainingBalance, 2) }}</span>
-                                        @endif
+                                        Active
+                                    @endif
+                                </div>
+
+                                <div class="action-buttons-main">
+                                    <button class="action-btn" 
+                                            onclick="showDetailsModal({{ $booking->bookingID }})">
+                                        <i class="fas fa-eye"></i> Details
+                                    </button>
+                                    
+                                    @if($canPayBalance)
+                                        <a href="{{ route('payment.remaining', ['bookingID' => $booking->bookingID]) }}" 
+                                           class="action-btn-success" 
+                                           style="text-decoration: none;">
+                                            <i class="fas fa-credit-card"></i> Pay Balance (RM{{ number_format($remainingBalance, 2) }})
+                                        </a>
                                     @endif
                                 </div>
                             </div>
-
-                            <!-- Unified action buttons -->
-                            <div class="card-actions">
-                                <button class="btn btn-outline" onclick="showDetailsModal({{ $booking->bookingID }})">
-                                    <i class="fas fa-eye"></i> Details
-                                </button>
-
-                                @if($canPayBalance)
-                                    <a href="{{ route('payment.remaining', ['bookingID' => $booking->bookingID]) }}" 
-                                    class="btn btn-primary">
-                                        <i class="fas fa-credit-card"></i> Pay RM{{ number_format($remainingBalance, 2) }}
-                                    </a>
-                                @endif
-
-                                @if($booking->bookingStatus === 'approved' && !$isUpcoming)
-                                    <a href="{{ route('pickup.form', ['bookingID' => $booking->bookingID]) }}" 
-                                    class="btn btn-secondary"
-                                    title="Process vehicle pickup">
-                                        <i class="fas fa-car"></i> Pickup
-                                    </a>
-
-                                    @if($isCurrent)
-                                        <a href="{{ route('return.form', ['bookingID' => $booking->bookingID]) }}" 
-                                        class="btn btn-warning"
-                                        title="Process vehicle return">
-                                            <i class="fas fa-undo"></i> Return
-                                        </a>
-                                    @endif
-                                @endif
-                            </div>
                         </div>
                     @empty
-                        <p class="no-bookings">No active or upcoming bookings.</p>
+                        <div class="empty-state">
+                            <i class="fas fa-calendar-check" style="font-size: 24px; margin-bottom: 10px;"></i><br>
+                            No active or upcoming bookings.
+                        </div>
                     @endforelse
                 </div>
-            </div>
                 
                 @if(count($active) > 3)
                 <div class="show-more-container">
