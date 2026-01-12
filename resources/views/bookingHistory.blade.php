@@ -208,12 +208,6 @@
                                         Active
                                     @endif
                                 </div>
-
-                                <div class="action-buttons-main">
-                                    <button class="action-btn" 
-                                            onclick="showDetailsModal({{ $booking->bookingID }})">
-                                        <i class="fas fa-eye"></i> Details
-                                    </button>
                                     
                                     @if($canPayBalance)
                                         <a href="{{ route('payment.remaining', ['bookingID' => $booking->bookingID]) }}" 
