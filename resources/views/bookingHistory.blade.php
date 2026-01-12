@@ -15,6 +15,7 @@
     <link href="{{ asset('css/booking-history.css') }}" rel="stylesheet">
  
     <style>
+        
         .status.upcoming {
             background-color: #6c757d !important; /* Grey color for upcoming */
             color: white !important;
@@ -78,8 +79,6 @@
         </div>
     </div>
 
-    
-
     {{-- Main Content with Sidebar --}}
     <div class="content-with-sidebar">
         {{-- Sidebar Menu --}}
@@ -108,30 +107,25 @@
         <div class="booking-history-page">
             <h1 class="profile-title">My Booking History</h1>
         
-            <!-- Active/Ongoing Bookings Section -->
             <div class="booking-section">
                 <div class="section-title active">Active & Upcoming Bookings</div>
                 <div class="booking-cards-container" id="activeBookingsContainer">
                     @forelse($active as $booking)
                         @php
                             $vehicle = $booking->vehicle ?? null;
-                            // Use values calculated in controller
                             $rentalPrice = $booking->totalPrice ?? 0;
                             $totalCost = $booking->totalCost ?? ($rentalPrice + 50);
                             $totalPaid = $booking->totalPaid ?? 0;
                             $remainingBalance = $booking->remainingBalance ?? 0;
                             $isFullyPaid = $booking->isFullyPaid ?? false;
                             
-                            // Check if booking has started yet
                             $now = \Carbon\Carbon::now();
                             $startDate = \Carbon\Carbon::parse($booking->startDate);
                             $isUpcoming = $now->lt($startDate);
                             
-                            // Check if booking is currently active
                             $endDate = \Carbon\Carbon::parse($booking->endDate);
                             $isCurrent = $now->between($startDate, $endDate);
                             
-                            // Determine if balance can be paid
                             $canPayBalance = $remainingBalance > 0 && 
                                            $booking->bookingStatus === 'approved' && 
                                            !$isUpcoming;
@@ -149,7 +143,6 @@
                                     <h3>{{ $vehicle->model ?? 'Car Model' }}</h3>
                                     <p>{{ $vehicle->vehicleType ?? 'Vehicle Type' }}</p>
                                     
-                                    <!-- Payment Information -->
                                     <div class="payment-info">
                                         @if($remainingBalance > 0)
                                             <div class="paid">Paid: RM{{ number_format($totalPaid, 2) }}</div>
@@ -177,14 +170,12 @@
                                     
                                     @if($booking->bookingStatus === 'approved')
                                         <div class="action-buttons" style="margin-top: 10px;">
-                                            {{-- Pickup Button --}}
                                             <a href="{{ route('pickup.form', ['bookingID' => $booking->bookingID]) }}" 
                                                class="btn btn-primary btn-sm pickup-btn"
                                                title="Process vehicle pickup">
-                                                <i class="fas fa-car"></i> Pickup
+                                                 <i class="fas fa-car"></i> Pickup
                                             </a>
                                             
-                                            {{-- Return Button --}}
                                             @if($booking->pickup?->pickupComplete ?? false)
                                                 <a href="{{ route('return.form', ['bookingID' => $booking->bookingID]) }}" 
                                                 class="btn btn-warning btn-sm return-btn"
@@ -218,7 +209,6 @@
                                     @endif
                                 </div>
                             </div>
-                        </div>
                     @empty
                         <div class="empty-state">
                             <i class="fas fa-calendar-check" style="font-size: 24px; margin-bottom: 10px;"></i><br>
@@ -235,16 +225,12 @@
                     </button>
                 </div>
                 @endif
-            </div>
-
-            <!-- Pending Bookings Section -->
-            <div class="booking-section">
+            </div> <div class="booking-section">
                 <div class="section-title pending">Pending Bookings</div>
                 <div class="booking-cards-container" id="pendingBookingsContainer">
                     @forelse($pending as $booking)
                         @php
                             $vehicle = $booking->vehicle ?? null;
-                            // Use values calculated in controller
                             $rentalPrice = $booking->totalPrice ?? 0;
                             $totalPaid = $booking->totalPaid ?? 0;
                             $remainingBalance = $booking->remainingBalance ?? 0;
@@ -293,14 +279,10 @@
                     </button>
                 </div>
                 @endif
-            </div>
-
-            <!-- Past Bookings Section -->
-            <div class="booking-section">
+            </div> <div class="booking-section">
                 <div class="section-title past">Past Bookings</div>
                 
                 <div class="past-bookings-grid">
-                    <!-- Completed Bookings Column -->
                     <div class="past-bookings-section">
                         <h4><i class="fas fa-check-circle"></i> Completed</h4>
                         <div class="past-bookings-scroll-container" id="completedScroll">
@@ -335,7 +317,6 @@
                         </div>
                     </div>
 
-                    <!-- Cancelled Bookings Column -->
                     <div class="past-bookings-section">
                         <h4><i class="fas fa-times-circle"></i> Cancelled</h4>
                         <div class="past-bookings-scroll-container" id="cancelledScroll">
@@ -381,7 +362,6 @@
         </div>
     </div>
 
-    <!-- Cancel Modal -->
     <div id="cancelModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -398,8 +378,7 @@
                     <div class="info-message">
                         <strong><i class="fas fa-info-circle"></i> Current Booking Details:</strong>
                         <div id="cancel-booking-details">
-                            <!-- Will be populated by JavaScript -->
-                        </div>
+                            </div>
                     </div>
 
                     <div class="warning-message">
@@ -416,7 +395,6 @@
             </form>
         </div>
     </div>
-    
     <script>
     let bookingsData = [];
 
