@@ -289,7 +289,7 @@ public function showPaymentForm(Request $request)
     }
 
     // Confirm booking and payment - FIXED VERSION
-  public function confirmBooking(Request $request)
+ public function confirmBooking(Request $request)
 {
     \Log::info('=== START BOOKING CONFIRMATION ===');
     \Log::info('Request data:', $request->all());
@@ -388,75 +388,70 @@ public function showPaymentForm(Request $request)
             return back()->with('error', 'Payment receipt is required')->withInput();
         }
 
-        // Create booking
-        \Log::info('Creating booking record...');
-        $booking = new Bookings();
-        $booking->customerID = auth()->id();
-        $booking->vehicleID = $vehicle->vehicleID;
-        $booking->startDate = $request->pickup_date;
-        $booking->endDate = $request->return_date;
-        $booking->bookingDuration = $durationHours;
-        $booking->bookingStatus = 'pending';
-        $booking->reservation_expires_at = now()->addMinutes(30);
-        $booking->totalPrice = $totalPrice;
-        $booking->delivery_charge = $deliveryCharge;
-        $booking->promo_id = $request->promo_id;
-        $booking->destination = $request->destination;
-        $booking->remark = $request->remark;
-        $booking->bank_name = $request->bank_name;
-        $booking->bank_owner_name = $request->bank_owner_name;
-        $booking->pay_amount_type = $request->payAmount;
-        $booking->payment_receipt_path = $receiptPath;
-        
-        if ($request->filled('for_someone_else') && $request->for_someone_else == 1) {
-            $booking->for_someone_else = true;
-            $booking->driver_matric_number = $request->matricNumber;
-            $booking->driver_license_number = $request->licenseNumber;
-            $booking->driver_college = $request->college;
-            $booking->driver_faculty = $request->faculty;
-            $booking->driver_deposit_balance = $request->depoBalance ?? 0;
-        }
+        // ========== START DATABASE TRANSACTION ==========
+        DB::beginTransaction();
         
         try {
+            // Create booking with PENDING status (awaiting admin approval)
+            \Log::info('Creating booking record...');
+            $booking = new Bookings();
+            $booking->customerID = auth()->id();
+            $booking->vehicleID = $vehicle->vehicleID;
+            $booking->startDate = $request->pickup_date;
+            $booking->endDate = $request->return_date;
+            $booking->bookingDuration = $durationHours;
+            $booking->bookingStatus = 'pending'; // ✅ PENDING - awaits admin approval
+            $booking->reservation_expires_at = now()->addHours(24); // ✅ Give admin 24h to review
+            $booking->totalPrice = $totalPrice;
+            $booking->delivery_charge = $deliveryCharge;
+            $booking->promo_id = $request->promo_id;
+            $booking->destination = $request->destination;
+            $booking->remark = $request->remark;
+            $booking->bank_name = $request->bank_name;
+            $booking->bank_owner_name = $request->bank_owner_name;
+            $booking->pay_amount_type = $request->payAmount;
+            $booking->payment_receipt_path = $receiptPath;
+            
+            if ($request->filled('for_someone_else') && $request->for_someone_else == 1) {
+                $booking->for_someone_else = true;
+                $booking->driver_matric_number = $request->matricNumber;
+                $booking->driver_license_number = $request->licenseNumber;
+                $booking->driver_college = $request->college;
+                $booking->driver_faculty = $request->faculty;
+                $booking->driver_deposit_balance = $request->depoBalance ?? 0;
+            }
+            
             $booking->save();
             \Log::info('Booking saved successfully:', ['bookingID' => $booking->bookingID]);
-        } catch (\Exception $e) {
-            \Log::error('Failed to save booking:', ['error' => $e->getMessage()]);
-            return back()->with('error', 'Failed to create booking')->withInput();
-        }
 
-        // ========== CREATE PAYMENT RECORD ==========
-        \Log::info('--- CREATING PAYMENT RECORD ---');
-        
-        // Calculate payment amount
-        $paymentAmount = ($request->payAmount == 'deposit') ? 50 : ($totalPrice + 50);
-        
-        \Log::info('Payment calculation:', [
-            'payment_type' => $request->payAmount,
-            'calculated_amount' => $paymentAmount,
-            'total_price' => $totalPrice,
-            'formula' => $request->payAmount == 'deposit' ? 'RM50 fixed' : 'totalPrice + RM50'
-        ]);
-        
-        // Create payment using array data (more reliable)
-        $paymentData = [
-            'bookingID' => $booking->bookingID,
-            'bankName' => $request->bank_name,
-            'bankOwnerName' => $request->bank_owner_name,
-            'amount' => $paymentAmount,
-            'paymentType' => $request->payAmount,
-            'paymentStatus' => 'completed',
-            'receiptImage' => $receiptPath,
-            'paymentDate' => now()->format('Y-m-d'),
-            'qrPayment' => null,
-            'created_at' => now(),
-            'updated_at' => now()
-        ];
-        
-        \Log::info('Payment data prepared:', $paymentData);
-        
-        try {
-            // Try to create payment using create() method
+            // ========== CREATE PAYMENT RECORD ==========
+            \Log::info('--- CREATING PAYMENT RECORD ---');
+            
+            // Calculate payment amount
+            $paymentAmount = ($request->payAmount == 'deposit') ? 50 : ($totalPrice + 50);
+            
+            \Log::info('Payment calculation:', [
+                'payment_type' => $request->payAmount,
+                'calculated_amount' => $paymentAmount,
+                'total_price' => $totalPrice,
+                'formula' => $request->payAmount == 'deposit' ? 'RM50 fixed' : 'totalPrice + RM50'
+            ]);
+            
+            // Create payment with COMPLETED status (payment verified automatically)
+            $paymentData = [
+                'bookingID' => $booking->bookingID,
+                'bankName' => $request->bank_name,
+                'bankOwnerName' => $request->bank_owner_name,
+                'amount' => $paymentAmount,
+                'paymentType' => $request->payAmount,
+                'paymentStatus' => 'completed', // ✅ COMPLETED - payment received
+                'receiptImage' => $receiptPath,
+                'paymentDate' => now()->format('Y-m-d'),
+                'qrPayment' => null,
+            ];
+            
+            \Log::info('Payment data prepared:', $paymentData);
+            
             $payment = Payment::create($paymentData);
             \Log::info('PAYMENT CREATED SUCCESSFULLY!', [
                 'paymentID' => $payment->paymentID,
@@ -465,27 +460,9 @@ public function showPaymentForm(Request $request)
                 'type' => $payment->paymentType,
                 'status' => $payment->paymentStatus
             ]);
-        } catch (\Illuminate\Database\QueryException $qe) {
-            \Log::error('DATABASE ERROR creating payment:', [
-                'sql_error' => $qe->getMessage(),
-                'sql_code' => $qe->getCode(),
-                'sql_bindings' => $qe->getBindings(),
-                'full_query' => $qe->getSql()
-            ]);
-            throw $qe;
-        } catch (\Exception $e) {
-            \Log::error('GENERAL ERROR creating payment:', [
-                'error' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine()
-            ]);
-            throw $e;
-        }
-        // ========== END PAYMENT CREATION ==========
 
-        // Create pickup record
-        \Log::info('Creating pickup record...');
-        try {
+            // ========== CREATE PICKUP RECORD ==========
+            \Log::info('Creating pickup record...');
             PickUp::create([
                 'bookingID' => $booking->bookingID,
                 'pickupDate' => $request->pickup_date,
@@ -493,13 +470,9 @@ public function showPaymentForm(Request $request)
                 'location' => $request->pickupLocation,
             ]);
             \Log::info('Pickup record created');
-        } catch (\Exception $e) {
-            \Log::error('Failed to create pickup record:', ['error' => $e->getMessage()]);
-        }
 
-        // Create return record
-        \Log::info('Creating return record...');
-        try {
+            // ========== CREATE RETURN RECORD ==========
+            \Log::info('Creating return record...');
             ReturnCar::create([
                 'bookingID' => $booking->bookingID,
                 'returnDate' => $request->return_date,
@@ -507,57 +480,45 @@ public function showPaymentForm(Request $request)
                 'location' => $request->returnLocation,
             ]);
             \Log::info('Return record created');
-        } catch (\Exception $e) {
-            \Log::error('Failed to create return record:', ['error' => $e->getMessage()]);
-        }
 
-        // Update vehicle status
-        \Log::info('Updating vehicle status...');
-        try {
-            $vehicle->status = 'unavailable';
+            // ========== UPDATE VEHICLE STATUS ==========
+            \Log::info('Updating vehicle status...');
+            // Vehicle stays 'reserved' until admin approves
+            $vehicle->status = 'reserved';
             $vehicle->save();
-            \Log::info('Vehicle status updated to unavailable');
-        } catch (\Exception $e) {
-            \Log::error('Failed to update vehicle status:', ['error' => $e->getMessage()]);
-        }
+            \Log::info('Vehicle status set to reserved (awaiting approval)');
 
-        \Log::info('=== BOOKING CONFIRMATION COMPLETED SUCCESSFULLY ===');
-        \Log::info('Redirecting to booking history...');
-        
-        return redirect()->route('bookinghistory')->with('success', 'Payment submitted successfully! Your booking is now pending approval.');
+            // ========== COMMIT TRANSACTION ==========
+            DB::commit();
+            \Log::info('=== BOOKING CONFIRMATION COMPLETED SUCCESSFULLY ===');
+            
+            return redirect()->route('bookinghistory')->with('success', 'Payment submitted successfully! Your booking is awaiting admin approval.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Transaction failed, rolling back:', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            throw $e;
+        }
 
     } catch (\Illuminate\Validation\ValidationException $e) {
         \Log::error('VALIDATION FAILED:', ['errors' => $e->errors()]);
         return back()->withErrors($e->errors())->withInput();
-        
-    } catch (\Illuminate\Database\QueryException $qe) {
-        \Log::error('DATABASE QUERY EXCEPTION:', [
-            'message' => $qe->getMessage(),
-            'code' => $qe->getCode(),
-            'sql' => $qe->getSql(),
-            'bindings' => $qe->getBindings()
-        ]);
-        
-        $errorMessage = 'Database error occurred. Please try again.';
-        if (str_contains($qe->getMessage(), 'paymentStatus')) {
-            $errorMessage = 'Invalid payment status value. Please contact support.';
-        } elseif (str_contains($qe->getMessage(), 'bookingID')) {
-            $errorMessage = 'Booking reference error. Please try again.';
-        }
-        
-        return back()->with('error', $errorMessage)->withInput();
         
     } catch (\Exception $e) {
         \Log::error('UNEXPECTED EXCEPTION:', [
             'message' => $e->getMessage(),
             'file' => $e->getFile(),
             'line' => $e->getLine(),
-            'trace' => $e->getTraceAsString()
         ]);
         
-        return back()->with('error', 'An unexpected error occurred: ' . $e->getMessage())->withInput();
+        return back()->with('error', 'An unexpected error occurred. Please try again.')->withInput();
     }
 }
+
     public function approveBooking($bookingID)
     {
         try {
