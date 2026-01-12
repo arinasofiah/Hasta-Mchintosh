@@ -24,10 +24,11 @@ class Payment extends Model
         'qrPayment'
     ];
     
-    protected $casts = [
-        'amount' => 'decimal:2',
-        'paymentDate' => 'date'
-    ];
+    // In App\Models\Payment.php
+protected $casts = [
+    'amount' => 'decimal:2',
+    'paymentDate' => 'date:Y-m-d', // Add this format
+];
     
     /**
      * Relationship with Booking
