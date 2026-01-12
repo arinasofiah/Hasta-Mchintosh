@@ -282,6 +282,7 @@
         }
 
         /* Upload */
+<<<<<<< Updated upstream
         .upload-container {
             border: 2px dashed #ddd;
             border-radius: 12px;
@@ -350,6 +351,31 @@
             margin-top: 8px;
             display: none;
         }
+=======
+        .upload-area { 
+            border: 2px dashed #ddd; 
+            border-radius: 10px; 
+            padding: 40px; 
+            text-align: center; 
+            background: #fafafa; 
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .upload-area:hover { border-color: #d94444; background: #fff; }
+        .upload-area.drag-over { border-color: #d94444; background: #fff; }
+        .browse-btn { 
+            background: #999; 
+            color: white; 
+            padding: 10px 30px; 
+            border: none; 
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .browse-btn:hover { background: #888; }
+
+        #imagePreview { margin-top: 15px; }
+        #imagePreview img { max-width: 100%; max-height: 200px; border-radius: 8px; }
+>>>>>>> Stashed changes
 
         /* Terms */
         .terms-container {
@@ -382,6 +408,7 @@
 
         /* Submit */
         .submit-btn { 
+<<<<<<< Updated upstream
             width: 100%;
             background: #d94444; 
             color: white; 
@@ -585,6 +612,21 @@
                 font-size: 16px;
             }
         }
+=======
+            display: block; 
+            margin: 0 auto; 
+            background: #d94444; 
+            color: white; 
+            padding: 15px 60px; 
+            border: none; 
+            border-radius: 5px; 
+            font-size: 16px; 
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+        .submit-btn:hover { background: #c23939; }
+        .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
+>>>>>>> Stashed changes
     </style>
 </head>
 
@@ -592,17 +634,25 @@
 
 <!-- Header -->
 <div id="header">
-    <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}">
+    <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}" alt="HASTA Logo">
 
     <div id="menu">
+<<<<<<< Updated upstream
         <a href="{{ url('/') }}"><button class="head_button">Home</button></a>
         <button class="head_button">Vehicles</button>
         <button class="head_button">Details</button>
+=======
+        <a href="#" class="head_button">Home</a>
+        <a href="#" class="head_button">Vehicles</a>
+        <a href="#" class="head_button">Details</a>
+        <a href="#" class="head_button">About Us</a>
+        <a href="#" class="head_button">Contact Us</a>
+>>>>>>> Stashed changes
     </div>
 
     <div id="profile">
         <div id="profile-container">
-            <img id="pfp" src="{{ asset('img/racc_icon.png') }}">
+            <img id="pfp" src="{{ asset('img/racc_icon.png') }}" alt="Profile">
         </div>
         @guest
             <a id="username" href="{{ route('login') }}">Log in</a>
@@ -613,6 +663,7 @@
 <!-- Progress Steps -->
 <div class="progress-container">
     <div class="steps">
+<<<<<<< Updated upstream
         <div class="step filled">
             <i class="fas fa-car"></i>
             <span>Vehicle</span>
@@ -627,6 +678,13 @@
             <i class="fas fa-credit-card"></i>
             <span>Payment</span>
         </div>
+=======
+        <div class="step filled" id="step-vehicle"><span class="step-icon">✓</span><span>Vehicle</span></div>
+        <div class="step-connector"></div>
+        <div class="step filled" id="step-booking"><span class="step-icon">✓</span><span>Booking Details</span></div>
+        <div class="step-connector"></div>
+        <div class="step active" id="step-payment"><span class="step-icon">✓</span><span>Payment</span></div>
+>>>>>>> Stashed changes
     </div>
 </div>
 
@@ -673,6 +731,7 @@
                         <span class="car-model">RM{{ number_format($vehicle->pricePerDay, 2) }}/day</span>
                     </h3>
 
+<<<<<<< Updated upstream
                     <p class="car-type">{{ $vehicle->type ?? 'Vehicle' }}</p>
 
                     <div class="car-features">
@@ -681,6 +740,14 @@
                         <span class="feature-item"><i class="fas fa-cog"></i> {{ $vehicle->transmission ?? 'Auto' }}</span>
                         <span class="feature-item"><i class="fas fa-gas-pump"></i> {{ $vehicle->fuelType ?? 'Petrol' }}</span>
                     </div>
+=======
+        <div class="car-info">
+            @if($vehicle->image)
+                <img src="{{ asset('storage/' . $vehicle->image) }}" class="car-image" alt="Vehicle">
+            @else
+                <div class="car-image" style="background:#f0f0f0;display:flex;align-items:center;justify-content:center;color:#999;">
+                    No Image
+>>>>>>> Stashed changes
                 </div>
             </div>
 
@@ -984,6 +1051,7 @@
             </button>
         </div>
     </div>
+<<<<<<< Updated upstream
 </form>
 
 <!-- Terms Modal -->
@@ -1430,5 +1498,218 @@ window.addEventListener('click', (e) => {
     if (e.target === successModal) successModal.style.display = 'none';
 });
 </script>
+=======
+
+    <!-- Payment Section -->
+    <div class="section">
+        <h2>Payment Details</h2>
+
+        <div class="form-group">
+            <label>Bank Name</label>
+            <select name="bank_name" required>
+                <option value="">Select Bank</option>
+                <option value="Maybank">Maybank</option>
+                <option value="CIMB Bank">CIMB Bank</option>
+                <option value="Public Bank">Public Bank</option>
+                <option value="RHB Bank">RHB Bank</option>
+                <option value="Hong Leong Bank">Hong Leong Bank</option>
+                <option value="Touch 'n Go eWallet">Touch 'n Go eWallet</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Bank Owner Name</label>
+            <input type="text" name="bank_owner_name" placeholder="Enter account holder name" required>
+        </div>
+
+        <div class="form-group">
+            <label>Pay Amount</label>
+            <div class="radio-group">
+                <label><input type="radio" name="payAmount" value="full" checked> Full</label>
+                <label><input type="radio" name="payAmount" value="deposit"> Deposit</label>
+            </div>
+        </div>
+
+        <div class="qr-section">
+            <label>Scan QR here to pay</label>
+
+            <div class="qr-code">
+                @if(file_exists(public_path('storage/qrImage.jpeg')))
+                    <img src="{{ asset('storage/qrImage.jpeg') }}" alt="QR Code">
+                @else
+                    <div style="color:#999;">QR Code Not Available</div>
+                @endif
+            </div>
+
+            <p class="company-name">HASTA TRAVEL SDN BHD</p>
+        </div>
+
+        <div class="form-group">
+            <label>Upload Receipt <span style="color: red;">*</span></label>
+
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📄</div>
+                <p id="uploadText">Drag files here or click "Browse"</p>
+
+                <button type="button" class="browse-btn" id="browseBtn">Browse</button>
+
+                <input type="file" id="fileInput" name="payment_receipt" accept="image/*" style="display:none;" required>
+
+                <div id="imagePreview" style="display:none;"></div>
+            </div>
+        </div>
+
+        <div class="terms">
+            <label>
+                <input type="checkbox" id="termsCheckbox" required>
+                I agree to the <a href="#">Terms & Conditions</a>
+            </label>
+        </div>
+
+        <button type="submit" class="submit-btn">Confirm Payment</button>
+    </div>
+
+</div>
+</form>
+
+<script>
+    // File upload functionality
+    const fileInput = document.getElementById('fileInput');
+    const uploadArea = document.getElementById('uploadArea');
+    const browseBtn = document.getElementById('browseBtn');
+    const uploadText = document.getElementById('uploadText');
+    const imagePreview = document.getElementById('imagePreview');
+
+    // Click to browse
+    browseBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        fileInput.click();
+    });
+
+    // Click anywhere in upload area to browse
+    uploadArea.addEventListener('click', (e) => {
+        if (e.target !== browseBtn) {
+            fileInput.click();
+        }
+    });
+
+    // File input change
+    fileInput.addEventListener('change', (e) => {
+        handleFile(e.target.files[0]);
+    });
+
+    // Drag and drop
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('drag-over');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('drag-over');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('drag-over');
+        
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+            fileInput.files = e.dataTransfer.files;
+            handleFile(file);
+        }
+    });
+
+    // Handle file preview
+    function handleFile(file) {
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            
+            reader.onload = (e) => {
+                imagePreview.innerHTML = `
+                    <img src="${e.target.result}" alt="Receipt Preview">
+                    <p style="margin-top: 10px; color: #28a745; font-weight: 600;">✓ ${file.name}</p>
+                `;
+                imagePreview.style.display = 'block';
+                uploadText.textContent = 'File uploaded successfully! Click to change';
+            };
+            
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Form submission validation
+    document.getElementById('paymentForm').addEventListener('submit', (e) => {
+        const termsCheckbox = document.getElementById('termsCheckbox');
+        const submitBtn = document.querySelector('.submit-btn');
+        
+        if (!fileInput.files || fileInput.files.length === 0) {
+            e.preventDefault();
+            alert('Please upload a payment receipt before submitting.');
+            return false;
+        }
+        
+        if (!termsCheckbox.checked) {
+            e.preventDefault();
+            alert('Please agree to the Terms & Conditions.');
+            return false;
+        }
+
+        // Disable submit button to prevent double submission
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Processing...';
+    });
+
+    // Check for success message in URL or session
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('success') === 'true') {
+            showSuccessMessage();
+        }
+    });
+
+    function showSuccessMessage() {
+        // Create overlay
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        `;
+
+        // Create success message box
+        const messageBox = document.createElement('div');
+        messageBox.style.cssText = `
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+        `;
+
+        messageBox.innerHTML = `
+            <div style="font-size: 60px; color: #28a745; margin-bottom: 20px;">✓</div>
+            <h2 style="color: #333; margin-bottom: 15px; font-size: 24px;">Successfully Submitted!</h2>
+            <p style="color: #666; margin-bottom: 20px;">Your payment has been received. Redirecting to booking history...</p>
+        `;
+
+        overlay.appendChild(messageBox);
+        document.body.appendChild(overlay);
+
+        // Redirect after 2 seconds
+        setTimeout(() => {
+            window.location.href = "{{ route('bookinghistory') }}";
+        }, 2000);
+    }
+</script>
+
+>>>>>>> Stashed changes
 </body>
 </html>
