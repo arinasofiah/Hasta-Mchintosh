@@ -531,7 +531,6 @@
     </div>
     
    <script>
-    // Collect all booking data with proper vehicle information
     let bookingsData = [];
 
     // Add active bookings (including reserved)
@@ -583,6 +582,7 @@
                     $remainingBalance = max(0, $totalCost - $totalPaid);
                 }
             @endphp
+            
             bookingsData.push({
                 bookingID: {{ $booking->bookingID }},
                 startDate: '{{ $booking->startDate }}',

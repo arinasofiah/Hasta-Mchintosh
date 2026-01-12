@@ -650,6 +650,8 @@
     <input type="hidden" name="depoBalance" value="{{ $depoBalance ?? 0 }}">
     <input type="hidden" name="promo_id" value="{{ $promoDetails?->promoID ?? '' }}">
     <input type="hidden" name="voucher_id" id="selected_voucher_id" value="">
+    <input type="hidden" name="delivery_charge" value="{{ $deliveryCharge ?? 0 }}">
+    <input type="hidden" name="base_rental_price" value="{{ $originalRentalPrice ?? 0 }}">
 
     <div class="container">
         <!-- Order Summary -->
@@ -709,8 +711,6 @@
                 <span class="info-value" id="delivery_charge_display">RM {{ number_format($deliveryCharge, 2) }}</span>
             </div>
             @endif
-            <input type="hidden" name="delivery_charge" value="{{ $deliveryCharge ?? 0 }}">
-            <input type="hidden" name="base_rental_price" value="{{ $originalRentalPrice ?? 0 }}">
 
             @if($promotionDiscount > 0)
             <div class="info-row discount-row">
@@ -1050,8 +1050,13 @@ const closeSuccess = document.getElementById('closeSuccess');
 // Payment Calculation Variables
 const FIXED_DEPOSIT = 50;
 let baseRentalPrice = {{ $originalRentalPrice ?? 0 }}; 
+let originalTotal = {{ ($finalTotal + $deliveryCharge) ?? 0 }};
 let deliveryCharge = {{ $deliveryCharge ?? 0 }}; 
 let promotionDiscount = {{ $promotionDiscount ?? 0 }};
+let currentVoucherValue = 0;
+
+let baseTotal = baseRentalPrice + deliveryCharge - promotionDiscount;
+let originalTotal = baseTotal + FIXED_DEPOSIT;
 let currentVoucherValue = 0;
 
 // Initialize payment calculations
@@ -1352,6 +1357,48 @@ document.getElementById('paymentForm').addEventListener('submit', function(e) {
         }
     });
 });
+
+function unction updateGrandTotal() {
+        console.log('=== UPDATING GRAND TOTAL ===');
+        console.log('Base Rental:', baseRentalPrice);
+        console.log('Delivery Charge:', deliveryCharge);
+        console.log('Promotion Discount:', promotionDiscount);
+        console.log('Voucher Discount:', currentVoucherValue);
+        
+        // Calculate: Rental + Delivery - Promotion - Voucher
+        let subtotal = baseRentalPrice + deliveryCharge - promotionDiscount - currentVoucherValue;
+        subtotal = Math.max(0, subtotal); // Never negative
+        
+        let depositAmount = fixedDeposit;
+        let totalWithDeposit = subtotal + depositAmount;
+        
+        console.log('Final Subtotal:', subtotal);
+        console.log('Deposit:', depositAmount);
+        console.log('Total with Deposit:', totalWithDeposit);
+
+        // Update Deposit Payable display
+        const depositEl = document.getElementById('depositAmount');
+        if (depositEl) {
+            depositEl.textContent = 'MYR ' + depositAmount.toFixed(2);
+        }
+
+        // Update Total Payable display
+        const totalEl = document.getElementById('totalAmount');
+        if (totalEl) {
+            totalEl.textContent = 'MYR ' + totalWithDeposit.toFixed(2);
+        }
+        
+        // Update hidden inputs for form submission
+        const depositInput = document.getElementById('depositInput');
+        if (depositInput) {
+            depositInput.value = depositAmount;
+        }
+        
+        const finalTotalInput = document.getElementById('finalTotalInput');
+        if (finalTotalInput) {
+            finalTotalInput.value = totalWithDeposit;
+        }
+}
 
 function showError(message) {
     if (fileError) {
