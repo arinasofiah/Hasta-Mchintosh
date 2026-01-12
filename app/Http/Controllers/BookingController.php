@@ -284,7 +284,7 @@ public function showPaymentForm(Request $request)
     }
 
     // Confirm booking and payment - FIXED VERSION
-    public function confirmBooking(Request $request)
+   public function confirmBooking(Request $request)
 {
     \Log::info('Booking confirmation request received', $request->all());
 
@@ -301,7 +301,7 @@ public function showPaymentForm(Request $request)
             'bank_owner_name' => 'required|string',
             'payAmount' => 'required|in:full,deposit',
             'payment_receipt' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120',
-            'delivery_charge' => 'nullable|numeric', // Add this validation
+            'delivery_charge' => 'nullable|numeric',
         ]);
 
         $vehicle = Vehicles::findOrFail($request->vehicleID);
@@ -314,15 +314,12 @@ public function showPaymentForm(Request $request)
         $return = Carbon::parse($request->return_date . ' ' . $request->return_time);
         $durationHours = $return->diffInHours($pickup);
         
-        // Get delivery charge
         $deliveryCharge = $request->input('delivery_charge', 0);
         
-        // Calculate rental price
         $days = floor($durationHours / 24);
         $remainingHours = $durationHours % 24;
         $rentalPrice = ($days * $vehicle->pricePerDay) + ($remainingHours * $vehicle->pricePerHour);
         
-        // Apply promotion discount
         $promotionDiscount = 0;
         if ($request->promo_id) {
             $promo = Promotion::find($request->promo_id);
@@ -331,7 +328,6 @@ public function showPaymentForm(Request $request)
             }
         }
         
-        // Final total = (rental - promo) + delivery
         $totalPrice = max(0, $rentalPrice - $promotionDiscount) + $deliveryCharge;
         $depositAmount = $totalPrice * 0.5;
 
@@ -354,7 +350,7 @@ public function showPaymentForm(Request $request)
         $booking->reservation_expires_at = now()->addMinutes(30);
         $booking->totalPrice = $totalPrice;
         $booking->depositAmount = $depositAmount;
-        $booking->delivery_charge = $deliveryCharge; // Save delivery charge
+        $booking->delivery_charge = $deliveryCharge;
         $booking->promo_id = $request->promo_id;
         $booking->destination = $request->destination;
         $booking->remark = $request->remark;
@@ -363,7 +359,6 @@ public function showPaymentForm(Request $request)
         $booking->pay_amount_type = $request->payAmount;
         $booking->payment_receipt_path = $receiptPath;
         
-        // If booking for someone else
         if ($request->filled('for_someone_else') && $request->for_someone_else == 1) {
             $booking->for_someone_else = true;
             $booking->driver_matric_number = $request->matricNumber;
@@ -374,6 +369,21 @@ public function showPaymentForm(Request $request)
         }
         
         $booking->save();
+
+        // ========== CREATE PAYMENT RECORD ==========
+        $paymentAmount = ($request->payAmount == 'deposit') ? 50 : $totalPrice + 50;
+        
+        $payment = new Payment();
+        $payment->bookingID = $booking->bookingID;
+        $payment->bankName = $request->bank_name;
+        $payment->bankOwnerName = $request->bank_owner_name;
+        $payment->amount = $paymentAmount;
+        $payment->paymentType = $request->payAmount; // 'deposit' or 'full'
+        $payment->paymentStatus = 'completed'; // IMPORTANT: Use correct status
+        $payment->receiptImage = $receiptPath;
+        $payment->paymentDate = now();
+        $payment->save();
+        // ========== END PAYMENT CREATION ==========
 
         // Create pickup record
         PickUp::create([
@@ -405,7 +415,6 @@ public function showPaymentForm(Request $request)
         \Log::error('Booking confirmation failed: ' . $e->getMessage());
         return back()->with('error', 'Failed to submit payment. Please try again.')->withInput();
     }
-    // ✅ NO CODE AFTER THIS POINT!
 }
     public function approveBooking($bookingID)
     {
