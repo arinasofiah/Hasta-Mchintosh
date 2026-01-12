@@ -116,7 +116,7 @@
                         <tbody>
                             @forelse($pendingApprovals as $booking)
                             <tr>
-                                <td>#{{ $booking->bookingID }}</td>
+                                <td>#{{ $booking->booking_code }}</td>
                                 <td>{{ $booking->customer->name ?? 'Unknown' }}</td>
                                 <td>
                                     @if($booking->bookingStatus == 'paid')
@@ -158,7 +158,7 @@
                         <tbody>
                             @forelse($upcomingPickups as $booking)
                             <tr>
-                                <td>#{{ $booking->bookingID }}</td>
+                                <td>#{{ $booking->booking_code }}</td>
                                 <td>{{ \Carbon\Carbon::parse($booking->pickupDate)->format('d M Y, h:i A') }}</td>
                                 <td>{{ $booking->customer->name ?? 'Unknown' }}</td>
                                 <td><a href="{{ route('admin.bookings.show', $booking->bookingID) }}" class="action-btn">Details</a></td>
@@ -177,7 +177,7 @@
                         <tbody>
                             @forelse($pendingReturns as $booking)
                             <tr>
-                                <td>#{{ $booking->bookingID }}</td>
+                                <td>#{{ $booking->booking_code }}</td>
                                 <td>{{ \Carbon\Carbon::parse($booking->returnDate)->format('d M Y') }}</td>
                                 <td>{{ $booking->customer->name ?? 'Unknown' }}</td>
                                 <td>
@@ -201,7 +201,7 @@
                         <tbody>
                             @forelse($bookingHistory as $booking)
                             <tr>
-                                <td>#{{ $booking->bookingID }}</td>
+                                <td>#{{ $booking->booking_code }}</td>
                                 <td>{{ \Carbon\Carbon::parse($booking->created_at)->format('d-m-Y') }}</td>
                                 <td>{{ $booking->customer->name ?? 'Unknown' }}</td>
                                 <td>
