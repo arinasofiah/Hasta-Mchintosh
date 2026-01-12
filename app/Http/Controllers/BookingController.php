@@ -554,12 +554,9 @@ class BookingController extends Controller
 
                 $booking->pickupDateTime = "$pickupDate $pickupTime";
                 $booking->returnDateTime = "$returnDate $returnTime";
-                $booking->isPickupCompleted = $booking->pickup?->pickupComplete ?? false;
-
+                
                 return $booking;
             });
-
-        \Log::info('Booking type:', ['class' => get_class($bookings->first())]);
 
         $now = Carbon::now();
 
