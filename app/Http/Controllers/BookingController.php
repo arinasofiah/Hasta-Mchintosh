@@ -562,16 +562,11 @@ class BookingController extends Controller
 
     $active = $bookings->filter(function($booking) use ($now) {
         return in_array($booking->bookingStatus, ['approved', 'confirmed'])
-            && $now->gte(Carbon::parse($booking->pickupDateTime))
             && $now->lte(Carbon::parse($booking->returnDateTime));
     });
 
     $pending = $bookings->filter(function($booking) use ($now) {
-        return $booking->bookingStatus === 'pending'
-            || (
-                in_array($booking->bookingStatus, ['approved', 'confirmed'])
-                && $now->lt(Carbon::parse($booking->pickupDateTime))
-            );
+        return $booking->bookingStatus === 'pending';
     });
 
     $completed = $bookings->where('bookingStatus', 'completed');
