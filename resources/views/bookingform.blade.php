@@ -153,6 +153,9 @@ textarea.input {resize:vertical; min-height:100px;}
     <div id="menu">
         <button class="head_button">Home</button>
         <button class="head_button">Vehicles</button>
+        <button class="head_button">Details</button>
+        <button class="head_button">About Us</button>
+        <button class="head_button">Contact Us</button>
     </div>
 
     <div id="profile">
@@ -209,6 +212,7 @@ textarea.input {resize:vertical; min-height:100px;}
 <form id="bookingForm" action="{{ route('payment.form') }}" method="POST">
     @csrf
     <input type="hidden" name="vehicleID" value="{{ $vehicle->vehicleID }}">
+    
     <input type="hidden" name="deliveryCharge" id="deliveryChargeInput" value="0">
 
     <div class="container">
@@ -456,6 +460,7 @@ function handleLocationChange(type) {
         hiddenInput.value = 'HASTA Office, Student Mall';
         notice.style.display = 'none';
         othersFields.style.display = 'none';
+
     } else if (locType === 'others') {
         // Show fields and make them required
         hiddenInput.value = 'Waiting for details...';
@@ -786,6 +791,7 @@ function showMessage(text, type) {
     message.style.border = type === 'success' ? '1px solid #c3e6cb' : '1px solid #f5c6cb';
 }
 
+// ===== GO TO PAYMENT FUNCTION =====
 function goToPayment() {
     console.log('=== GO TO PAYMENT DEBUG START ===');
     
@@ -865,6 +871,7 @@ function goToPayment() {
     console.log('Promotion Discount:', promotionDiscount);
     console.log('Delivery Charge:', deliveryCharge);
     console.log('Final Total:', window.finalTotal);
+    
 
     updateDeliveryCharge();
     recalculateTotal();
@@ -911,6 +918,9 @@ function goToPayment() {
     
     // Submit the form
     form.submit();
+    
+    console.log('=== Form submission triggered ===');
+    console.log('=== GO TO PAYMENT DEBUG END ===');
 }
 
 function validateOtherLocations() {

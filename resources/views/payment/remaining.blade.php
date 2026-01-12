@@ -99,6 +99,19 @@
                     <span>Fixed Deposit:</span>
                     <span>RM 50.00</span>
                 </div>
+                @if($lateFee > 0)
+                <div class="summary-row" style="color: #d94444;">
+                    <span>Late Return Fee:</span>
+                    <span>RM {{ number_format($lateFee, 2) }}</span>
+                </div>
+                @endif
+
+                @if($fuelFee > 0)
+                <div class="summary-row" style="color: #d94444;">
+                    <span>Refuel Surcharge:</span>
+                    <span>RM {{ number_format($fuelFee, 2) }}</span>
+                </div>
+                @endif
                 <div class="summary-row">
                     <span>Total Cost:</span>
                     <span>RM {{ number_format($booking->totalPrice + 50, 2) }}</span>

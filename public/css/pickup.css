@@ -404,3 +404,22 @@ canvas{
     color: #CB3737;
     font-size: 18px;
 }
+.fee-summary-card {
+    border: 1px solid #e0e0e0;
+}
+.fee-label {
+    color: #666;
+    font-size: 14px;
+}
+.fee-value {
+    font-weight: 600;
+    color: #333;
+}
+.btn-success:hover {
+    background-color: #218838 !important;
+    transform: translateY(-1px);
+    transition: all 0.2s;
+}
+.d-grid{
+    margin-top: 20px;
+}
