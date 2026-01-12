@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Bookings;
 use App\Models\Payment;
+use App\Models\ReturnCar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -31,10 +32,13 @@ class PaymentController extends Controller
     if ($booking->pay_amount_type !== 'deposit') {
         return back()->with('error', 'Only deposit-only bookings have remaining balance to pay.');
     }
+
+    $lateFee = $booking->returnCar->late_fee ?? 0;
+    $fuelFee = $booking->returnCar->fuel_fee ?? 0;
     
     // Calculate remaining balance
     $totalPaid = $booking->payments()->where('paymentStatus', 'approved')->sum('amount');
-    $totalCost = $booking->totalPrice + 50; // Rental + RM50 deposit
+    $totalCost = $booking->totalPrice + 50 + $lateFee + $fuelFee; // Rental + RM50 deposit
     $remainingBalance = max(0, $totalCost - $totalPaid);
     
     if ($remainingBalance <= 0) {
@@ -43,7 +47,9 @@ class PaymentController extends Controller
     
     return view('payment.remaining', [
         'booking' => $booking,
-        'remainingBalance' => $remainingBalance
+        'remainingBalance' => $remainingBalance,
+        'lateFee' => $lateFee,
+        'fuelFee' => $fuelFee
     ]);
 }
 

@@ -295,6 +295,11 @@
                             <span class="total-label">Total Amount Due</span>
                             <span class="total-value">RM {{ number_format($return->total_fee, 2) }}</span>
                         </div>
+                        <div class="d-grid">
+                            <a href="{{ route('payment.remaining', $booking->bookingID) }}" class="btn btn-success">
+                                <i class="fas fa-credit-card"></i> Pay Remaining Balance
+                            </a>
+                        </div>
                     </div>
                 @endif
                 </div>
@@ -532,8 +537,6 @@ document.getElementById('savePickupBtn').addEventListener('click', function() {
         }
     })
     .then(response => {
-        // Show the modal regardless of response for now, 
-        // but ideally check if(response.ok)
         var myModal = new bootstrap.Modal(document.getElementById('pickupSuccessModal'));
         myModal.show();
     })
