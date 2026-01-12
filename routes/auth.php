@@ -71,7 +71,7 @@ Route::middleware('guest')->group(function () {
     
     // Staff routes
     Route::prefix('staff')->group(function () {
-        Route::get('/dashboard', [StaffController::class, 'index'])->name('staff.dashboard');
+        Route::get('/dashboard', [StaffController::class, 'index'])->name('admin.dashboard');
     });
 
     

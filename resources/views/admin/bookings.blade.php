@@ -72,7 +72,6 @@
         @endif
 
         <ul class="nav nav-tabs" id="bookingTabs" role="tablist">
-            <li class="nav-item"><button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending-pane">Verify Payments</button></li>
             <li class="nav-item"><button class="nav-link" id="approval-tab" data-bs-toggle="tab" data-bs-target="#approval-pane">Pending Approval</button></li>
             <li class="nav-item"><button class="nav-link" id="pickup-tab" data-bs-toggle="tab" data-bs-target="#pickup-pane">Pickups</button></li>
             <li class="nav-item"><button class="nav-link" id="return-tab" data-bs-toggle="tab" data-bs-target="#return-pane">Returns</button></li>
@@ -80,34 +79,6 @@
         </ul>
 
         <div class="tab-content">
-            
-            <div class="tab-pane fade show active" id="pending-pane">
-                <div class="table-card">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light"><tr><th>ID</th><th>Amount</th><th>Proof</th><th>Action</th></tr></thead>
-                        <tbody>
-                            @forelse($pendingPayments as $booking)
-                            <tr>
-                                <td>#{{ $booking->bookingID }}</td>
-                                <td>RM {{ number_format($booking->totalPrice, 2) }}</td>
-                                <td>
-                                    @if($booking->payment && $booking->payment->receiptImage)
-                                        <a href="#" class="btn btn-sm btn-outline-primary">View Receipt</a>
-                                    @else <span class="text-muted">No Proof</span> @endif
-                                </td>
-                                <td>
-                                    <form action="{{ route('admin.payment.approve', $booking->bookingID) }}" method="POST">
-                                        @csrf
-                                        <button class="btn btn-success btn-sm rounded-pill px-3">Verify</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            @empty <tr><td colspan="4" class="text-center p-4 text-muted">No pending payments.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
 
             <div class="tab-pane fade" id="approval-pane">
                 <div class="table-card">
@@ -116,7 +87,7 @@
                         <tbody>
                             @forelse($pendingApprovals as $booking)
                             <tr>
-                                <td>#{{ $booking->bookingID }}</td>
+                                <td>#{{ $booking->booking_code }}</td>
                                 <td>{{ $booking->customer->name ?? 'Unknown' }}</td>
                                 <td>
                                     @if($booking->bookingStatus == 'paid')
@@ -158,7 +129,7 @@
                         <tbody>
                             @forelse($upcomingPickups as $booking)
                             <tr>
-                                <td>#{{ $booking->bookingID }}</td>
+                                <td>#{{ $booking->booking_code }}</td>
                                 <td>{{ \Carbon\Carbon::parse($booking->pickupDate)->format('d M Y, h:i A') }}</td>
                                 <td>{{ $booking->customer->name ?? 'Unknown' }}</td>
                                 <td><a href="{{ route('admin.bookings.show', $booking->bookingID) }}" class="action-btn">Details</a></td>
@@ -177,7 +148,7 @@
                         <tbody>
                             @forelse($pendingReturns as $booking)
                             <tr>
-                                <td>#{{ $booking->bookingID }}</td>
+                                <td>#{{ $booking->booking_code }}</td>
                                 <td>{{ \Carbon\Carbon::parse($booking->returnDate)->format('d M Y') }}</td>
                                 <td>{{ $booking->customer->name ?? 'Unknown' }}</td>
                                 <td>
@@ -201,7 +172,7 @@
                         <tbody>
                             @forelse($bookingHistory as $booking)
                             <tr>
-                                <td>#{{ $booking->bookingID }}</td>
+                                <td>#{{ $booking->booking_code }}</td>
                                 <td>{{ \Carbon\Carbon::parse($booking->created_at)->format('d-m-Y') }}</td>
                                 <td>{{ $booking->customer->name ?? 'Unknown' }}</td>
                                 <td>
