@@ -213,7 +213,7 @@ textarea.input {resize:vertical; min-height:100px;}
     @csrf
     <input type="hidden" name="vehicleID" value="{{ $vehicle->vehicleID }}">
     
-    <input type="hidden" name="deliveryCharge" id="deliveryChargeInput" value="0">
+    <input type="hidden" name="delivery_charge" value="{{deliveryCharge ?? 0}}">
 
     <div class="container">
         <!-- Booking Details Card -->

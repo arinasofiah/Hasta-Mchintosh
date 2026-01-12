@@ -183,6 +183,8 @@ public function showPaymentForm(Request $request)
     // ✅ 1. Get delivery charge (critical fix!)
     $deliveryCharge = $request->input('delivery_charge', 0);
 
+    \Log::info('Delivery Charge Received:', ['delivery_charge' => $deliveryCharge, 'all_request' => $request->all()]);
+    
     // Get promo details if exists
     $promoDetails = null;
     if ($request->promo_id) {
