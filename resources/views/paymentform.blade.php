@@ -743,7 +743,12 @@
                 </div>
                 
                 <div class="payment-row">
-                    <span>Subtotal (After Discounts)</span>
+                    <span>
+                        Subtotal
+                        @if($promotionDiscount > 0)
+                            (After Promotion Discount)
+                        @endif
+                    </span>
                     <span id="subtotal_display">RM {{ number_format(($finalSubtotal + ($deliveryCharge ?? 0)) - $promotionDiscount, 2) }}</span>
                 </div>
                 
