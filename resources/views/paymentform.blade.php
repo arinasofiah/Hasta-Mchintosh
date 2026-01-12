@@ -1033,357 +1033,327 @@
 </div>
 
 <script>
-// DOM Elements
-const fileInput = document.getElementById('fileInput');
-const browseBtn = document.getElementById('browseBtn');
-const uploadContainer = document.getElementById('uploadContainer');
-const previewContainer = document.getElementById('previewContainer');
-const previewImage = document.getElementById('previewImage');
-const removeBtn = document.getElementById('removeBtn');
-const fileError = document.getElementById('fileError');
-const termsLink = document.getElementById('termsLink');
-const termsModal = document.getElementById('termsModal');
-const closeTerms = document.getElementById('closeTerms');
-const termsCheckbox = document.getElementById('termsCheckbox');
-const submitBtn = document.getElementById('submitBtn');
-const successModal = document.getElementById('successModal');
-const viewBookings = document.getElementById('viewBookings');
-const closeSuccess = document.getElementById('closeSuccess');
+    document.addEventListener('DOMContentLoaded', function () {
+        // DOM Elements 
+        const fileInput = document.getElementById('fileInput');
+        const browseBtn = document.getElementById('browseBtn');
+        const uploadContainer = document.getElementById('uploadContainer');
+        const previewContainer = document.getElementById('previewContainer');
+        const previewImage = document.getElementById('previewImage');
+        const removeBtn = document.getElementById('removeBtn');
+        const fileError = document.getElementById('fileError');
+        const termsLink = document.getElementById('termsLink');
+        const termsModal = document.getElementById('termsModal');
+        const closeTerms = document.getElementById('closeTerms');
+        const termsCheckbox = document.getElementById('termsCheckbox');
+        const submitBtn = document.getElementById('submitBtn');
+        const successModal = document.getElementById('successModal');
+        const viewBookings = document.getElementById('viewBookings');
+        const closeSuccess = document.getElementById('closeSuccess');
+        const paymentForm = document.getElementById('paymentForm');
 
-// Payment Calculation Variables
-const FIXED_DEPOSIT = 50;
-let baseRentalPrice = {{ $finalSubtotal ?? 0 }}; 
-let deliveryCharge = {{ $deliveryCharge ?? 0 }}; 
-let promotionDiscount = {{ $promotionDiscount ?? 0 }};
-let currentVoucherValue = 0;
+        // Safety check
+        if (!paymentForm) {
+            console.error('Payment form not found!');
+            return;
+        }
 
-// Initialize payment calculations
-document.addEventListener('DOMContentLoaded', function() {
-    updatePaymentSummary();
-    
-    // Add payment type change listener
-    document.querySelectorAll('input[name="payAmount"]').forEach(radio => {
-        radio.addEventListener('change', updatePaymentSummary);
-    });
-});
+        // Payment Calculation Variables
+        const FIXED_DEPOSIT = 50;
+        let baseRentalPrice = {{ $finalSubtotal ?? 0 }};
+        let deliveryCharge = {{ $deliveryCharge ?? 0 }};
+        let promotionDiscount = {{ $promotionDiscount ?? 0 }};
+        let currentVoucherValue = 0;
 
-// Event Listeners
-if (browseBtn) {
-    browseBtn.addEventListener('click', () => fileInput.click());
-}
+        // Initialize payment calculations
+        updatePaymentSummary();
 
-if (fileInput) {
-    fileInput.addEventListener('change', handleFileSelect);
-}
+        // Attach payment type change listeners
+        document.querySelectorAll('input[name="payAmount"]').forEach(radio => {
+            radio.addEventListener('change', updatePaymentSummary);
+        });
 
-if (uploadContainer) {
-    uploadContainer.addEventListener('dragover', handleDragOver);
-    uploadContainer.addEventListener('dragleave', handleDragLeave);
-    uploadContainer.addEventListener('drop', handleDrop);
-}
+        // Voucher tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+            });
+        });
 
-if (removeBtn) {
-    removeBtn.addEventListener('click', removeFile);
-}
+        // Apply voucher button
+        const applyVoucherBtn = document.getElementById('apply_voucher');
+        if (applyVoucherBtn) {
+            applyVoucherBtn.addEventListener('click', applyVoucherCode);
+        }
 
-if (termsLink) {
-    termsLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        termsModal.style.display = 'block';
-    });
-}
+        // File upload handlers
+        if (browseBtn) browseBtn.addEventListener('click', () => fileInput.click());
+        if (fileInput) fileInput.addEventListener('change', handleFileSelect);
+        if (uploadContainer) {
+            uploadContainer.addEventListener('dragover', handleDragOver);
+            uploadContainer.addEventListener('dragleave', handleDragLeave);
+            uploadContainer.addEventListener('drop', handleDrop);
+        }
+        if (removeBtn) removeBtn.addEventListener('click', removeFile);
 
-if (closeTerms) {
-    closeTerms.addEventListener('click', () => {
-        termsModal.style.display = 'none';
-        termsCheckbox.checked = true;
-    });
-}
+        // Terms modal
+        if (termsLink) {
+            termsLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (termsModal) termsModal.style.display = 'block';
+            });
+        }
+        if (closeTerms) {
+            closeTerms.addEventListener('click', () => {
+                if (termsModal) {
+                    termsModal.style.display = 'none';
+                    if (termsCheckbox) termsCheckbox.checked = true;
+                }
+            });
+        }
 
-if (viewBookings) {
-    viewBookings.addEventListener('click', () => {
-        window.location.href = "{{ route('booking.history') }}";
-    });
-}
+        // Success modal buttons
+        if (viewBookings) {
+            viewBookings.addEventListener('click', () => {
+                window.location.href = "{{ route('booking.history') }}";
+            });
+        }
+        if (closeSuccess) {
+            closeSuccess.addEventListener('click', () => {
+                window.location.href = "/";
+            });
+        }
 
-if (closeSuccess) {
-    closeSuccess.addEventListener('click', () => {
-        window.location.href = "/";
-    });
-}
+        // Close modals when clicking outside
+        window.addEventListener('click', (e) => {
+            if (termsModal && e.target === termsModal) termsModal.style.display = 'none';
+            if (successModal && e.target === successModal) successModal.style.display = 'none';
+        });
 
-// Voucher Handling
-document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-    });
-});
+        // ✅ SUBMIT HANDLER — NOW INSIDE DOMContentLoaded
+        paymentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
 
-if (document.getElementById('apply_voucher')) {
-    document.getElementById('apply_voucher').addEventListener('click', applyVoucherCode);
-}
+            if (!termsCheckbox || !termsCheckbox.checked) {
+                alert('Please accept Terms and Conditions');
+                return;
+            }
 
-// Functions
-function selectVoucher(element) {
-    document.querySelectorAll('.voucher-item').forEach(item => item.classList.remove('selected'));
-    element.classList.add('selected');
-    
-    const id = element.dataset.id;
-    const amount = parseFloat(element.dataset.val);
-    applyVoucherMath(id, amount);
-}
+            if (!fileInput || !fileInput.files.length) {
+                showError('Please upload a payment receipt.');
+                return;
+            }
 
-function applyVoucherCode() {
-    const code = document.getElementById('voucher_code')?.value;
-    const msgEl = document.getElementById('voucher_message');
-    
-    if (!code) {
-        if (msgEl) msgEl.innerHTML = '<span style="color:red;">Please enter a code</span>';
-        return;
-    }
-    
-    fetch("{{ route('validate.voucher') }}", {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: JSON.stringify({ code: code })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (msgEl) {
-            if (data.valid) {
-                msgEl.innerHTML = '<span style="color:green;">' + data.message + '</span>';
-                applyVoucherMath(data.voucher_id, parseFloat(data.amount));
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            }
+
+            const formData = new FormData(this);
+            formData.append('promotion_discount', promotionDiscount);
+
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            if (!csrfMeta) {
+                alert('CSRF token missing!');
+                if (submitBtn) submitBtn.disabled = false;
+                return;
+            }
+
+            fetch("{{ route('booking.confirm') }}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': csrfMeta.getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (successModal) successModal.style.display = 'block';
+                } else {
+                    alert(data.message || 'Submission failed. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Submission error:', error);
+                alert('An error occurred. Please try again.');
+            })
+            .finally(() => {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Confirm Payment';
+                }
+            });
+        });
+
+        function updatePaymentSummary() {
+            const rentalPriceWithDelivery = baseRentalPrice + deliveryCharge;
+            const subtotal = Math.max(0, rentalPriceWithDelivery - promotionDiscount - currentVoucherValue);
+            const paymentType = document.querySelector('input[name="payAmount"]:checked')?.value || 'deposit';
+
+            let payNow, remainingBalance, paymentTypeLabel;
+            if (paymentType === 'deposit') {
+                payNow = FIXED_DEPOSIT;
+                remainingBalance = subtotal;
+                paymentTypeLabel = 'Deposit Only';
             } else {
-                msgEl.innerHTML = '<span style="color:red;">' + (data.message || 'Invalid voucher') + '</span>';
-                resetVoucher();
+                payNow = subtotal + FIXED_DEPOSIT;
+                remainingBalance = 0;
+                paymentTypeLabel = 'Full Amount';
+            }
+
+            const totalVehicleCost = subtotal + FIXED_DEPOSIT;
+
+            // Update UI
+            setText('rental_price_display', 'RM ' + baseRentalPrice.toFixed(2));
+            if (deliveryCharge > 0) setText('delivery_charge_display', 'RM ' + deliveryCharge.toFixed(2));
+            setText('subtotal_display', 'RM ' + subtotal.toFixed(2));
+            setText('summary_deposit_display', 'RM ' + FIXED_DEPOSIT.toFixed(2));
+            setText('deposit_display', 'RM ' + FIXED_DEPOSIT.toFixed(2));
+            setText('payment_type_label', paymentTypeLabel);
+            setText('pay_now_display', 'RM ' + payNow.toFixed(2));
+            setText('remaining_balance_display', 'RM ' + Math.max(0, remainingBalance).toFixed(2));
+            setText('total_vehicle_cost_display', 'RM ' + totalVehicleCost.toFixed(2));
+        }
+
+        function setText(id, text) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = text;
+        }
+
+        function selectVoucher(element) {
+            document.querySelectorAll('.voucher-item').forEach(item => item.classList.remove('selected'));
+            element.classList.add('selected');
+            applyVoucherMath(element.dataset.id, parseFloat(element.dataset.val));
+        }
+
+        function applyVoucherCode() {
+            const code = document.getElementById('voucher_code')?.value;
+            const msgEl = document.getElementById('voucher_message');
+            if (!code) {
+                if (msgEl) msgEl.innerHTML = '<span style="color:red;">Please enter a code</span>';
+                return;
+            }
+
+            fetch("{{ route('validate.voucher') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ code: code })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (msgEl) {
+                    if (data.valid) {
+                        msgEl.innerHTML = '<span style="color:green;">' + data.message + '</span>';
+                        applyVoucherMath(data.voucher_id, parseFloat(data.amount));
+                    } else {
+                        msgEl.innerHTML = '<span style="color:red;">' + (data.message || 'Invalid voucher') + '</span>';
+                        resetVoucher();
+                    }
+                }
+            })
+            .catch(() => {
+                if (msgEl) msgEl.innerHTML = '<span style="color:red;">Error validating voucher</span>';
+            });
+        }
+
+        function applyVoucherMath(id, amount) {
+            const hiddenInput = document.getElementById('selected_voucher_id');
+            if (hiddenInput) hiddenInput.value = id;
+            currentVoucherValue = amount;
+
+            const discountRow = document.getElementById('voucher_discount_row');
+            const discountDisplay = document.getElementById('voucher_discount_display');
+            if (discountRow && discountDisplay) {
+                discountRow.style.display = 'flex';
+                discountDisplay.textContent = '- RM ' + amount.toFixed(2);
+            }
+            updatePaymentSummary();
+        }
+
+        function resetVoucher() {
+            const hiddenInput = document.getElementById('selected_voucher_id');
+            if (hiddenInput) hiddenInput.value = '';
+            currentVoucherValue = 0;
+            const discountRow = document.getElementById('voucher_discount_row');
+            if (discountRow) discountRow.style.display = 'none';
+            updatePaymentSummary();
+        }
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) validateAndPreview(file);
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            uploadContainer?.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            uploadContainer?.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            uploadContainer?.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                fileInput.files = dt.files;
+                validateAndPreview(file);
             }
         }
-    })
-    .catch(() => {
-        if (msgEl) msgEl.innerHTML = '<span style="color:red;">Error validating voucher</span>';
-    });
-}
 
-function applyVoucherMath(id, amount) {
-    // Set voucher value
-    document.getElementById('selected_voucher_id').value = id;
-    currentVoucherValue = amount;
-    
-    // Update voucher discount display
-    const discountRow = document.getElementById('voucher_discount_row');
-    const discountDisplay = document.getElementById('voucher_discount_display');
-    
-    if (discountRow && discountDisplay) {
-        discountRow.style.display = 'flex';
-        discountDisplay.textContent = '- RM ' + amount.toFixed(2);
-    }
-    
-    // Recalculate all payments
-    updatePaymentSummary();
-}
-
-function resetVoucher() {
-    document.getElementById('selected_voucher_id').value = '';
-    currentVoucherValue = 0;
-    
-    const discountRow = document.getElementById('voucher_discount_row');
-    if (discountRow) discountRow.style.display = 'none';
-    
-    updatePaymentSummary();
-}
-
-function updatePaymentSummary() {
-    // Calculate rental price with delivery
-    const rentalPriceWithDelivery = baseRentalPrice + deliveryCharge;
-    
-    // Calculate subtotal after all discounts
-    const subtotal = Math.max(0, rentalPriceWithDelivery - promotionDiscount - currentVoucherValue);
-    
-    // Get payment type
-    const paymentType = document.querySelector('input[name="payAmount"]:checked').value;
-    
-    // Calculate amounts
-    let payNow, remainingBalance;
-    let paymentTypeLabel = '';
-    
-    if (paymentType === 'deposit') {
-        // Pay deposit only
-        payNow = FIXED_DEPOSIT;
-        remainingBalance = subtotal; // They still owe the full rental amount
-        paymentTypeLabel = 'Deposit Only';
-    } else {
-        // Pay full amount (rental + deposit)
-        payNow = subtotal + FIXED_DEPOSIT;
-        remainingBalance = 0;
-        paymentTypeLabel = 'Full Amount';
-    }
-    
-    const totalVehicleCost = subtotal + FIXED_DEPOSIT;
-    
-    // Update display values
-    document.getElementById('rental_price_display').textContent = 'RM ' + baseRentalPrice.toFixed(2);
-    
-    // Update delivery charge display if it exists
-    if (deliveryCharge > 0) {
-        const deliveryDisplay = document.getElementById('delivery_charge_display');
-        if (deliveryDisplay) {
-            deliveryDisplay.textContent = 'RM ' + deliveryCharge.toFixed(2);
+        function removeFile() {
+            if (fileInput) fileInput.value = '';
+            if (previewContainer) previewContainer.style.display = 'none';
+            hideError();
         }
-    }
-    
-    document.getElementById('subtotal_display').textContent = 'RM ' + subtotal.toFixed(2);
-    document.getElementById('summary_deposit_display').textContent = 'RM ' + FIXED_DEPOSIT.toFixed(2);
-    document.getElementById('deposit_display').textContent = 'RM ' + FIXED_DEPOSIT.toFixed(2);
-    document.getElementById('payment_type_label').textContent = paymentTypeLabel;
-    document.getElementById('pay_now_display').textContent = 'RM ' + payNow.toFixed(2);
-    document.getElementById('remaining_balance_display').textContent = 'RM ' + Math.max(0, remainingBalance).toFixed(2);
-    document.getElementById('total_vehicle_cost_display').textContent = 'RM ' + totalVehicleCost.toFixed(2);
-}
 
-document.querySelectorAll('input[name="payAmount"]').forEach(radio => {
-    radio.addEventListener('change', updatePaymentSummary);
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-    updatePaymentSummary(); // Call once on page load
-});
-
-function handleFileSelect(e) {
-    const file = e.target.files[0];
-    if (file) validateAndPreview(file);
-}
-
-function handleDragOver(e) {
-    e.preventDefault();
-    uploadContainer.classList.add('drag-over');
-}
-
-function handleDragLeave(e) {
-    e.preventDefault();
-    uploadContainer.classList.remove('drag-over');
-}
-
-function handleDrop(e) {
-    e.preventDefault();
-    uploadContainer.classList.remove('drag-over');
-    const file = e.dataTransfer.files[0];
-    if (file) {
-        const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(file);
-        fileInput.files = dataTransfer.files;
-        validateAndPreview(file);
-    }
-}
-
-function removeFile() {
-    fileInput.value = '';
-    previewContainer.style.display = 'none';
-    hideError();
-}
-
-function validateAndPreview(file) {
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-    if (!validTypes.includes(file.type)) {
-        showError('Please select a valid image file (JPEG, JPG, PNG, or GIF)');
-        fileInput.value = '';
-        return;
-    }
-    
-    if (file.size > 5 * 1024 * 1024) {
-        showError('File size exceeds 5MB. Please select a smaller file');
-        fileInput.value = '';
-        return;
-    }
-    
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        previewImage.src = e.target.result;
-        previewContainer.style.display = 'block';
-        hideError();
-    };
-    reader.readAsDataURL(file);
-}
-
-    // Form Submission
-    document.getElementById('paymentForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-    if (!termsCheckbox.checked) {
-        alert('Please accept Terms and Conditions');
-        return;
-    }
-
-    if (!fileInput.files.length) {
-        showError('Please upload a payment receipt.');
-        return;
-    }
-    
-    // Disable submit button
-    if(submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-    }
-
-    const formData = new FormData(this);
-    
-    // Add promotion discount to form data
-    formData.append('promotion_discount', promotionDiscount);
-
-    fetch("{{ route('booking.confirm') }}", {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        function validateAndPreview(file) {
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            if (!validTypes.includes(file.type)) {
+                showError('Please select a valid image file (JPEG, JPG, PNG, or GIF)');
+                if (fileInput) fileInput.value = '';
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                showError('File size exceeds 5MB. Please select a smaller file');
+                if (fileInput) fileInput.value = '';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                if (previewImage) previewImage.src = e.target.result;
+                if (previewContainer) previewContainer.style.display = 'block';
+                hideError();
+            };
+            reader.readAsDataURL(file);
         }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            successModal.style.display = 'block';
-        } else {
-            alert(data.message || 'Submission failed. Please try again.');
-            if(submitBtn) { 
-                submitBtn.disabled = false; 
-                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Confirm Payment'; 
+
+        function showError(message) {
+            if (fileError) {
+                fileError.textContent = message;
+                fileError.style.display = 'block';
             }
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred. Please try again.');
-        if(submitBtn) { 
-            submitBtn.disabled = false; 
-            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Confirm Payment'; 
+
+        function hideError() {
+            if (fileError) {
+                fileError.style.display = 'none';
+                fileError.textContent = '';
+            }
         }
     });
-});
-
-function showError(message) {
-    if (fileError) {
-        fileError.textContent = message;
-        fileError.style.display = 'block';
-    }
-}
-
-function hideError() {
-    if (fileError) {
-        fileError.style.display = 'none';
-        fileError.textContent = '';
-    }
-}
-
-// Close modals when clicking outside
-window.addEventListener('click', (e) => {
-    if (e.target === termsModal) termsModal.style.display = 'none';
-    if (e.target === successModal) successModal.style.display = 'none';
-});
-
 </script>
 </body>
 </html>
