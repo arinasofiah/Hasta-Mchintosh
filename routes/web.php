@@ -114,6 +114,11 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     
     Route::post('/staff/{id}/resend', [AdminController::class, 'resendStaffInvitation'])->name('admin.staff.resendInvitation');
     Route::post('/staff/{id}/cancel', [AdminController::class, 'cancelStaffInvitation'])->name('admin.staff.cancelInvitation');
+
+    Route::get('/pickup/{bookingID}', [BookingController::class, 'showPickupForm'])->name('pickup.form');
+    Route::post('/pickup/{bookingID}', [BookingController::class, 'processPickup'])->name('pickup.process');
+    Route::get('/return/{bookingID}', [BookingController::class, 'showReturnForm'])->name('return.form');
+    Route::post('/return/{bookingID}', [BookingController::class, 'processReturn'])->name('return.process');
 });
 
 //  Booking routes (customer)
