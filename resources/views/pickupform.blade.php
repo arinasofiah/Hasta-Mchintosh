@@ -282,7 +282,7 @@
 </div>
 
         <div id="btn_div"> 
-            <button type="button" id="saveReturnBtn" class="btn-primary">Save Return</button>
+             <button type="submit" class="btn-primary">Save Return</button>
         </div>
         </form>
         @else
@@ -591,95 +591,7 @@ document.getElementById('savePickupBtn').addEventListener('click', function() {
     }
 });
 
-document.getElementById('saveReturnBtn').addEventListener('click', function() {
-    const btn = this;
-    const form = btn.closest('form');
-    let isValid = true;
 
-    // 1. Reset Styles
-    document.querySelectorAll('.error-msg').forEach(el => el.style.display = 'none');
-    document.querySelectorAll('.mini-drop-zone').forEach(el => el.classList.remove('field-error'));
-
-    // 2. Validate 4 Angle Photos
-    const anglePhotos = ['imgRetFront', 'imgRetBack', 'imgRetLeft', 'imgRetRight'];
-    anglePhotos.forEach(id => {
-        const input = document.getElementById(id);
-        if (!input.files || input.files.length === 0) {
-            isValid = false;
-            const container = input.closest('.mini-drop-zone');
-            container.classList.add('field-error');
-            // Using a generic approach to find the error-msg if you didn't give them unique IDs
-            const errorSpan = container.querySelector('.error-msg');
-            if(errorSpan) errorSpan.style.display = 'block';
-        }
-    });
-
-    // 3. Validate Dashboard & Keys
-    const internalPhotos = ['imgDash', 'imgKeys'];
-    internalPhotos.forEach(id => {
-        const input = document.getElementById(id);
-        if (!input.files || input.files.length === 0) {
-            isValid = false;
-            const container = input.closest('.mini-drop-zone');
-            container.classList.add('field-error');
-            if(container.querySelector('.error-msg')) {
-                container.querySelector('.error-msg').style.display = 'block';
-            }
-        }
-    });
-    // 4. Validate Fuel and Return Time
-    const fuel = document.getElementById('fuel');
-    const retTime = document.getElementById('ac_ret_time');
-
-    if (!fuel.value || fuel.value === "") {
-        isValid = false;
-        fuel.classList.add('is-invalid');
-        // Find the error span relative to the input
-        const fuelErr = fuel.parentElement.querySelector('.error-msg');
-        if(fuelErr) fuelErr.style.display = 'block';
-    }
-
-    if (!retTime.value) {
-        isValid = false;
-        retTime.classList.add('is-invalid');
-        const timeErr = retTime.parentElement.querySelector('.error-msg');
-        if(timeErr) timeErr.style.display = 'block';
-}
-
-    // 5. Submit via AJAX if valid
-    if (isValid) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-
-        const formData = new FormData(form);
-        
-        fetch(form.action, {
-            method: 'POST',
-            body: formData,
-            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
-        })
-        .then(response => {
-            if(response.ok) {
-                // You can reuse the same success modal or create a specific 'returnSuccessModal'
-                alert('Return submitted successfully!');
-                window.location.href = "{{ route('customer.dashboard') }}";
-            } else {
-                throw new Error('Server error');
-            }
-        })
-        .catch(error => {
-            btn.disabled = false;
-            btn.innerHTML = 'Save Return';
-            alert('Error saving return. Please check all fields.');
-        });
-    } else {
-        // Scroll to the first error found
-        const firstError = document.querySelector('.field-error, .is-invalid');
-        if (firstError) {
-            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-    }
-});
 </script>
 </body>
 </html>
