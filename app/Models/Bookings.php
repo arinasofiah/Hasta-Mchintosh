@@ -363,7 +363,7 @@ public function getIsFullyPaidAttribute()
         return $this->hasOne(PickUp::class, 'bookingID', 'bookingID');
     }
 
-    public function returnDetail()
+    public function returnCar()
     {
         return $this->hasOne(ReturnCar::class, 'bookingID', 'bookingID');
     }
