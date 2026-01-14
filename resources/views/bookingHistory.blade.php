@@ -397,10 +397,10 @@
                         <strong>Status:</strong>
                         <span id="detail-status">-</span>
                     </div>
-                    <div class="detail-row">
+                    <!-- <div class="detail-row">
                         <strong>Duration:</strong>
                         <span id="detail-duration">-</span>
-                    </div>
+                    </div> -->
                 </div>
             </div>
             <hr style="margin: 20px 0;">

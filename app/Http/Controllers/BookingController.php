@@ -38,17 +38,20 @@ class BookingController extends Controller
 
         $start = Carbon::parse("$pickupDate $pickupTime");
         $end = Carbon::parse("$returnDate $returnTime");
-        $durationHours = $end->diffInHours($start);
+        $durationHours = ceil($end->diffInMinutes($start) / 60);
         
-        // FIX: Use ceil() instead of floor() to round up partial days
-        $durationDays = ceil($durationHours / 24);
-        
-        // Ensure minimum 1 day for any booking
-        if ($durationDays < 1) {
+        // Option B: Day-based with Hourly Overflow
+        // Any rental up to 24 hours = 1 day charge
+        // Beyond 24 hours = full days + remaining hours at hourly rate
+        if ($durationHours <= 24) {
+            $totalPrice = $vehicle->pricePerDay;
             $durationDays = 1;
+        } else {
+            $days = intdiv($durationHours, 24); // Full days
+            $remainingHours = $durationHours % 24; // Remaining hours
+            $totalPrice = ($days * $vehicle->pricePerDay) + ($remainingHours * $vehicle->pricePerHour);
+            $durationDays = ceil($durationHours / 24);
         }
-        
-        $totalPrice = $durationDays * $vehicle->pricePerDay;
 
         $user = Auth::user();
         $vouchers = [];
@@ -318,11 +321,19 @@ class BookingController extends Controller
         $pickup = Carbon::parse($request->pickup_date . ' ' . $request->pickup_time);
         $return = Carbon::parse($request->return_date . ' ' . $request->return_time);
 
-        $hours = max(1, $pickup->diffInHours($return));
-        $days = ceil($hours / 24);
+        $hours = ceil($pickup->diffInMinutes($return) / 60);
+        $hours = max(1, $hours);
 
-        // PRICE
-        $rentalPrice = $days * $vehicle->pricePerDay;
+        // PRICE - Option B: Day-based with Hourly Overflow
+        // Any rental up to 24 hours = 1 day charge
+        // Beyond 24 hours = full days + remaining hours at hourly rate
+        if ($hours <= 24) {
+            $rentalPrice = $vehicle->pricePerDay;
+        } else {
+            $days = intdiv($hours, 24); // Full days
+            $remainingHours = $hours % 24; // Remaining hours
+            $rentalPrice = ($days * $vehicle->pricePerDay) + ($remainingHours * $vehicle->pricePerHour);
+        }
         $deposit = 50;
 
         // PROMO
