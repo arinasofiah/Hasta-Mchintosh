@@ -345,6 +345,7 @@ class BookingController extends Controller
         // BOOKING
         $booking = new Bookings();
         $booking->userID = auth()->id(); 
+        $booking->customerID = auth()->id(); // Fix: Populate customerID for Admin view relationship
         $booking->vehicleID = $vehicle->vehicleID;
         $booking->startDate = $request->pickup_date;
         $booking->endDate = $request->return_date;

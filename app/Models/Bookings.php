@@ -347,6 +347,11 @@ public function getIsFullyPaidAttribute()
     return $this->remaining_balance <= 0;
 }
 
+public function getPaymentProofAttribute()
+{
+    return $this->payment_receipt_path;
+}
+
     // Relationships
     public function vehicle()
     {
