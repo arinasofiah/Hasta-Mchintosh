@@ -53,6 +53,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/customers', [AdminController::class, 'customers'])->name('admin.customers');
         Route::put('/customers/{id}', [AdminController::class, 'updateCustomer'])->name('admin.customers.update');
          Route::get('/profile', [AdminController::class, 'profile'])->name('profile');
+         
+
+    Route::get('profile/edit', [AdminController::class, 'editProfile'])
+        ->name('admin.edit-profile');
+
+    Route::put('profile/update', [AdminController::class, 'updateProfile'])
+        ->name('admin.profile.update');
+         
 
        // Staff management routes
     Route::get('/staff', [AdminController::class, 'staff'])->name('admin.staff');
@@ -100,5 +108,6 @@ Route::middleware('guest')->group(function () {
     Route::get('/customer/booking/{id}', [CustomerController::class, 'getBookingDetails'])
         ->name('customer.booking.details');
     });
+
     
 });

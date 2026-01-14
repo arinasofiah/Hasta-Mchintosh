@@ -835,6 +835,97 @@ public function storeStaff(Request $request)
     ));
 }
 
+public function editProfile()
+{
+    $user = auth()->user();
+
+    $telephone = DB::table('telephone')
+        ->where('userID', $user->userID)
+        ->first();
+
+    $staffDetails = null;
+    if ($user->userType === 'staff') {
+        $staffDetails = DB::table('staff')
+            ->where('userID', $user->userID)
+            ->first();
+    }
+
+    return view('admin.edit-profile', compact(
+        'user',
+        'telephone',
+        'staffDetails'
+    ));
+}
+
+public function updateProfile(Request $request)
+{
+    $user = auth()->user();
+
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|max:255|unique:users,email,' . $user->userID . ',userID',
+        'phoneNumber' => 'nullable|string|max:20|unique:telephone,phoneNumber,' . $user->userID . ',userID',
+        'password' => 'nullable|min:8|confirmed',
+        'position' => 'nullable|string|max:100',
+    ]);
+
+    DB::beginTransaction();
+
+    try {
+        // Update users table
+        DB::table('users')->where('userID', $user->userID)->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'updated_at' => now(),
+        ]);
+
+        // Update password if provided
+        if ($request->filled('password')) {
+            DB::table('users')->where('userID', $user->userID)->update([
+                'password' => Hash::make($request->password),
+            ]);
+        }
+
+        // Update or insert phone number
+        if ($request->filled('phoneNumber')) {
+            $phone = DB::table('telephone')->where('userID', $user->userID)->first();
+
+            if ($phone) {
+                DB::table('telephone')->where('userID', $user->userID)->update([
+                    'phoneNumber' => $request->phoneNumber,
+                    'updated_at' => now(),
+                ]);
+            } else {
+                DB::table('telephone')->insert([
+                    'userID' => $user->userID,
+                    'phoneNumber' => $request->phoneNumber,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
+
+        // Update staff position (staff only)
+        if ($user->userType === 'staff' && $request->filled('position')) {
+            DB::table('staff')->where('userID', $user->userID)->update([
+                'position' => $request->position,
+                'updated_at' => now(),
+            ]);
+        }
+
+        DB::commit();
+
+        return redirect()
+            ->route('admin.profile')
+            ->with('success', 'Profile updated successfully!');
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->withErrors(['error' => 'Failed to update profile']);
+    }
+}
+
+
 /**
  * Add new commission record
  */

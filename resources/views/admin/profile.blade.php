@@ -45,8 +45,75 @@
         .indicator-recent {background:#4caf50;animation:pulse 2s infinite}
         .indicator-old {background:#9e9e9e}
         @keyframes pulse {0%{opacity:0.7}50%{opacity:1}100%{opacity:0.7}}
-        @media (max-width:768px){.commission-summary{flex-wrap:wrap}.commission-box{min-width:150px}.commission-count{font-size:24px}.history-table{font-size:14px}.history-table th,.history-table td{padding:10px}}
-        @media (max-width:576px){.history-table{display:block;overflow-x:auto}.commission-title{font-size:16px}.commission-form{padding:15px}.commission-summary{gap:10px}.commission-box{min-width:140px}}
+        
+        /* Updated Profile Header Styles */
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .profile-title-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .profile-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+            margin: 0;
+        }
+        
+        .edit-profile-btn {
+            background: linear-gradient(135deg, #bc3737 0%, #a52a2a 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(188, 55, 55, 0.2);
+        }
+        
+        .edit-profile-btn:hover {
+            background: linear-gradient(135deg, #a52a2a 0%, #8b0000 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(188, 55, 55, 0.3);
+            color: white;
+        }
+        
+        .edit-profile-btn:active {
+            transform: translateY(0);
+        }
+        
+        @media (max-width:768px){.commission-summary{flex-wrap:wrap}.commission-box{min-width:150px}.commission-count{font-size:24px}.history-table{font-size:14px}.history-table th,.history-table td{padding:10px}
+            .profile-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+        }
+        @media (max-width:576px){.history-table{display:block;overflow-x:auto}.commission-title{font-size:16px}.commission-form{padding:15px}.commission-summary{gap:10px}.commission-box{min-width:140px}
+            .profile-title-wrapper {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .edit-profile-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -77,10 +144,14 @@
 <div class="content-with-sidebar">
 
     <div class="profile-page">
-        <div class="profile-header">
-            <h2 class="profile-title">My Profile</h2>
-        </div>
-      
+        <!-- Updated Profile Header -->
+        <div class="profile-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <h2 class="profile-title" style="margin: 0;">My Profile</h2>
+    <a href="{{ route('admin.edit-profile') }}" class="btn btn-primary" style="display: flex; align-items: center; gap: 8px;">
+        <i class="fas fa-user-edit"></i> Edit Profile
+    </a>
+</div>
+        
         <div class="profile-content">
             {{-- Personal Information Card --}}
             <div class="info-card">
@@ -116,6 +187,7 @@
                     <i class="fas fa-shield-alt"></i>
                     Account Information
                 </div>
+
                 <div class="info-row">
                     <span class="info-label">User Type:</span>
                     <span class="info-value">{{ ucfirst($user->userType) }}</span>
@@ -130,10 +202,7 @@
                         <span class="status-badge status-active">Active</span>
                     </span>
                 </div>
-                <div class="info-row">
-                    <span class="info-label">Last Login:</span>
-                    <span class="info-value">{{ $user->last_login_at ? $user->last_login_at->format('M d, Y H:i') : 'N/A' }}</span>
-                </div>
+            
             </div>
             
             {{-- Commission Management Section --}}
