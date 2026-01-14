@@ -373,6 +373,11 @@ public function getPaymentProofAttribute()
         return $this->hasOne(ReturnCar::class, 'bookingID', 'bookingID');
     }
 
+    public function returnDetail()
+    {
+        return $this->hasOne(ReturnCar::class, 'bookingID', 'bookingID');
+    }
+
     public function voucher()
     {
         return $this->belongsTo(Voucher::class, 'voucher_id', 'voucherCode');

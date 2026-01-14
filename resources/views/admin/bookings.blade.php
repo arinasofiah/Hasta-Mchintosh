@@ -88,7 +88,7 @@
                             @forelse($pendingApprovals as $booking)
                             <tr>
                                 <td>#{{ $booking->booking_code }}</td>
-                                <td>{{ $booking->customer->name ?? 'Unknown' }}</td>
+                                <td>{{ $booking->user->name ?? 'Unknown' }}</td>
                                 <td>
                                     @if($booking->bookingStatus == 'paid')
                                         <span class="status-badge bg-green">Paid</span>
@@ -131,7 +131,7 @@
                             <tr>
                                 <td>#{{ $booking->booking_code }}</td>
                                 <td>{{ \Carbon\Carbon::parse($booking->pickupDate)->format('d M Y, h:i A') }}</td>
-                                <td>{{ $booking->customer->name ?? 'Unknown' }}</td>
+                                <td>{{ $booking->users->name ?? 'Unknown' }}</td>
                                 <td><a href="{{ route('admin.bookings.show', $booking->bookingID) }}" class="action-btn">Details</a></td>
                             </tr>
                             @empty <tr><td colspan="4" class="text-center p-4 text-muted">No upcoming pickups.</td></tr>

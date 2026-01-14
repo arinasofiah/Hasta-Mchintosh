@@ -74,10 +74,10 @@
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-body text-center">
                         <h6 class="text-muted text-start mb-3 fw-bold small">VEHICLE</h6>
-                        <img src="{{ asset('storage/' . ($booking->vehicle->image ?? 'default_car.png')) }}" 
-                             class="img-fluid rounded mb-3" style="width:100%; object-fit: cover;" alt="Car">
+                       <!-- <img src="{{ asset('storage/' . ($booking->vehicle->image ?? 'default_car.png')) }}" 
+                             class="img-fluid rounded mb-3" style="width:100%; object-fit: cover;" alt="Car"> -->
                         <h5 class="fw-bold">{{ $booking->vehicle->model ?? 'Unknown Model' }}</h5>
-                        <p class="text-muted m-0"><i class="fa-solid fa-car-side me-1"></i> {{ $booking->vehicle->plate_number ?? 'No Plate' }}</p>
+                        <p class="text-muted m-0"><i class="fa-solid fa-car-side me-1"></i> {{ $booking->vehicle->plateNumber ?? 'No Plate' }}</p>
                     </div>
                 </div>
 
@@ -146,15 +146,15 @@
                                 <div class="row g-3 mb-4">
                                     <div class="col-md-4">
                                         <label class="text-muted small">Name</label>
-                                        <div class="fw-bold">{{ $booking->customer->name ?? 'N/A' }}</div>
+                                        <div class="fw-bold">{{ $booking->user->name ?? 'N/A' }}</div>
                                     </div>
                                     <div class="col-md-4">
                                         <label class="text-muted small">Email</label>
-                                        <div class="fw-bold">{{ $booking->customer->email ?? 'N/A' }}</div>
+                                        <div class="fw-bold">{{ $booking->user->email ?? 'N/A' }}</div>
                                     </div>
                                     <div class="col-md-4">
                                         <label class="text-muted small">Phone</label>
-                                        <div class="fw-bold">{{ $booking->customer->phone ?? 'N/A' }}</div>
+                                        <div class="fw-bold">{{ $booking->user->phone ?? 'N/A' }}</div>
                                     </div>
                                 </div>
 
