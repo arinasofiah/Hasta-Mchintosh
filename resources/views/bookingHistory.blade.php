@@ -149,7 +149,7 @@
                                     <h3>{{ $vehicle->model ?? 'Car Model' }}</h3>
                                     <p>{{ $vehicle->vehicleType ?? 'Vehicle Type' }}</p>
                                     
-                                    <!-- Payment Information -->
+                                    <!-- Payment Information
                                     <div class="payment-info">
                                         @if($remainingBalance > 0)
                                             <div class="paid">Paid: RM{{ number_format($totalPaid, 2) }}</div>
@@ -157,7 +157,7 @@
                                         @elseif($isFullyPaid)
                                             <div class="paid">Fully Paid</div>
                                         @endif
-                                    </div>
+                                    </div> -->
                                 </div>
 
                                 <div class="price">
@@ -209,6 +209,7 @@
                                     @endif
                                 </div>
                                     
+                                <div>
                                     @if($canPayBalance)
                                         <a href="{{ route('payment.remaining', ['bookingID' => $booking->bookingID]) }}" 
                                            class="action-btn-success" 
