@@ -201,7 +201,7 @@
                                     @endif
                                 </div>
                                     
-                                <div>
+                                <!-- <div>
                                     @if($canPayBalance)
                                         <a href="{{ route('payment.remaining', ['bookingID' => $booking->bookingID]) }}" 
                                            class="action-btn-success" 
@@ -209,7 +209,7 @@
                                             <i class="fas fa-credit-card"></i> Pay Balance (RM{{ number_format($remainingBalance, 2) }})
                                         </a>
                                     @endif
-                                </div>
+                                </div> -->
                             </div>
                     @empty
                         <div class="empty-state">
@@ -258,6 +258,7 @@
                                             onclick="showDetailsModal({{ $booking->bookingID }})">
                                         <i class="fas fa-eye"></i> Details
                                     </button>
+                                    
                                     <button class="action-btn-danger" 
                                             onclick="showCancelModal({{ $booking->bookingID }})">
                                         <i class="fas fa-times"></i> Cancel
@@ -363,6 +364,84 @@
             </div>
         </div>
     </div>
+
+    <div id="detailsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2><i class="fas fa-info-circle"></i> Booking Details</h2>
+            <button class="close-btn" onclick="closeModal('detailsModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div style="display: flex; gap: 20px;">
+                <div style="flex: 1;">
+                    <img id="detail-car-image" src="" alt="Vehicle" style="width: 100%; border-radius: 8px; max-height: 300px; object-fit: cover;">
+                </div>
+                <div style="flex: 1;">
+                    <div class="detail-row">
+                        <strong>Vehicle Model:</strong>
+                        <span id="detail-model">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>Vehicle Type:</strong>
+                        <span id="detail-type">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>Plate Number:</strong>
+                        <span id="detail-plate">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>Booking ID:</strong>
+                        <span id="detail-id">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>Status:</strong>
+                        <span id="detail-status">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>Duration:</strong>
+                        <span id="detail-duration">-</span>
+                    </div>
+                </div>
+            </div>
+            <hr style="margin: 20px 0;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                    <strong>Start Date:</strong><br><span id="detail-start">-</span>
+                </div>
+                <div>
+                    <strong>End Date:</strong><br><span id="detail-end">-</span>
+                </div>
+            </div>
+            <hr style="margin: 20px 0;">
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                <h5>Payment Information</h5>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px;">
+                    <div>
+                        <strong>Total Cost:</strong><br><span id="detail-total-cost">RM0.00</span>
+                    </div>
+                    <div>
+                        <strong>Amount Paid:</strong><br><span id="detail-paid">RM0.00</span>
+                    </div>
+                    <div>
+                        <strong>Remaining Balance:</strong><br><span id="detail-remaining">RM0.00</span>
+                    </div>
+                    <div>
+                        <strong>Payment Type:</strong><br><span id="detail-payment-type">-</span>
+                    </div>
+                </div>
+                <div style="margin-top: 15px;">
+                    <strong>Bank:</strong><br><span id="detail-bank-name">-</span>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('detailsModal')">Close</button>
+            <a id="modal-pay-balance-btn" href="#" class="btn btn-primary" style="display: none; text-decoration: none;">
+                <i class="fas fa-credit-card"></i> Pay Remaining Balance
+            </a>
+        </div>
+    </div>
+</div>
 
     <div id="cancelModal" class="modal">
         <div class="modal-content">

@@ -585,13 +585,18 @@ function calculateDurationAndPrice() {
     if (durationInput) durationInput.value = durationText;
     if (durationDisplay) durationDisplay.textContent = durationText;
 
-    // Calculate base rental cost
-    const totalByHour = diffHours * {{ $vehicle->pricePerHour }};
-    baseGrandTotal = (days * {{ $vehicle->pricePerDay }}) + (remainingHours * {{ $vehicle->pricePerHour }});
+    // Calculate base rental cost using Option B: Day-based with Hourly Overflow
+    // Any rental up to 24 hours = 1 day charge
+    // Beyond 24 hours = full days + remaining hours at hourly rate
+    if (diffHours <= 24) {
+        baseGrandTotal = {{ $vehicle->pricePerDay }};
+    } else {
+        baseGrandTotal = (days * {{ $vehicle->pricePerDay }}) + (remainingHours * {{ $vehicle->pricePerHour }});
+    }
 
     const totalByHourEl = document.getElementById('totalByHour');
     if (totalByHourEl) {
-        totalByHourEl.textContent = `MYR ${totalByHour.toFixed(2)}`;
+        totalByHourEl.textContent = `MYR ${baseGrandTotal.toFixed(2)}`;
     }
 
     console.log('Duration Hours:', diffHours);
