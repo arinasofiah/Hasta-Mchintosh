@@ -270,7 +270,7 @@
                             {{ ucfirst($booking->bookingStatus) }}
                         </span>
                     </div>
-                    <div class="col-2 text-end fw-bold text-success">RM {{ number_format($booking->totalPrice, 2) }}</div>
+                    <div class="col-2 text-end fw-bold text-success">RM {{ number_format($booking->totalPrice + 50, 2) }}</div>
                 </div>
                 @endforeach
             </div>
