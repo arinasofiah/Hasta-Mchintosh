@@ -367,11 +367,6 @@ textarea.input {resize:vertical; min-height:100px;}
                     <input type="text" id="faculty" name="faculty" class="input" placeholder="Enter faculty">
                 </div>
                 
-                <div style="margin-bottom: 15px;">
-                    <div class="field-label">Deposit Balance (RM)</div>
-                    <input type="number" step="0.01" id="depoBalance" name="depoBalance" class="input" placeholder="0.00">
-                </div>
-                
                 <button type="button" id="registerDriverBtn" class="next-btn" style="width: 100%;">
                     Register Driver
                 </button>
