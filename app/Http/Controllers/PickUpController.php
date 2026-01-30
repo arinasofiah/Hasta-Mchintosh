@@ -20,7 +20,7 @@ class PickUpController extends Controller
             ['bookingID' => $bookingID], 
             [
                 'pickupDate'     => $booking->startDate,
-                'pickupLocation' => $booking->pickup_location ?? '', // Default to booking location
+                'pickupLocation' => $booking->pickup_location ?? '',
                 'agreementForm'  => 0,
             ]
         );
@@ -36,8 +36,6 @@ class PickUpController extends Controller
 
     public function store(Request $request)
     {
-        // UNCOMMENT THE LINE BELOW TO DEBUG IF IT FAILS
-        // dd($request->all()); 
 
         $request->validate([
             'bookingID'    => 'required',
@@ -48,14 +46,12 @@ class PickUpController extends Controller
             'manual_signature_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        // Custom check: Must have Canvas OR File
         if (!$request->filled('signature') && !$request->hasFile('manual_signature_photo')) {
             return redirect()->back()->withErrors(['signature' => 'Agreement is required (Sign or Upload).']);
         }
 
         $pickup = PickUp::where('bookingID', $request->bookingID)->firstOrFail();
 
-        // Save Car Photos
         $sides = ['front', 'back', 'left', 'right'];
         foreach ($sides as $side) {
             $inputName = 'photo_' . $side;
@@ -67,7 +63,7 @@ class PickUpController extends Controller
             }
         }
 
-        // Save Signature (Priority to File Upload if both exist, or use Canvas)
+
         if ($request->hasFile('manual_signature_photo')) {
             $file = $request->file('manual_signature_photo');
             $fileName = time() . '_manual_sig_' . $request->bookingID . '.' . $file->getClientOriginalExtension();
@@ -86,12 +82,10 @@ class PickUpController extends Controller
         if ($request->hasFile('trafficTicketPhoto')) {
         $paths = [];
         foreach ($request->file('trafficTicketPhoto') as $photo) {
-                // Save photo in public/uploads/tickets
                 $name = time() . '_' . $photo->getClientOriginalName();
                 $photo->move(public_path('uploads/tickets'), $name);
                 $paths[] = 'uploads/tickets/' + $name;
             }
-            // Save as a JSON string: ["path1.jpg", "path2.jpg"]
             $return->trafficTicketPhoto = json_encode($paths);
         }
         $pickup->pickupComplete = true;
@@ -109,13 +103,12 @@ class PickUpController extends Controller
             'return_photo_right'     => 'required|image|max:2048',
             'return_photo_dashboard' => 'required|image|max:2048',
             'return_photo_keys'      => 'required|image|max:2048',
-            'trafficTicketPhoto.*'   => 'nullable|image|max:2048', // Validate each file in array
+            'trafficTicketPhoto.*'   => 'nullable|image|max:2048',
             'isFined'                => 'required'
         ]);
 
         $return = ReturnCar::where('bookingID', $request->bookingID)->firstOrFail();
 
-        // 1. Handle Single Vehicle Photos
         $fields = [
             'return_photo_front'     => 'photo_front', 
             'return_photo_back'      => 'photo_back', 
@@ -134,7 +127,6 @@ class PickUpController extends Controller
             }
         }
 
-        // 2. Handle Multiple Traffic Tickets
         if ($request->hasFile('trafficTicketPhoto')) {
             $ticketPaths = [];
             foreach ($request->file('trafficTicketPhoto') as $photo) {
@@ -142,11 +134,9 @@ class PickUpController extends Controller
                 $photo->move(public_path('uploads/tickets'), $name);
                 $ticketPaths[] = 'uploads/tickets/' . $name;
             }
-            // Because of the 'array' cast in the Model, we just assign the array
             $return->trafficTicketPhoto = $ticketPaths; 
         }
 
-        // 3. Handle Text and Radio Fields
         $return->isfined = ($request->isFined === 'yes') ? 1 : 0;
         $return->fuelAmount = $request->fuelAmount;
         $return->feedback = $request->feedback;

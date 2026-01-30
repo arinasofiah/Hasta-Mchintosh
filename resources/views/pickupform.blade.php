@@ -248,15 +248,6 @@
                 <div id="fileNameList" style="margin-top: 10px; text-align: left; font-size: 12px; color: #333;"></div>
             </div>
         </div>
-        <!--<div class="radio-section">
-            <span>Was any damage done?</span>
-            <label class="radio-label">
-                <input type="radio" name="isDamaged" value="yes" onchange="toggleTicketBox(this)"> <span>Yes</span>
-            </label>
-            <label class="radio-label">
-                <input type="radio" name="isDamaged" value="no" onchange="toggleTicketBox(this)" checked> <span>No</span>
-            </label>
-        </div>-->
 
         </div><p class="main_txt">Return information</p>
         <p class="sub_txt">Please provide information about the return</p>
@@ -538,26 +529,22 @@ document.getElementById('savePickupBtn').addEventListener('click', function() {
     const form = btn.closest('form');
     let isValid = true;
 
-    // 1. Reset Styles
     document.querySelectorAll('.error-msg').forEach(el => el.style.display = 'none');
     document.querySelectorAll('.mini-drop-zone, .signature-section').forEach(el => el.classList.remove('field-error'));
 
-    // 2. Validate All 4 Photos (Mandatory)
     const photos = ['imgFront', 'imgBack', 'imgLeft', 'imgRight'];
     photos.forEach(id => {
         const input = document.getElementById(id);
         if (!input.files || input.files.length === 0) {
             isValid = false;
-            // Highlight the container and show error text
             const container = input.closest('.mini-drop-zone');
             container.classList.add('field-error');
             container.querySelector('.error-msg').style.display = 'block';
         }
     });
 
-    // 3. Validate Signature OR File (One of them must exist)
-    const signatureData = document.getElementById('signature-input').value; // Canvas data
-    const signatureFile = document.getElementById('imgSigDoc').files.length; // Uploaded file
+    const signatureData = document.getElementById('signature-input').value;
+    const signatureFile = document.getElementById('imgSigDoc').files.length;
 
     if (!signatureData && signatureFile === 0) {
         isValid = false;
@@ -565,7 +552,6 @@ document.getElementById('savePickupBtn').addEventListener('click', function() {
         document.getElementById('sig_area_wrapper').classList.add('field-error');
     }
 
-    // 4. Submit if valid
     if (isValid) {
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
@@ -586,7 +572,6 @@ document.getElementById('savePickupBtn').addEventListener('click', function() {
             alert('Error saving. Please try again.');
         });
     } else {
-        // Scroll to the first error
         document.querySelector('.field-error').scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 });

@@ -178,7 +178,7 @@
                                     </div>
                                     <div class="col-md-5 text-end">
                                         <small class="text-muted">Total Amount</small>
-                                        <div class="h2 fw-bold text-success mb-0">RM {{ number_format($booking->totalPrice, 2) }}</div>
+                                        <div class="h2 fw-bold text-success mb-0">RM {{ number_format($booking->totalPrice + 50, 2) }}</div>
                                     </div>
                                 </div>
 

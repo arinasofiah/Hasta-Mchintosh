@@ -135,21 +135,20 @@ class ReportController extends Controller
             ));
         }
 
-        // 2. Base Query for INCOME (Monthly/Daily) - USING BOOKING TABLE
-        $incomeQuery = DB::table('booking')
-            ->whereIn('bookingStatus', ['approved', 'completed', 'picked_up']) // Only confirmed/completed bookings
-            ->whereNotNull('totalPrice'); // Ensure there's a price
+        // 2. Base Query for INCOME (Monthly/Daily) - USING PAYMENT TABLE
+        $incomeQuery = DB::table('payment')
+            ->where('paymentStatus', 'completed');
 
         if ($view === 'daily') {
             $results = (clone $incomeQuery)
                 ->select(
-                    DB::raw('DAY(created_at) as day'),
-                    DB::raw('SUM(totalPrice) as total'),
+                    DB::raw('DAY(paymentDate) as day'),
+                    DB::raw('SUM(amount) as total'),
                     DB::raw('COUNT(*) as sales_count'),
-                    DB::raw('AVG(totalPrice) as average_sale') // Optional: average booking value
+                    DB::raw('AVG(amount) as average_sale')
                 )
-                ->whereYear('created_at', $year)
-                ->whereMonth('created_at', $month)
+                ->whereYear('paymentDate', $year)
+                ->whereMonth('paymentDate', $month)
                 ->groupBy('day')->orderBy('day')->get();
 
             $daysInMonth = Carbon::create($year, $month)->daysInMonth;
@@ -164,13 +163,13 @@ class ReportController extends Controller
             // Monthly logic
             $results = (clone $incomeQuery)
                 ->select(
-                    DB::raw('MONTH(created_at) as month_num'),
-                    DB::raw('MONTHNAME(created_at) as month_name'),
-                    DB::raw('SUM(totalPrice) as total'),
+                    DB::raw('MONTH(paymentDate) as month_num'),
+                    DB::raw('MONTHNAME(paymentDate) as month_name'),
+                    DB::raw('SUM(amount) as total'),
                     DB::raw('COUNT(*) as sales_count'),
-                    DB::raw('AVG(totalPrice) as average_sale') // Optional: average booking value
+                    DB::raw('AVG(amount) as average_sale')
                 )
-                ->whereYear('created_at', $year)
+                ->whereYear('paymentDate', $year)
                 ->groupBy('month_num', 'month_name')->orderBy('month_num')->get();
 
             $chartLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -190,39 +189,37 @@ class ReportController extends Controller
         $month = $request->get('month', date('m'));
         $view = $request->get('view', 'monthly');
 
-        // Fetch data from booking table
+        // Fetch data from payment table
         if ($view === 'daily') {
-            $fileName = "Daily_Booking_Report_{$month}_{$year}.csv";
-            $data = DB::table('booking')
+            $fileName = "Daily_Payment_Report_{$month}_{$year}.csv";
+            $data = DB::table('payment')
                 ->select(
-                    DB::raw('DAY(created_at) as label'),
-                    DB::raw('COUNT(*) as bookings'),
-                    DB::raw('SUM(totalPrice) as total_revenue'),
-                    DB::raw('AVG(totalPrice) as avg_booking_value')
+                    DB::raw('DAY(paymentDate) as label'),
+                    DB::raw('COUNT(*) as transactions'),
+                    DB::raw('SUM(amount) as total_revenue'),
+                    DB::raw('AVG(amount) as avg_transaction')
                 )
-                ->whereYear('created_at', $year)
-                ->whereMonth('created_at', $month)
-                ->whereIn('bookingStatus', ['approved', 'completed', 'picked_up'])
-                ->whereNotNull('totalPrice')
+                ->whereYear('paymentDate', $year)
+                ->whereMonth('paymentDate', $month)
+                ->where('paymentStatus', 'completed')
                 ->groupBy('label')->orderBy('label')->get();
             
-            $header = ['Day', 'No of Bookings', 'Total Revenue (RM)', 'Average Booking Value (RM)'];
+            $header = ['Day', 'No of Transactions', 'Total Revenue (RM)', 'Average Transaction (RM)'];
         } else {
-            $fileName = "Monthly_Booking_Report_{$year}.csv";
-            $data = DB::table('booking')
+            $fileName = "Monthly_Payment_Report_{$year}.csv";
+            $data = DB::table('payment')
                 ->select(
-                    DB::raw('MONTHNAME(created_at) as label'),
-                    DB::raw('COUNT(*) as bookings'),
-                    DB::raw('SUM(totalPrice) as total_revenue'),
-                    DB::raw('AVG(totalPrice) as avg_booking_value')
+                    DB::raw('MONTHNAME(paymentDate) as label'),
+                    DB::raw('COUNT(*) as transactions'),
+                    DB::raw('SUM(amount) as total_revenue'),
+                    DB::raw('AVG(amount) as avg_transaction')
                 )
-                ->whereYear('created_at', $year)
-                ->whereIn('bookingStatus', ['approved', 'completed', 'picked_up'])
-                ->whereNotNull('totalPrice')
-                ->groupBy(DB::raw('MONTH(created_at)'), 'label')
-                ->orderBy(DB::raw('MONTH(created_at)'))->get();
+                ->whereYear('paymentDate', $year)
+                ->where('paymentStatus', 'completed')
+                ->groupBy(DB::raw('MONTH(paymentDate)'), 'label')
+                ->orderBy(DB::raw('MONTH(paymentDate)'))->get();
             
-            $header = ['Month', 'No of Bookings', 'Total Revenue (RM)', 'Average Booking Value (RM)'];
+            $header = ['Month', 'No of Transactions', 'Total Revenue (RM)', 'Average Transaction (RM)'];
         }
 
         // Generate CSV
@@ -232,9 +229,9 @@ class ReportController extends Controller
             foreach ($data as $row) {
                 fputcsv($file, [
                     $row->label, 
-                    $row->bookings, 
+                    $row->transactions, 
                     number_format($row->total_revenue ?? 0, 2),
-                    number_format($row->avg_booking_value ?? 0, 2)
+                    number_format($row->avg_transaction ?? 0, 2)
                 ]);
             }
             fclose($file);
@@ -250,59 +247,57 @@ class ReportController extends Controller
     }
     
     /**
-     * Additional method to get income breakdown by payment type
-     * (Optional - if you have pay_amount_type field in booking table)
+     * Additional method to get payment breakdown by payment method
      */
-    public function getPaymentTypeBreakdown(Request $request)
+    public function getPaymentMethodBreakdown(Request $request)
     {
         $year = $request->get('year', date('Y'));
         $month = $request->get('month', date('m'));
         
-        $breakdown = DB::table('booking')
+        $breakdown = DB::table('payment')
             ->select(
-                'pay_amount_type',
-                DB::raw('COUNT(*) as booking_count'),
-                DB::raw('SUM(totalPrice) as total_revenue'),
-                DB::raw('AVG(totalPrice) as avg_revenue')
+                'paymentMethod',
+                DB::raw('COUNT(*) as transaction_count'),
+                DB::raw('SUM(amount) as total_revenue'),
+                DB::raw('AVG(amount) as avg_revenue')
             )
-            ->whereYear('created_at', $year)
-            ->whereMonth('created_at', $month)
-            ->whereIn('bookingStatus', ['approved', 'completed', 'picked_up'])
-            ->whereNotNull('totalPrice')
-            ->groupBy('pay_amount_type')
+            ->whereYear('paymentDate', $year)
+            ->whereMonth('paymentDate', $month)
+            ->where('paymentStatus', 'completed')
+            ->groupBy('paymentMethod')
             ->get();
             
         return response()->json($breakdown);
     }
     
     /**
-     * Additional method to get top performing vehicles
-     * (Optional - for vehicle performance report)
+     * Additional method to get payment summary with booking details
      */
-    public function getTopVehicles(Request $request)
+    public function getPaymentSummary(Request $request)
     {
         $year = $request->get('year', date('Y'));
-        $limit = $request->get('limit', 10);
+        $month = $request->get('month', date('m'));
         
-        $topVehicles = DB::table('booking')
+        $summary = DB::table('payment')
+            ->join('booking', 'payment.bookingID', '=', 'booking.bookingID')
             ->join('vehicles', 'booking.vehicleID', '=', 'vehicles.vehicleID')
             ->select(
-                'vehicles.vehicleID',
+                'payment.paymentID',
+                'payment.amount',
+                'payment.paymentMethod',
+                'payment.paymentDate',
+                'booking.booking_code',
+                'booking.totalPrice as booking_total',
                 'vehicles.model',
-                'vehicles.vehicleType',
-                'vehicles.plateNumber',
-                DB::raw('COUNT(*) as booking_count'),
-                DB::raw('SUM(booking.totalPrice) as total_revenue'),
-                DB::raw('AVG(booking.totalPrice) as avg_revenue')
+                'vehicles.vehicleType'
             )
-            ->whereYear('booking.created_at', $year)
-            ->whereIn('booking.bookingStatus', ['approved', 'completed', 'picked_up'])
-            ->whereNotNull('booking.totalPrice')
-            ->groupBy('vehicles.vehicleID', 'vehicles.model', 'vehicles.vehicleType', 'vehicles.plateNumber')
-            ->orderBy('total_revenue', 'desc')
-            ->limit($limit)
+            ->whereYear('payment.paymentDate', $year)
+            ->whereMonth('payment.paymentDate', $month)
+            ->where('payment.paymentStatus', 'completed')
+            ->orderBy('payment.paymentDate', 'desc')
+            ->limit(20)
             ->get();
             
-        return response()->json($topVehicles);
+        return response()->json($summary);
     }
 }

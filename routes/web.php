@@ -39,12 +39,12 @@ Route::get('/', function () {
 // Vehicle Index page (shows all available vehicles in grid)
 Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
 
-// Pickup & Return (public or auth? assuming auth later)
-// Pickup
+// Pickup & Return (auth)
+Route::middleware(['auth'])->group(function () {
 Route::get('/pickup/{bookingID}', [PickUpController::class, 'show'])->name('pickup.show');
 Route::post('/pickup/store', [PickUpController::class, 'store'])->name('pickup.store');
 Route::get('/pickup/form/{bookingID}', [PickUpController::class, 'show'])->name('pickup.form');
-
+});
 // Return
 Route::post('/return/store', [PickUpController::class, 'storeReturn'])->name('return.store');
 
