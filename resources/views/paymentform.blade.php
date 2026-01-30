@@ -13,23 +13,12 @@
         body { font-family: 'Inter', sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; }
         button { cursor: pointer; }
 
-        /* Header */
-        #header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 20px 40px; 
-            background: #d94444; 
-            color: white; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
         #logo { height: 45px; }
         #profile-container { 
             width: 45px; 
             height: 45px; 
             border-radius: 50%; 
             overflow: hidden; 
-            background: white; 
         }
         #pfp { width: 100%; height: 100%; object-fit: cover; }
         #username { 
@@ -592,26 +581,31 @@
 
 <!-- Header -->
 <div id="header">
-    <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}">
-
-    <div id="menu">
-        <a href="{{ url('/') }}"><button class="head_button">Home</button></a>
-        <button class="head_button">Vehicles</button>
-        <button class="head_button">Details</button>
-        <button class="head_button">About Us</button>
-        <button class="head_button">Contact Us</button>
-    </div>
-
-    <div id="profile">
-        <div id="profile-container">
-            <img id="pfp" src="{{ asset('img/racc_icon.png') }}">
+        <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}" alt="Hasta Logo">
+        
+        <div id="menu">
+            <button class="head_button" onclick="window.location.href='{{ route('customer.dashboard') }}'">Home</button>
+            <button class="head_button" onclick="window.location.href='{{ route('customer.dashboard') }}'">Vehicles</button>
         </div>
-        @guest
-            <a id="username" href="{{ route('login') }}">Log in</a>
-        @endguest
+        
+        <div id="profile">
+            <div id="profile-container">
+                <img id="pfp" src="{{ asset('img/racc_icon.png') }}" alt="Profile">
+                
+                <div id="profile-dropdown">
+                    <a href="{{ route('customer.profile') }}" class="dropdown-item">My Profile</a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="dropdown-item">Logout</button>
+                    </form>
+                </div>
+            </div>
+            
+            @auth
+                <span id="username">{{ Auth::user()->name }}</span>
+            @endauth
+        </div>
     </div>
-</div>
-
 <!-- Progress Steps -->
 <div class="progress-container">
     <div class="steps">
