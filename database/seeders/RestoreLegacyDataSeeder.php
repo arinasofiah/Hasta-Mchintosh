@@ -32,28 +32,8 @@ class RestoreLegacyDataSeeder extends Seeder
             ],
             [
                 'userID' => 2,
-                'email' => 'arinasofiah@graduate.utm.my',
-                'password' => '12345678', // Note: This might need hashing if it wasn't hashed in the dump, but the dump implies it's plain text or handled elsewhere. The other pw is hashed. 
-                // Wait, the dump shows '12345678' literally? 
-                // The dump says: '12345678'. If the app expects hashed, this user might not be able to login unless we hash it. 
-                // However, I must restore EXACTLY what was in the dump first. 
-                // Actually, let's look at the dump again. 
-                // (2, '...utm.my', '12345678', ...)
-                // I will insert it as is. If the user can't login, they can reset or we fix later. 
-                // But usually standard Laravel auth needs Bcrypt. 
-                // The other one is $2y$12... which is Bcrypt. 
-                // I will keep it as is to be faithful to the dump.
-                'name' => 'QISTINA AIRA',
-                'icNumber' => '010415-10-3442',
-                'userType' => 'admin',
-                'remember_token' => NULL,
-                'created_at' => '2025-12-29 11:15:27',
-                'updated_at' => '2025-12-29 11:15:27',
-            ],
-            [
-                'userID' => 3,
                 'email' => 'admin@example.com',
-                'password' => '$2y$12$Y6NWgNpjX9f/Nhx4qPAMyegdZt6Ab4BKPNrrRS5m8J4g8bVO.y3K2',
+                'password' => '$2y$12$6K4s1FheL1u0Gz.0bLkMcu5YJeKJ2PoE.dnmE7pSkK/R7zd0TX2Yu',
                 'name' => 'administrator',
                 'icNumber' => '000000-00-0000',
                 'userType' => 'admin',
