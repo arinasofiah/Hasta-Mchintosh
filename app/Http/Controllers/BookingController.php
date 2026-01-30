@@ -474,8 +474,6 @@ class BookingController extends Controller
             $now = Carbon::now();
             $startDate = Carbon::parse($booking->startDate);
             
-            // If booking hasn't started yet, mark vehicle as "reserved"
-            // If booking has started or in progress, mark as "in_use"
             if ($startDate->isFuture()) {
                 // Booking hasn't started yet - mark vehicle as "reserved"
                 $booking->vehicle->status = 'reserved';
@@ -531,20 +529,14 @@ class BookingController extends Controller
                 $depositAmount = 50; // Fixed deposit amount
                 
                 // Calculate like the frontend expects
-                // Total Cost is ALWAYS rental + RM50 deposit
                 $totalCost = $rentalPrice + $depositAmount;
                 
                 // Calculate remaining balance based on payment type
                 if ($paymentType == 'deposit') {
-                    // For deposit payments: customer owes rental portion after paying RM50
-                    // They might have paid more than RM50 (partial payment of rental)
-                    // So remaining = totalCost - totalPaid
                     $remainingBalance = max(0, $totalCost - $totalPaid);
                 } elseif ($paymentType == 'full') {
-                    // For full payments: remaining = totalCost - totalPaid
                     $remainingBalance = max(0, $totalCost - $totalPaid);
                 } else {
-                    // No payment type or other type: full amount due
                     $remainingBalance = $totalCost;
                 }
                 
@@ -554,8 +546,8 @@ class BookingController extends Controller
                 $booking->remainingBalance = $remainingBalance;
                 $booking->isFullyPaid = $remainingBalance <= 0;
                 $booking->pay_amount_type = $paymentType;
-                $booking->bank_name = $bank_name;
-                $booking->bank_owner_name = $bank_owner_name;
+                $booking->bank_name = $bankName;
+                $booking->bank_owner_name = $bankOwnerName;
                 $booking->depositAmount = $depositAmount;
                 
                 // Build datetime strings using related models
