@@ -403,7 +403,7 @@ class BookingController extends Controller
             'bookingID' => $booking->bookingID,
             'pickupDate' => $request->pickup_date,
             'pickupTime' => $request->pickup_time,
-            'location' => $request->pickupLocation,
+            'pickupLocation' => $request->pickupLocation,
         ]);
 
         // RETURN
@@ -411,7 +411,7 @@ class BookingController extends Controller
             'bookingID' => $booking->bookingID,
             'returnDate' => $request->return_date,
             'returnTime' => $request->return_time,
-            'pickupLocation' => $request->returnLocation,
+            'returnLocation' => $request->returnLocation,
         ]);
 
         // VEHICLE STATUS
