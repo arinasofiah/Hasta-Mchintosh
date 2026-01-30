@@ -423,7 +423,7 @@ class BookingController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Payment received. Awaiting admin approval.',
-            'redirect_url' => route('bookingHistory')
+            'redirect_url' => route('booking.history')
         ]);
 
     } catch (\Exception $e) {
