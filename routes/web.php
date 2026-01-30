@@ -129,7 +129,7 @@ Route::middleware(['auth'])->prefix('booking')->name('booking.')->group(function
     Route::post('/booking/confirm', [BookingController::class, 'confirmBooking'])->name('confirm');
     Route::get('/history', [BookingController::class, 'bookingHistory'])->name('history');
     Route::post('/payment-form', [BookingController::class, 'showPaymentForm'])->name('payment.form');
-    Route::get('/booking-history', [BookingController::class, 'history'])->name('booking.history');
+
 });
 
 Route::post('/register-customer', [CustomerController::class, 'registerCustomer'])->name('customer.register');
