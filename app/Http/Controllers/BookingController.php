@@ -373,8 +373,6 @@ class BookingController extends Controller
         $booking->bank_owner_name = $request->bank_owner_name;
         $booking->pay_amount_type = $request->payAmount;
         $booking->payment_receipt_path = $receiptPath;
-        $booking->pickupLocation = $request->pickupLocation;
-        $booking->returnLocation = $request->returnLocation;
 
         // FOR SOMEONE ELSE
         if ($request->for_someone_else == 1) {
@@ -413,7 +411,7 @@ class BookingController extends Controller
             'bookingID' => $booking->bookingID,
             'returnDate' => $request->return_date,
             'returnTime' => $request->return_time,
-            'location' => $request->returnLocation,
+            'pickupLocation' => $request->returnLocation,
         ]);
 
         // VEHICLE STATUS
