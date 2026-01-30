@@ -11,8 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('bookings', function (Blueprint $table) {
-            //
+        Schema::table('booking', function (Blueprint $table) {
+            if (!Schema::hasColumn('booking', 'vehicleID')) {
+                $table->unsignedBigInteger('vehicleID')->after('bookingID');
+                $table->foreign('vehicleID')->references('vehicleID')->on('vehicles')->onDelete('cascade');
+            }
+            if (!Schema::hasColumn('booking', 'customerID')) {
+                $table->unsignedBigInteger('customerID')->after('vehicleID');
+                 // Note: referencing 'users' table based on other migrations
+                $table->foreign('customerID')->references('userID')->on('users')->onDelete('cascade');
+            }
         });
     }
 
@@ -21,8 +29,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('bookings', function (Blueprint $table) {
-            //
+        Schema::table('booking', function (Blueprint $table) {
+            $table->dropForeign(['vehicleID']);
+            $table->dropColumn('vehicleID');
+            $table->dropForeign(['customerID']);
+            $table->dropColumn('customerID');
         });
     }
 };
