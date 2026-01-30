@@ -148,45 +148,31 @@ textarea.input {resize:vertical; min-height:100px;}
 
 <!-- HEADER -->
 <div id="header">
-    <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}">
-
-    <div id="menu">
-        <button class="head_button">Home</button>
-        <button class="head_button">Vehicles</button>
-        <button class="head_button">Details</button>
-        <button class="head_button">About Us</button>
-        <button class="head_button">Contact Us</button>
-    </div>
-
-    <div id="profile">
-        <div id="profile-container" aria-haspopup="true" aria-expanded="false">
-            <img id="pfp" src="{{ asset('img/racc_icon.png') }}" alt="Profile Picture" role="button" tabindex="0">
-            
-            <div id="profile-dropdown" role="menu" aria-label="User menu">
-                @guest
-                    <a href="{{ route('login') }}" class="dropdown-item" role="menuitem">Login</a>
-                    <a href="{{ route('register') }}" class="dropdown-item" role="menuitem">Register</a>
-                @endguest
-                
-                @auth
-                    <a href="{{ route('customer.profile') }}" class="dropdown-item" role="menuitem">My Profile</a>
-                    <form method="POST" action="{{ route('logout') }}" class="dropdown-form">
-                        @csrf
-                        <button type="submit" class="dropdown-item" role="menuitem">Logout</button>
-                    </form>
-                @endauth
-            </div>
-        </div>
-
-        @guest
-            <a id="username" href="{{ route('login') }}">Log in</a>
-        @endguest
+        <img id="logo" src="{{ asset('img/hasta_logo.jpg') }}" alt="Hasta Logo">
         
-        @auth
-            <span id="username">{{ Auth::user()->name }}</span>
-        @endauth
+        <div id="menu">
+            <button class="head_button" onclick="window.location.href='{{ route('customer.dashboard') }}'">Home</button>
+            <button class="head_button" onclick="window.location.href='{{ route('customer.dashboard') }}'">Vehicles</button>
+        </div>
+        
+        <div id="profile">
+            <div id="profile-container">
+                <img id="pfp" src="{{ asset('img/racc_icon.png') }}" alt="Profile">
+                
+                <div id="profile-dropdown">
+                    <a href="{{ route('customer.profile') }}" class="dropdown-item">My Profile</a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="dropdown-item">Logout</button>
+                    </form>
+                </div>
+            </div>
+            
+            @auth
+                <span id="username">{{ Auth::user()->name }}</span>
+            @endauth
+        </div>
     </div>
-</div>
 
 <!-- Progress Steps -->
 <div class="progress-container">
