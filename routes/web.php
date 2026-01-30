@@ -123,13 +123,12 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
 
 //  Booking routes (customer)
 Route::middleware(['auth'])->prefix('booking')->name('booking.')->group(function () {
+    Route::get('/history', [BookingController::class, 'bookingHistory'])->name('history');
+    Route::post('/payment-form', [BookingController::class, 'showPaymentForm'])->name('payment.form');
+    Route::post('/booking/confirm', [BookingController::class, 'confirmBooking'])->name('confirm');
     Route::get('/{vehicleID}', [BookingController::class, 'showForm'])->name('form');
     Route::post('/{vehicleID}', [BookingController::class, 'store'])->name('store');
     Route::post('/start/{vehicleID}', [BookingController::class, 'start'])->name('start');
-    Route::post('/booking/confirm', [BookingController::class, 'confirmBooking'])->name('confirm');
-    Route::get('/history', [BookingController::class, 'bookingHistory'])->name('history');
-    Route::post('/payment-form', [BookingController::class, 'showPaymentForm'])->name('payment.form');
-
 });
 
 Route::post('/register-customer', [CustomerController::class, 'registerCustomer'])->name('customer.register');
