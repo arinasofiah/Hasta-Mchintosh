@@ -865,8 +865,7 @@
                             @foreach($eligibleVouchers as $v)
                                 <div class="voucher-item" 
                                      data-id="{{ $v->promoID }}" 
-                                     data-val="{{ $v->discountValue }}"
-                                     onclick="selectVoucher(this)">
+                                     data-val="{{ $v->discountValue }}">
                                     <strong>{{ $v->title }}</strong><br>
                                     <small>Code: {{ $v->code }} (Disc: RM{{ $v->discountValue }})</small>
                                 </div>
@@ -1091,6 +1090,13 @@
             uploadContainer.addEventListener('dragleave', handleDragLeave);
             uploadContainer.addEventListener('drop', handleDrop);
         }
+        // Voucher item selection
+        document.querySelectorAll('.voucher-item').forEach(item => {
+            item.addEventListener('click', function() {
+                selectVoucher(this);
+            });
+        });
+
         if (removeBtn) removeBtn.addEventListener('click', removeFile);
 
         // Terms modal
@@ -1222,9 +1228,17 @@
         }
 
         function selectVoucher(element) {
-            document.querySelectorAll('.voucher-item').forEach(item => item.classList.remove('selected'));
-            element.classList.add('selected');
-            applyVoucherMath(element.dataset.id, parseFloat(element.dataset.val));
+            // Check if already selected
+            if (element.classList.contains('selected')) {
+                // Deselect
+                element.classList.remove('selected');
+                resetVoucher();
+            } else {
+                // Select
+                document.querySelectorAll('.voucher-item').forEach(item => item.classList.remove('selected'));
+                element.classList.add('selected');
+                applyVoucherMath(element.dataset.id, parseFloat(element.dataset.val));
+            }
         }
 
         function applyVoucherCode() {

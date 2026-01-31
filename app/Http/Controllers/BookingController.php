@@ -15,6 +15,7 @@ use App\Models\Promotion;
 use App\Models\Voucher;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class BookingController extends Controller
 {
@@ -80,65 +81,60 @@ class BookingController extends Controller
     public function checkPromotion(Request $request)
     {
         try {
-            $duration = $request->input('duration');
-            $amount = $request->input('amount');
+            $duration = (int) $request->input('duration', 0);
+            $amount = (float) $request->input('amount', 0);
             $vehicleID = $request->input('vehicleID');
 
-            \Illuminate\Support\Facades\Log::info("DEBUG CHECK: Duration={$duration}, Amount={$amount}, VehicleID={$vehicleID}");
-
             if (!$vehicleID) {
-                throw new \Exception("Vehicle ID is missing from the request!");
+                return response()->json(['hasPromotion' => false, 'discount' => 0]);
             }
 
-            $vehicle = \App\Models\Vehicles::find($vehicleID);
-            if (!$vehicle) {
-                throw new \Exception("Vehicle found in DB is NULL for ID: {$vehicleID}");
-            }
-
-            \Illuminate\Support\Facades\Log::info("DEBUG CHECK: Vehicle Found -> " . $vehicle->model);
-
-            $promotion = \App\Models\Promotion::where('applicableDays', '<=', $duration)
+            // Find valid vehicle for model check
+            $vehicle = Vehicles::find($vehicleID);
+            
+            $promotion = Promotion::where('applicableDays', '<=', $duration)
                 ->where(function($query) use ($vehicle) {
-                    $query->where('applicableModel', 'All')
-                          ->orWhere('applicableModel', $vehicle->model);
+                     $query->where('applicableModel', 'All');
+                     if ($vehicle) {
+                        $query->orWhere('applicableModel', $vehicle->model);
+                     }
                 })
                 ->orderBy('discountValue', 'desc')
                 ->first();
 
             if ($promotion) {
-                \Illuminate\Support\Facades\Log::info("DEBUG CHECK: Promo Match -> " . $promotion->title);
-                
-                $discount = 0;
+                $pVal = (float) $promotion->discountValue;
+                $finalDiscount = 0.0;
+
                 if ($promotion->discountType == 'percentage') {
-                    $discount = $amount * ($promotion->discountValue / 100);
+                    $finalDiscount = $amount * ($pVal / 100);
                 } else {
-                    $discount = $promotion->discountValue;
+                    $finalDiscount = $pVal;
                 }
 
+                // Cap discount
+                if ($finalDiscount > $amount) $finalDiscount = $amount;
+                
                 return response()->json([
                     'hasPromotion' => true,
-                    'discount' => min($discount, $amount),
+                    'discount' => round($finalDiscount, 2),
                     'promoID' => $promotion->promoID,
                     'message' => 'Applied: ' . $promotion->title,
-                    'debug_info' => 'Success'
+                    'debug_info' => $promotion->discountType // Minimal debug info
                 ]);
             }
 
-            \Illuminate\Support\Facades\Log::info("DEBUG CHECK: No promo matched.");
             return response()->json([
                 'hasPromotion' => false, 
-                'discount' => 0, 
-                'debug_info' => 'No rules matched your criteria (Duration: '.$duration.')'
+                'discount' => 0
             ]);
 
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("CHECK PROMOTION CRASHED: " . $e->getMessage());
-            \Illuminate\Support\Facades\Log::error($e->getTraceAsString());
-
-        return response()->json([
-            'hasPromotion' => false,
-            'discount' => 0
-        ]);
+            \Log::error('Check Promotion Error: ' . $e->getMessage());
+            return response()->json([
+                'hasPromotion' => false,
+                'discount' => 0
+            ]);
         }
     }
 
@@ -415,6 +411,16 @@ class BookingController extends Controller
         $vehicle->status = 'reserved';
         $vehicle->save();
 
+        // AWARD VOUCHER (RM10 Voucher for next booking)
+        Voucher::create([
+            'userID' => auth()->id(),
+            'voucherType' => 'cash_reward', 
+            'voucherCode' => 'REW-' . strtoupper(Str::random(6)),
+            'value' => 10,
+            'expiryTime' => now()->addMonths(3)->timestamp,
+            'isUsed' => 0
+        ]);
+
         DB::commit();
 
         return response()->json([
@@ -454,10 +460,8 @@ class BookingController extends Controller
                         ['stampCount' => 0]
                     );
 
-                    // Calculate rental hours from booking
-                    $start = Carbon::parse($booking->startDate . ' 00:00:00');
-                    $end = Carbon::parse($booking->endDate . ' 23:59:59');
-                    $rentalHours = $end->diffInHours($start);
+                    // Use stored duration
+                    $rentalHours = $booking->bookingDuration;
                     
                     // Only give stamp if rental duration >= 7 hours
                     if ($rentalHours >= 7) {
