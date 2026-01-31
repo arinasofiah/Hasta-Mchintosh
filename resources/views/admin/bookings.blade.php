@@ -72,7 +72,7 @@
         @endif
 
         <ul class="nav nav-tabs" id="bookingTabs" role="tablist">
-            <li class="nav-item"><button class="nav-link" id="approval-tab" data-bs-toggle="tab" data-bs-target="#approval-pane">Pending Approval</button></li>
+            <li class="nav-item"><button class="nav-link active" id="approval-tab" data-bs-toggle="tab" data-bs-target="#approval-pane">Pending Approval</button></li>
             <li class="nav-item"><button class="nav-link" id="pickup-tab" data-bs-toggle="tab" data-bs-target="#pickup-pane">Pickups</button></li>
             <li class="nav-item"><button class="nav-link" id="return-tab" data-bs-toggle="tab" data-bs-target="#return-pane">Returns</button></li>
             <li class="nav-item"><button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history-pane">History</button></li>
@@ -80,7 +80,7 @@
 
         <div class="tab-content">
 
-            <div class="tab-pane fade" id="approval-pane">
+            <div class="tab-pane fade show active" id="approval-pane">
                 <div class="table-card">
                     <table class="table table-hover align-middle">
                         <thead class="table-light"><tr><th>ID</th><th>Customer</th><th>Status</th><th>Action</th></tr></thead>
