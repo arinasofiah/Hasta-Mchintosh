@@ -40,15 +40,12 @@ class BookingController extends Controller
         $end = Carbon::parse("$returnDate $returnTime");
         $durationHours = ceil($end->diffInMinutes($start) / 60);
         
-        // Option B: Day-based with Hourly Overflow
-        // Any rental up to 24 hours = 1 day charge
-        // Beyond 24 hours = full days + remaining hours at hourly rate
         if ($durationHours <= 24) {
             $totalPrice = $vehicle->pricePerDay;
             $durationDays = 1;
         } else {
-            $days = intdiv($durationHours, 24); // Full days
-            $remainingHours = $durationHours % 24; // Remaining hours
+            $days = intdiv($durationHours, 24); 
+            $remainingHours = $durationHours % 24; 
             $totalPrice = ($days * $vehicle->pricePerDay) + ($remainingHours * $vehicle->pricePerHour);
             $durationDays = ceil($durationHours / 24);
         }

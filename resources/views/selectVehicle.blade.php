@@ -496,7 +496,7 @@ body {
         </div>
     </div>
 
-    <!-- Booking Summary (READ ONLY - No form) -->
+    <!-- Booking Summary -->
     <div class="booking-summary">
         <div class="summary-container">
             <div class="summary-title">
@@ -699,11 +699,7 @@ body {
     </div>
 
 <script>
-// No date/time editing functionality needed anymore
-// All dates are read-only and displayed from server
 
-// Only keep the booking functionality
-// Only the guest booking functionality remains
 function handleGuestBooking() {
     // Show loading state
     const bookBtn = document.querySelector('.book-btn');

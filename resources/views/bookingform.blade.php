@@ -304,7 +304,7 @@ textarea.input {resize:vertical; min-height:100px;}
                 </label>
             </div>
 
-            <!-- Driver Info Section (Hidden by default) -->
+            <!-- Driver Info Section -->
             <div id="driverInfoSection" style="display: none; border: 1px solid #ddd; padding: 15px; margin-top: 15px; border-radius: 5px; background: #f9f9f9;">
                 <h5 style="margin-bottom: 15px;">Driver Information</h5>
                 
@@ -379,10 +379,6 @@ textarea.input {resize:vertical; min-height:100px;}
                 <span>Delivery Charge</span>
                 <span id="deliveryCharge">RM 0.00</span>
             </div>
-            <!-- <div class="charge-row">
-                <span>Total Price (by hour)</span>
-                <span id="totalByHour">RM 0.00</span>
-            </div> -->
             <div class="charge-row" style="color: #28a745;">
                 <span>Promotion Discount</span>
                 <span id="promotionDiscount">- RM 0.00</span>
@@ -483,7 +479,6 @@ function updateDeliveryCharge() {
 
     deliveryCharge = charge;
     
-    // Update delivery charge display immediately
     const deliveryChargeEl = document.getElementById('deliveryCharge');
     if (deliveryChargeEl) {
         deliveryChargeEl.textContent = `MYR ${deliveryCharge.toFixed(2)}`;
@@ -492,7 +487,6 @@ function updateDeliveryCharge() {
     recalculateTotal();
 }
 
-// Update hidden location input when user types details
 document.addEventListener('DOMContentLoaded', () => {
     ['pickup', 'return'].forEach(type => {
         const detailsInput = document.getElementById(`${type}Details`);
@@ -565,11 +559,6 @@ function calculateDurationAndPrice() {
     const durationDisplay = document.getElementById('durationDisplay');
     if (durationInput) durationInput.value = durationText;
     if (durationDisplay) durationDisplay.textContent = durationText;
-
-    // Calculate base rental cost using Option B: Day-based with Hourly Overflow
-    // Any rental up to 24 hours = 1 day charge
-    // Beyond 24 hours = full days + remaining hours at hourly rate
-    if (diffHours <= 24) {
         baseGrandTotal = {{ $vehicle->pricePerDay }};
     } else {
         baseGrandTotal = (days * {{ $vehicle->pricePerDay }}) + (remainingHours * {{ $vehicle->pricePerHour }});
@@ -584,7 +573,6 @@ function calculateDurationAndPrice() {
     console.log('Base Grand Total:', baseGrandTotal);
     console.log('Vehicle ID:', '{{ $vehicle->vehicleID }}');
 
-    // Trigger promotion check AFTER base total is set
     checkPromotion();
 }
 
@@ -597,16 +585,13 @@ function checkPromotion() {
         return;
     }
 
-    // Extract days from duration text
     const durationText = durationInput.value;
     let days = 0;
     
-    // Parse days from text like "2 days 3 hours" or "5 hours"
     const dayMatch = durationText.match(/(\d+)\s*day/);
     if (dayMatch) {
         days = parseInt(dayMatch[1]);
     } else {
-        // If no days mentioned, check if hours exceed 24
         const hourMatch = durationText.match(/(\d+)\s*hour/);
         if (hourMatch) {
             const hours = parseInt(hourMatch[1]);
@@ -643,7 +628,6 @@ function checkPromotion() {
             promoDiscountEl.style.color = data.hasPromotion ? '#28a745' : '#333';
         }
 
-        // Set promo ID if exists
         let promoInput = document.querySelector('input[name="promo_id"]');
         if (data.hasPromotion) {
             if (!promoInput) {
@@ -674,13 +658,11 @@ function recalculateTotal() {
         deliveryInput.value = deliveryCharge;
     }
 
-    // Update delivery charge display
     const deliveryChargeEl = document.getElementById('deliveryCharge');
     if (deliveryChargeEl) {
         deliveryChargeEl.textContent = `MYR ${deliveryCharge.toFixed(2)}`;
     }
 
-    // Update grand total displays
     const grandTotalEl = document.getElementById('grandTotal');
     const bottomBarTotalEl = document.getElementById('bottomBarTotal');
     if (grandTotalEl) grandTotalEl.textContent = `MYR ${finalTotal.toFixed(2)}`;

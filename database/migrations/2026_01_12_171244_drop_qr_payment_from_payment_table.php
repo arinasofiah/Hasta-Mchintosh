@@ -12,7 +12,6 @@ return new class extends Migration
     public function up(): void
 {
     Schema::table('payment', function (Blueprint $table) {
-        // This removes the column from the 'payment' table
         $table->dropColumn('qrPayment');
     });
 }
@@ -20,7 +19,6 @@ return new class extends Migration
 public function down(): void
 {
     Schema::table('payment', function (Blueprint $table) {
-        // This allows you to undo the change if needed
         $table->string('qrPayment')->nullable();
     });
 }
