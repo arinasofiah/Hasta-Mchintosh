@@ -616,8 +616,6 @@ function checkPromotion() {
 
     if (days < 1) days = 1;
 
-    console.log('Checking promotion for days:', days, 'Amount:', baseGrandTotal);
-
     fetch("/booking/check-promotion", {
         method: 'POST',
         headers: {
@@ -626,21 +624,23 @@ function checkPromotion() {
         },
         body: JSON.stringify({
             duration: days,
-            amount: baseGrandTotal
+            amount: baseGrandTotal,
+            vehicleID: '{{ $vehicle->vehicleID }}'
         })
     })
     .then(response => response.json())
     .then(data => {
-        console.log('Promotion response:', data);
-        
         promotionDiscount = data.hasPromotion ? data.discount : 0;
 
         const promoDiscountEl = document.getElementById('promotionDiscount');
         if (promoDiscountEl) {
-            promoDiscountEl.textContent = data.hasPromotion 
-                ? `- RM ${promotionDiscount.toFixed(2)}` 
-                : '- RM 0.00';
-            promoDiscountEl.style.color = data.hasPromotion ? '#28a745' : '#333';
+            if (data.hasPromotion && promotionDiscount > 0) {
+                promoDiscountEl.textContent = `- RM ${promotionDiscount.toFixed(2)}`;
+                promoDiscountEl.style.color = '#28a745';
+            } else {
+                promoDiscountEl.textContent = `- RM 0.00`;
+                promoDiscountEl.style.color = '#333';
+            }
         }
 
         // Set promo ID if exists

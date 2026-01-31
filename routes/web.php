@@ -122,21 +122,22 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
 });
 
 //  Booking routes (customer)
+// Specific routes must come BEFORE wildcards
+Route::middleware(['auth'])->group(function () {
+    Route::post('/booking/check-promotion', [BookingController::class, 'checkPromotion'])->name('booking.checkPromotion');
+    Route::post('/validate-voucher', [BookingController::class, 'validateVoucher'])->name('validate.voucher'); 
+    Route::post('/payment-form', [BookingController::class, 'showPaymentForm'])->name('payment.form');
+});
+
+//  Booking routes (customer)
 Route::middleware(['auth'])->prefix('booking')->name('booking.')->group(function () {
     Route::get('/history', [BookingController::class, 'bookingHistory'])->name('history');
-    Route::post('/payment-form', [BookingController::class, 'showPaymentForm'])->name('payment.form');
+    // Note: This creates /booking/payment-form which might duplicate the above, but that's fine for now.
+    Route::post('/payment-form', [BookingController::class, 'showPaymentForm'])->name('payment.form.duplicate');
     Route::post('/booking/confirm', [BookingController::class, 'confirmBooking'])->name('confirm');
     Route::get('/{vehicleID}', [BookingController::class, 'showForm'])->name('form');
     Route::post('/{vehicleID}', [BookingController::class, 'store'])->name('store');
     Route::post('/start/{vehicleID}', [BookingController::class, 'start'])->name('start');
-});
-
-Route::post('/register-customer', [CustomerController::class, 'registerCustomer'])->name('customer.register');
-
-Route::middleware(['auth'])->group(function () {
-    Route::post('/payment-form', [BookingController::class, 'showPaymentForm'])->name('payment.form');
-    Route::post('/booking/check-promotion', [BookingController::class, 'checkPromotion'])->name('booking.checkPromotion');
-    Route::post('/validate-voucher', [BookingController::class, 'validateVoucher'])->name('validate.voucher'); 
 });
 
 // Profile
