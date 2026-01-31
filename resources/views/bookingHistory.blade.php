@@ -142,16 +142,6 @@
                                 <div class="car-info">
                                     <h3>{{ $vehicle->model ?? 'Car Model' }}</h3>
                                     <p>{{ $vehicle->vehicleType ?? 'Vehicle Type' }}</p>
-                                    
-                                    <!-- Payment Information
-                                    <div class="payment-info">
-                                        @if($remainingBalance > 0)
-                                            <div class="paid">Paid: RM{{ number_format($totalPaid, 2) }}</div>
-                                            <div class="remaining">Balance: RM{{ number_format($remainingBalance, 2) }}</div>
-                                        @elseif($isFullyPaid)
-                                            <div class="paid">Fully Paid</div>
-                                        @endif
-                                    </div> -->
                                 </div>
 
                                 <div class="price">
@@ -200,16 +190,6 @@
                                         Active
                                     @endif
                                 </div>
-                                    
-                                <!-- <div>
-                                    @if($canPayBalance)
-                                        <a href="{{ route('payment.remaining', ['bookingID' => $booking->bookingID]) }}" 
-                                           class="action-btn-success" 
-                                           style="text-decoration: none;">
-                                            <i class="fas fa-credit-card"></i> Pay Balance (RM{{ number_format($remainingBalance, 2) }})
-                                        </a>
-                                    @endif
-                                </div> -->
                             </div>
                     @empty
                         <div class="empty-state">
@@ -227,7 +207,9 @@
                     </button>
                 </div>
                 @endif
-            </div> <div class="booking-section">
+            </div> 
+            
+            <div class="booking-section">
                 <div class="section-title pending">Pending Bookings</div>
                 <div class="booking-cards-container" id="pendingBookingsContainer">
                     @forelse($pending as $booking)
@@ -397,10 +379,6 @@
                         <strong>Status:</strong>
                         <span id="detail-status">-</span>
                     </div>
-                    <!-- <div class="detail-row">
-                        <strong>Duration:</strong>
-                        <span id="detail-duration">-</span>
-                    </div> -->
                 </div>
             </div>
             <hr style="margin: 20px 0;">

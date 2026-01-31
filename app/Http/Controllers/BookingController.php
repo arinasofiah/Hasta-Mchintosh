@@ -499,8 +499,6 @@ class BookingController extends Controller
     public function bookingHistory()
     {
         $userId = auth()->id();
-        
-        // Eager load payments to avoid N+1 queries
         $bookings = Bookings::with(['vehicle', 'pickup', 'returnCar', 'payments'])
             ->where(function($query) use ($userId) {
                 $query->where('customerID', $userId)
@@ -509,30 +507,22 @@ class BookingController extends Controller
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(function($booking) {
-                // Calculate total paid from COMPLETED payments
                 $totalPaid = $booking->payments
                     ->where('paymentStatus', 'completed')
                     ->sum('amount');
                 
-                // Get the latest payment to determine payment type
                 $latestPayment = $booking->payments
                     ->where('paymentStatus', 'completed')
                     ->sortByDesc('paymentDate')
                     ->first();
                 
-                // Use booking's pay_amount_type if no payment found
                 $paymentType = $latestPayment ? $latestPayment->paymentType : $booking->pay_amount_type;
                 $bankName = $latestPayment ? $latestPayment->bankName : $booking->bank_name;
                 $bankOwnerName = $latestPayment ? $latestPayment->bankOwnerName : $booking->bank_owner_name;
-                
-                // Calculate amounts correctly
                 $rentalPrice = $booking->totalPrice ?? 0;
-                $depositAmount = 50; // Fixed deposit amount
-                
-                // Calculate like the frontend expects
+                $depositAmount = 50; 
                 $totalCost = $rentalPrice + $depositAmount;
                 
-                // Calculate remaining balance based on payment type
                 if ($paymentType == 'deposit') {
                     $remainingBalance = max(0, $totalCost - $totalPaid);
                 } elseif ($paymentType == 'full') {
@@ -541,7 +531,6 @@ class BookingController extends Controller
                     $remainingBalance = $totalCost;
                 }
                 
-                // Add dynamic properties
                 $booking->totalPaid = $totalPaid;
                 $booking->totalCost = $totalCost;
                 $booking->remainingBalance = $remainingBalance;
@@ -551,7 +540,6 @@ class BookingController extends Controller
                 $booking->bank_owner_name = $bankOwnerName;
                 $booking->depositAmount = $depositAmount;
                 
-                // Build datetime strings using related models
                 $pickupDate = $booking->pickup?->pickupDate ?? $booking->startDate;
                 $pickupTime = $booking->pickup?->pickupTime ?? '08:00:00';
                 $returnDate = $booking->returnCar?->returnDate ?? $booking->endDate;
